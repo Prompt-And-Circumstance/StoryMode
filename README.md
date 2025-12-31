@@ -2,8 +2,6 @@
 
 **Version:** 0.1 (Initial Release)
 
-Guide your AI through structured story arcs with precision and style.
-
 ## Overview
 
 Story Mode is a extension for SillyTavern that provides intelligent story arc progression and asks the LLM to tell you a story in the style of popular genre writers. It injects context-aware prompts into your chat to guide the AI through the narrative of a story arc. It aims for proper pacing, thematic consistency, and genre-appropriate storytelling. Also include automatically generated epilogues and summaries.

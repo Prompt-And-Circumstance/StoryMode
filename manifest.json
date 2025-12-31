@@ -1,0 +1,11 @@
+{
+    "display_name": "Story Mode",
+    "loading_order": 16,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "css": "style.css",
+    "author": "Eco54",
+    "version": "0.0.1",
+    "homePage": "https://github.com/SillyTavern/SillyTavern"
+}

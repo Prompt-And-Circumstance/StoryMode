@@ -1,0 +1,447 @@
+/*wider popup */
+.popup wide_dialogue_popup {
+    min-width: 80vw !important;
+    min-width: 80dwv !important;
+}
+
+/* Story Mode Extension Styles */
+#story_mode_base_settings {
+    display: flex;
+    align-items: center;     
+    gap: 12px;                
+}
+.storymode-settings-panel {
+    display: flex;
+    align-items: center;
+    gap: 8px;              /* space between checkbox label and button */
+    justify-content: space-between;  
+}
+
+.storymode-settings-panel .checkbox_label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+#story_mode_settings_btn {
+    flex: 1;                  /* Take remaining horizontal space */
+    justify-content: left;  /* Center button horizontally */
+    margin-right: 10px;
+    min-width: 140px;
+    padding: 2px;
+}
+
+#story_mode_settings_btn button {
+    width: 60%
+}
+
+/* Status display on main panel */
+
+.storymode-status {
+    margin-top: 10px;
+    padding: 8px;
+    background-color: var(--black30a);
+    border-radius: 4px;
+    text-align: center;
+    color: white;
+    width: 100%;
+    margin-top: 4px;
+}
+
+.storymode-status small{
+    color: white !important;
+}
+
+/* Further settings popup */
+.storymode-panel {
+    padding: 0;
+    margin-bottom: 0;
+}
+
+.storymode-header {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-header h3 {
+    margin: 0;
+    font-size: 1.2em;
+    color: var(--SmartThemeBodyColor);
+}
+
+/* Settings Dialog Header */
+
+.storymode-header-dialog {
+    text-align: center;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-header-dialog h2 {
+    margin: 0 0 8px 0;
+    font-size: 1.8em;
+    font-weight: bold;
+    color: var(--SmartThemeBodyColor);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.storymode-tagline {
+    margin: 0;
+    font-size: 1em;
+    color: var(--grey70);
+    font-style: italic;
+    line-height: 1.4;
+}
+
+
+.storymode-status small {
+    color: var(--grey70);
+    font-size: 0.9em;
+}
+
+.storymode-section {
+    margin-bottom: 15px;
+}
+
+.storymode-subsection {
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: var(--black30a);
+    border-radius: 5px;
+    background-color: transparent !important;
+    border-top: 1px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-subsection h4 {
+    margin: 0 0 10px 0;
+    font-size: 1em;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-field {
+    margin-bottom: 10px;
+}
+
+.storymode-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-field .notes {
+    display: block;
+    margin-top: 3px;
+    font-size: 0.85em;
+    color: var(--grey70);
+    font-style: italic;
+}
+
+.storymode-field input[type="range"] {
+    width: 100%;
+}
+
+.storymode-field input[type="number"] {
+    width: 100px;
+}
+
+.storymode-badge {
+    display: inline-block;
+    padding: 8px 12px;
+    margin: 10px 0;
+    background-color: var(--SmartThemeBlurTintColor);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 5px;
+    font-weight: bold;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-preview {
+    padding: 10px;
+    margin-top: 5px;
+    background-color: var(--SmartThemeBlurTintColor);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 5px;
+    font-family: monospace; 
+    font-size: 0.9em;
+    color: var(--SmartThemeBodyColor);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 300px;
+    overflow-y: auto;
+    text-align: left;
+}
+
+.flex-container {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.flex-container > select,
+.flex-container > input {
+    flex: 1;
+}
+
+.flex-container > button {
+    flex-shrink: 0;
+}
+
+.checkbox_label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.checkbox_label input[type="checkbox"] {
+    cursor: pointer;
+}
+
+.checkbox_label span {
+    color: var(--SmartThemeBodyColor);
+}
+
+/* Editor Modal Styles */
+
+.storymode-editor {
+  width: 100%;
+}
+
+.storymode-editor-controls {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-editor-controls button {
+    flex: 1;
+}
+
+.storymode-editor-search {
+    margin: 15px 0;
+}
+
+.storymode-editor-search input {
+    width: 100%;
+}
+
+.storymode-editor-list {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.storymode-editor-item {
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: var(--SmartThemeBlurTintColor);
+    border: 1px solid var(--SmartThemeBodyColor);
+    border-radius: 5px;
+    text-align: left;
+}
+
+.storymode-editor-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.storymode-editor-item-header strong {
+    font-size: 1.1em;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-editor-category {
+    font-size: 0.9em;
+    color: var(--SmartThemeQuoteColor)
+    font-style: italic;
+}
+
+.storymode-editor-item-content {
+    margin-bottom: 10px;
+}
+
+.storymode-editor-item-content p {
+    margin: 5px 0;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-editor-item-actions {
+    display: flex;
+    gap: 5px;
+    justify-content: flex-end;
+}
+
+.storymode-nsfw-badge {
+    font-size: 1.2em;
+    margin-left: 8px;
+}
+
+.storymode-nsfw-text {
+    padding: 8px;
+    margin-top: 8px;
+    background-color: var(--black50a);
+    color: white !important;
+    border-left: 3px solid var(--grey70);
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+.storymode-nsfw-text strong {
+    color: var(--SmartThemeQuoteColor);
+}
+
+/* Edit Form Styles */
+
+.storymode-edit-form {
+    min-width: 500px;
+}
+
+.storymode-edit-form .storymode-field {
+    margin-bottom: 15px;
+}
+
+.storymode-edit-form textarea {
+    width: 100%;
+    resize: vertical;
+}
+
+.storymode-edit-form input[type="text"],
+.storymode-edit-form select {
+    width: 100%;
+}
+
+#edit_type_story_prompt {
+    font-family: 'Courier New', monospace;
+    font-size: 0.95em;
+    line-height: 1.5;
+    min-height: 10em;
+}
+
+#revert_to_default_btn {
+    width: 100%;
+}
+
+/* Responsive adjustments */
+
+@media (max-width: 768px) {
+    .storymode-editor {
+        min-width: 100%;
+    }
+
+    .storymode-editor-controls {
+        flex-direction: column;
+    }
+
+    .storymode-edit-form {
+        min-width: 100%;
+    }
+}
+
+/* Integration with SillyTavern theme */
+
+.storymode-panel .menu_button {
+    margin: 5px 0;
+}
+
+
+.storymode-panel .text_pole {
+    /* placeholder */
+}
+
+.storymode-panel .text_pole:focus {
+    border-color: var(--SmartThemeBorderColor);
+} 
+
+/* Scrollbar styling for lists */
+
+.storymode-editor-list::-webkit-scrollbar,
+.storymode-preview::-webkit-scrollbar {
+    width: 8px;
+}
+
+.storymode-editor-list::-webkit-scrollbar-track,
+.storymode-preview::-webkit-scrollbar-track {
+    background: var(--SmartThemeBlurTintColor);
+}
+
+.storymode-editor-list::-webkit-scrollbar-thumb,
+.storymode-preview::-webkit-scrollbar-thumb {
+    background: var(--SmartThemeBlurTintColor);
+    border-radius: 4px;
+}
+
+.storymode-editor-list::-webkit-scrollbar-thumb:hover,
+.storymode-preview::-webkit-scrollbar-thumb:hover {
+    background: var(--SmartThemeBlurTintColor);
+}
+
+/* Notes and help text styling */
+
+.notes {
+    font-size: 0.85em;
+    color: var(--SmartThemeBodyColor);
+    font-style: italic;
+    line-height: 1.4;
+}
+
+/* Button icon spacing */
+
+.menu_button_icon {
+    padding: 5px 10px;
+}
+
+.menu_button_icon i {
+    font-size: 1em;
+}
+
+/* Popup content adjustments */
+
+.author_styles_popup_content,
+.storymode-editor,
+.storymode-edit-form {
+    color: var(--SmartThemeBodyColor);
+}
+
+/* Select dropdown styling */
+
+#author_style_select * {
+    width: 100%;
+    background-color: var(--SmartThemeBlurTintColor) !important;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 5px;
+    font-size: 0.9em;
+    color: var(--SmartThemeBodyColor) !important;
+}
+
+#author_style_search {
+    margin-bottom: 5px;
+}
+
+/* Arc progress badge variants */
+
+.storymode-badge.arc-complete {
+    background-color: var(--SmartThemeEmColor);
+    color: white;
+}
+
+.storymode-badge.arc-setup {
+    border-left: 4px solid #4CAF50;
+}
+
+.storymode-badge.arc-confrontation {
+    border-left: 4px solid #FF9800;
+}
+
+.storymode-badge.arc-resolution {
+    border-left: 4px solid #F44336;
+}

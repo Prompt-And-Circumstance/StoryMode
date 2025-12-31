@@ -1,0 +1,611 @@
+[
+  {
+    "id": "noir_detective",
+    "name": "Noir Detective",
+    "category": [
+      "Mystery"
+    ],
+    "storyPrompt": "Rain-slick streets, double-crosses, dames with secrets. Cynical PIs chase shadows through morally ambiguous urban landscapes where everyone has something to hide.\n***Thematic Hook:*** A morally gray detective investigates a tangled case where corruption runs deep and truth is elusive in the shadows of a rain-soaked city.\n***Narrative Scope:*** Intimate, Urban.\n***Tone:*** Cynical, Atmospheric, Melancholic, Gritty.\n***Tropes:*** Hard-boiled detective, Femme fatale, Everyone's got secrets, Corrupt system.\n***Literary Devices:*** Foreshadowing: Heavy, Symbolism: Noir imagery (rain, shadows, neon), Irony: Dark.\n***Subgenre:*** Character-driven mystery, Atmospheric.\n***Pacing:*** Moderate with bursts of tension, Dialogue-heavy.\n***POV:*** First-person or close third-person with internal monologue.\n***Structure:*** Investigation-based, Non-linear revelations.\n***Priority:*** Atmosphere > Character depth > Mystery resolution.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Establish the gritty noir world, introduce the flawed detective protagonist and the mysterious case that draws them in. Plant seeds of intrigue.",
+      "confrontation": "Suspects multiply, alliances shatter, violence erupts. The detective navigates danger and deception as the case deepens and stakes rise.",
+      "resolution": "The truth emerges through a shocking twist. Justice is served, but it's bittersweet or pyrrhic - noir never offers clean victories."
+    }
+  },
+  {
+    "id": "cosmic_horror",
+    "name": "Cosmic Horror",
+    "category": [
+      "Horror"
+    ],
+    "storyPrompt": "Unfathomable entities beyond human comprehension lurk at the edges of reality. Investigating forbidden knowledge leads to madness and the realization of humanity's cosmic insignificance.\n***Thematic Hook:*** Investigators uncover eldritch truths that shatter their understanding of reality, revealing humanity's terrifying insignificance in a vast, indifferent cosmos.\n***Narrative Scope:*** Cosmic, Existential.\n***Tone:*** Dreadful, Atmospheric, Nihilistic, Unsettling.\n***Tropes:*** Forbidden knowledge, Descent into madness, Ancient evil, Cosmic indifference.\n***Literary Devices:*** Foreshadowing: Subtle and ominous, Symbolism: Non-Euclidean geometry, Irony: Tragic.\n***Subgenre:*** Lovecraftian horror, Slow-burn dread.\n***Pacing:*** Slow build with mounting tension, Atmospheric over action.\n***POV:*** First-person unreliable narrator or detached third-person.\n***Structure:*** Escalating revelations, Journal/document-based framing optional.\n***Priority:*** Atmosphere > Dread > Plot coherence.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Introduce strange occurrences and esoteric mysteries. Characters begin investigating, unaware of the sanity-shattering truth awaiting them.",
+      "confrontation": "Reality unravels. Non-Euclidean geometry, eldritch phenomena, and creeping madness manifest as characters glimpse the horrific truth.",
+      "resolution": "The cosmic horror is revealed in its terrible majesty. Characters face impossible choices: oblivion, madness, or cursed knowledge they cannot unlearn."
+    }
+  },
+  {
+    "id": "epic_fantasy",
+    "name": "Epic Fantasy",
+    "category": [
+      "Fantasy"
+    ],
+    "storyPrompt": "Grand quests across magical realms where heroes rise to face ancient evils. Magic, prophecy, and legendary artifacts shape destinies in battles between light and darkness.\n***Thematic Hook:*** A chosen hero embarks on an epic quest to defeat ancient evil, wielding magic and prophecy to determine the fate of kingdoms and the balance of light and darkness.\n***Narrative Scope:*** Epic, World-spanning.\n***Tone:*** Heroic, Grand, Hopeful with darker undercurrents.\n***Tropes:*** Chosen one, Ancient prophecy, Quest for artifact, Fellowship/party, Final battle.\n***Literary Devices:*** Foreshadowing: Prophecies and omens, Symbolism: Light vs darkness, Irony: Moderate.\n***Subgenre:*** High fantasy, Quest-driven.\n***Pacing:*** Moderate to fast, Action and journey balanced.\n***POV:*** Third-person limited or omniscient, Multiple POVs optional.\n***Structure:*** Quest-based with acts and milestones.\n***Priority:*** World-building > Character arcs > Plot beats.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Establish the fantasy world and its magic system. Introduce the heroic protagonist, their companions, and the looming threat to their world.",
+      "confrontation": "The quest intensifies. Heroes face escalating challenges, betrayals, and battles. Allies fall, dark forces grow stronger, and hope wavers.",
+      "resolution": "The final confrontation arrives. Heroes make ultimate sacrifices, prophecies fulfill, and the fate of the realm is decided in epic battle."
+    }
+  },
+  {
+    "id": "cyberpunk_thriller",
+    "name": "Cyberpunk Thriller",
+    "category": [
+      "Sci-Fi",
+      "Thriller"
+    ],
+    "storyPrompt": "High-tech, low-life. Mega-corporations control everything while hackers, mercenaries, and rebels fight for survival in neon-soaked dystopian sprawls where humanity and technology blur.\n***Thematic Hook:*** In a dystopian future ruled by mega-corporations, a skilled hacker or mercenary uncovers a dangerous conspiracy that blurs the line between human and machine.\n***Narrative Scope:*** Urban dystopia, High-stakes conspiracy.\n***Tone:*** Gritty, Cynical, Neon-soaked, Tense.\n***Tropes:*** Corp conspiracy, Hacker protagonist, Street samurai, AI consciousness, Anti-hero.\n***Literary Devices:*** Foreshadowing: Tech clues, Symbolism: Humanity vs technology, Irony: Heavy.\n***Subgenre:*** Tech-noir, Fast-paced thriller.\n***Pacing:*** Fast and relentless, Action-heavy with technical detail.\n***POV:*** Close third-person or first-person.\n***Structure:*** Heist/mission-based with escalating stakes.\n***Priority:*** Atmosphere > Action > Tech authenticity.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Paint the dystopian cyberpunk world. Introduce the protagonist - hacker, mercenary, or rebel - and the corporate conspiracy or dangerous job that entangles them.",
+      "confrontation": "Digital and physical warfare escalate. Betrayals unfold, mega-corps tighten their grip, and the protagonist races against time through cyberspace and mean streets.",
+      "resolution": "The final hack or heist. Systems crash, secrets expose, violence peaks. The protagonist may win the battle but the dystopia endures."
+    }
+  },
+  {
+    "id": "romantic_drama",
+    "name": "Romantic Drama",
+    "category": [
+      "Romance",
+      "Drama"
+    ],
+    "storyPrompt": "Intense emotional journeys exploring love in its many forms. Characters navigate desire, heartbreak, passion, and connection against obstacles both internal and external.\n***Thematic Hook:*** Two characters forge a deep emotional connection while navigating personal obstacles, societal pressures, and internal fears that test their relationship.\n***Narrative Scope:*** Intimate, Personal.\n***Tone:*** Emotional, Tender, Bittersweet, Hopeful.\n***Tropes:*** Will-they-won't-they, Opposites attract, Second chances, Found family, Slow burn.\n***Literary Devices:*** Foreshadowing: Subtle emotional cues, Symbolism: Seasons/places, Irony: Situational.\n***Subgenre:*** Character-driven, Emotionally intimate, Low-to-moderate spice.\n***Pacing:*** Moderate, Introspective with emotional peaks.\n***POV:*** Close third-person or dual POV.\n***Structure:*** Relationship arc with emotional beats.\n***Priority:*** Character depth > Emotional authenticity > Plot.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Introduce the romantic leads and the spark between them. Establish their individual struggles and the circumstances bringing them together.",
+      "confrontation": "Love deepens but obstacles emerge: misunderstandings, external pressures, internal fears. Emotional stakes rise as the relationship is tested.",
+      "resolution": "The emotional climax. Characters confront their truths and make pivotal choices. Reunion, heartbreak, or bittersweet acceptance brings closure."
+    }
+  },
+  {
+    "id": "murder_mystery",
+    "name": "Murder Mystery",
+    "category": [
+      "Mystery"
+    ],
+    "storyPrompt": "A puzzling murder demands solving. Detectives, amateur sleuths, or investigators follow clues, interrogate suspects, and unravel alibis to unmask the killer.\n***Thematic Hook:*** A clever detective or amateur sleuth must piece together cryptic clues and interrogate suspects to solve a baffling murder before the truth is buried forever.\n***Narrative Scope:*** Contained, Puzzle-focused.\n***Tone:*** Suspenseful, Cerebral, Tense, Satisfying.\n***Tropes:*** Locked room mystery, Red herrings, All suspects have secrets, Gathering for the reveal.\n***Literary Devices:*** Foreshadowing: Clues planted early, Symbolism: Minimal, Irony: Plot twists.\n***Subgenre:*** Whodunit, Clue-driven.\n***Pacing:*** Measured with mounting tension, Dialogue and investigation-heavy.\n***POV:*** Close third-person or first-person detective.\n***Structure:*** Investigation phases leading to grand reveal.\n***Priority:*** Puzzle logic > Character dynamics > Atmosphere.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Present the murder scene and initial suspects. Establish red herrings, clues, and the detective's methodology. Everyone has secrets.",
+      "confrontation": "Investigation intensifies. More evidence surfaces, suspects clash, alibis crumble. The detective pieces together the puzzle as danger mounts.",
+      "resolution": "The detective gathers everyone for the big reveal. The murderer is unmasked through clever deduction, evidence connects, and justice prevails."
+    }
+  },
+  {
+    "id": "space_opera",
+    "name": "Space Opera",
+    "category": [
+      "Sci-Fi"
+    ],
+    "storyPrompt": "Galaxy-spanning adventures with starships, alien civilizations, and interstellar conflicts. Heroes navigate cosmic politics, ancient mysteries, and battles that determine the fate of worlds.\n***Thematic Hook:*** Starship crews and interstellar heroes navigate galactic politics, ancient alien mysteries, and epic space battles that will decide the fate of entire civilizations.\n***Narrative Scope:*** Galaxy-spanning, Epic.\n***Tone:*** Grand, Adventurous, Hopeful, Dramatic.\n***Tropes:*** Space battles, Alien diplomacy, Ancient alien tech, Chosen captain, Galactic empire.\n***Literary Devices:*** Foreshadowing: Political/technological, Symbolism: Unity vs division, Irony: Moderate.\n***Subgenre:*** Military sci-fi, Adventure-driven.\n***Pacing:*** Fast-paced with spectacle, Action and politics balanced.\n***POV:*** Third-person limited, Multiple perspectives.\n***Structure:*** Mission/arc-based with escalating scope.\n***Priority:*** Spectacle > World-building > Character arcs.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Establish the galactic setting, factions, and technologies. Introduce the protagonist and crew, and the mission or conflict that launches them into space.",
+      "confrontation": "Interstellar stakes escalate. Space battles erupt, alien threats emerge, political machinations unfold. The crew faces betrayal and impossible odds.",
+      "resolution": "The final space battle or diplomatic resolution. Sacrifices are made, alliances forged, and the galaxy's future is decided in spectacular fashion."
+    }
+  },
+  {
+    "id": "psychological_thriller",
+    "name": "Psychological Thriller",
+    "category": [
+      "Thriller"
+    ],
+    "storyPrompt": "Mind games and paranoia dominate as characters question reality, identity, and trust. What's real? What's illusion? Tension builds through atmosphere and psychological manipulation.\n***Thematic Hook:*** A protagonist spirals into paranoia and doubt as they question what's real, what's manipulation, and whether they can even trust their own mind.\n***Narrative Scope:*** Intimate, Claustrophobic.\n***Tone:*** Paranoid, Tense, Unsettling, Ambiguous.\n***Tropes:*** Unreliable narrator, Gaslighting, Identity crisis, Psychological breakdown, Twist ending.\n***Literary Devices:*** Foreshadowing: Subtle psychological cues, Symbolism: Fractured reality, Irony: Heavy.\n***Subgenre:*** Mind-bending, Slow-burn tension.\n***Pacing:*** Slow to moderate with mounting dread.\n***POV:*** First-person unreliable or tight third-person.\n***Structure:*** Reality-fracturing reveals, Non-linear optional.\n***Priority:*** Psychological tension > Character psyche > Plot coherence.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Establish the protagonist's normal world, then introduce unsettling elements that make them question their reality, memory, or sanity.",
+      "confrontation": "Paranoia intensifies. Reality fragments. The protagonist can't trust anyone - perhaps not even themselves. Psychological pressure mounts unbearably.",
+      "resolution": "The truth shatters reality. Was it madness? Conspiracy? Manipulation? The reveal recontextualizes everything, leaving lasting psychological impact."
+    }
+  },
+  {
+    "id": "dark_comedy",
+    "name": "Dark Comedy",
+    "category": [
+      "Comedy"
+    ],
+    "storyPrompt": "Morbid humor meets absurd situations. Characters bungle crimes, navigate ridiculous predicaments, or face serious stakes with inappropriate levity. Tragedy and comedy intertwine.\n***Thematic Hook:*** Flawed characters stumble through darkly absurd situations, finding humor in tragedy and chaos in the most inappropriate moments.\n***Narrative Scope:*** Intimate to moderate, Absurdist.\n***Tone:*** Darkly humorous, Sardonic, Absurd, Irreverent.\n***Tropes:*** Bumbling criminals, Plans gone wrong, Inappropriate humor, Tragic comedy, Ensemble mishaps.\n***Literary Devices:*** Foreshadowing: Comedic setup, Symbolism: Minimal, Irony: Pervasive.\n***Subgenre:*** Black comedy, Caper or character-driven.\n***Pacing:*** Moderate to fast, Dialogue and situational humor-heavy.\n***POV:*** Close third-person or omniscient with comedic distance.\n***Structure:*** Escalating mishaps, Cause-and-effect chaos.\n***Priority:*** Humor > Character flaws > Dark stakes.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Introduce the darkly comedic premise and flawed characters. Set up the absurd situation or doomed plan with inappropriate humor.",
+      "confrontation": "Everything goes hilariously wrong. Stakes rise, chaos multiplies, and characters make increasingly ridiculous decisions that worsen their predicament.",
+      "resolution": "The darkly funny conclusion. Characters face consequences - possibly tragic - but the absurdity persists. Laugh at the darkness."
+    }
+  },
+  {
+    "id": "survival_horror",
+    "name": "Survival Horror",
+    "category": [
+      "Horror",
+      "Thriller"
+    ],
+    "storyPrompt": "Trapped with limited resources against relentless threats. Characters must survive against monsters, zombies, or killers, making desperate choices as dread and scarcity mount.\n***Thematic Hook:*** Survivors trapped in a hostile environment must battle relentless threats with dwindling resources, making desperate choices as hope fades and death closes in.\n***Narrative Scope:*** Contained, Isolated.\n***Tone:*** Tense, Desperate, Grim, Claustrophobic.\n***Tropes:*** Isolated location, Limited resources, Relentless threat, Hard choices, Not everyone survives.\n***Literary Devices:*** Foreshadowing: Death flags, Symbolism: Decay and scarcity, Irony: Tragic.\n***Subgenre:*** Resource-management horror, Tense thriller.\n***Pacing:*** Tense with action bursts, Escalating desperation.\n***POV:*** Close third-person or first-person.\n***Structure:*** Escalating threats, Resource depletion.\n***Priority:*** Tension > Survival stakes > Character depth.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Establish the isolated, dangerous environment. Introduce survivors and the immediate threat. Resources are scarce, escape seems impossible.",
+      "confrontation": "Survival becomes desperate. Threats intensify, supplies dwindle, paranoia grows. Characters make hard choices, and not everyone will survive.",
+      "resolution": "The final confrontation or escape attempt. Ultimate sacrifices, desperate gambles, and horror's full reveal. Survival comes at a terrible cost."
+    }
+  },
+  {
+    "id": "cozy_mystery_adventure",
+    "name": "Cozy Mystery Adventure",
+    "category": [
+      "Mystery",
+      "Adventure"
+    ],
+    "storyPrompt": "Curious minds discover mysterious clues hidden in everyday places. Friends, family, or neighbors follow puzzles and riddles through charming locales, uncovering delightful secrets without danger or darkness.\n***Thematic Hook:*** A mysterious note, hidden object, or cryptic message launches ordinary people on a charming puzzle-solving adventure filled with curiosity, teamwork, and wholesome discoveries.\n***Narrative Scope:*** Personal to local, Intimate.\n***Tone:*** Wholesome, Curious, Playful, Light-hearted, Cozy.\n***Tropes:*** Hidden clues, Puzzle-solving, Historical secrets, Unexpected discoveries, Amateur sleuths, Community connections.\n***Literary Devices:*** Foreshadowing: Gentle clues, Symbolism: Keys and maps, Irony: Light and delightful.\n***Subgenre:*** Cozy mystery, Puzzle-focused, Low-stakes.\n***Pacing:*** Moderate and comfortable, Exploration and discovery-focused.\n***POV:*** Close third-person or dual POV, Warm narrative voice.\n***Structure:*** Clue-by-clue progression, Puzzle chains, Satisfying reveals.\n***Priority:*** Wonder and curiosity > Puzzle-solving > Character bonds.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Introduce the protagonists and their ordinary world. Present the mysterious note, object, or clue that sparks their curiosity. Establish the cozy, safe atmosphere.",
+      "confrontation": "The mystery deepens as they follow clues through charming locations. Puzzles escalate in cleverness, connections reveal themselves, and the adventure grows more engaging. Keep stakes light and fun.",
+      "resolution": "The final clue leads to a delightful revelation. Secrets are uncovered, mysteries solved, and discoveries made. The adventure concludes with warmth and satisfaction."
+    }
+  },
+  {
+    "id": "discovery_quest",
+    "name": "Discovery Quest",
+    "category": [
+      "Adventure"
+    ],
+    "storyPrompt": "Bold adventurers seek legendary treasures, lost civilizations, or ancient knowledge. Exploration, clever problem-solving, and thrilling discoveries drive journeys through exotic locales filled with wonder and excitement.\n***Thematic Hook:*** Explorers embark on a grand quest to discover lost treasures, forgotten ruins, or hidden knowledge, facing thrilling challenges and solving ancient puzzles in exotic locations.\n***Narrative Scope:*** Expansive, Journey-based.\n***Tone:*** Adventurous, Thrilling, Optimistic, Exciting, Wondrous.\n***Tropes:*** Treasure map, Ancient ruins, Archaeological adventure, Rival seekers, Historical mystery, Lost civilization.\n***Literary Devices:*** Foreshadowing: Maps and legends, Symbolism: Keys and artifacts, Irony: Moderate twists.\n***Subgenre:*** Pulp adventure, Treasure hunt, Archaeological thriller.\n***Pacing:*** Fast-paced with exploration beats, Action and discovery balanced.\n***POV:*** Third-person adventure or first-person explorer.\n***Structure:*** Journey with milestones, Location-based acts, Puzzle sequences.\n***Priority:*** Discovery and wonder > Action and obstacles > Character dynamics.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Introduce the adventurers and the legendary treasure or discovery they seek. Establish the map, clues, or historical mystery. Set off on the journey with excitement and possibility.",
+      "confrontation": "The quest intensifies through exotic locales and dangerous terrain. Ancient puzzles challenge them, rival seekers complicate matters, and thrilling obstacles test their resolve. Each discovery brings them closer.",
+      "resolution": "The final challenge guards the ultimate discovery. Ancient chambers reveal their secrets, treasures are found, or lost knowledge is recovered. The quest concludes triumphantly with wonder and achievement."
+    }
+  },
+  {
+    "id": "historical_fiction",
+    "name": "Historical Fiction",
+    "category": [
+      "Historical",
+      "Drama"
+    ],
+    "storyPrompt": "Rich period settings bring history to life through compelling characters navigating real historical events, social customs, and the constraints of their era. Detailed authenticity meets emotional drama.\n***Thematic Hook:*** Characters navigate love, ambition, and survival within the vivid constraints and social structures of a specific historical period, where historical events shape personal destinies.\n***Narrative Scope:*** Intimate to epic, Period-specific.\n***Tone:*** Evocative, Romantic, Dramatic, Authentic.\n***Tropes:*** Period romance, Class divisions, Historical events as backdrop, Social constraints, Manners and customs.\n***Literary Devices:*** Foreshadowing: Historical inevitability, Symbolism: Period-appropriate, Irony: Dramatic and historical.\n***Subgenre:*** Varied - can be romance, drama, or epic.\n***Pacing:*** Moderate, Character and setting-focused.\n***POV:*** Third-person or first-person period-appropriate.\n***Structure:*** Linear or epistolary, Period-grounded.\n***Priority:*** Historical authenticity > Character drama > Period atmosphere.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Establish the historical period with rich sensory detail and authentic social structures. Introduce characters within their social context and the personal stakes shaped by their era.",
+      "confrontation": "Historical events and social pressures escalate personal conflicts. Characters navigate period-appropriate obstacles—war, scandal, class barriers, or societal change—with mounting emotional stakes.",
+      "resolution": "Personal storylines resolve within the historical framework. Characters find their place, make sacrifices, or achieve transformation shaped by the realities and constraints of their time."
+    }
+  },
+  {
+    "id": "coming_of_age",
+    "name": "Coming of Age",
+    "category": [
+      "Drama",
+      "YA"
+    ],
+    "storyPrompt": "A young protagonist navigates the transition from childhood to adulthood, facing challenges that force growth, self-discovery, and the loss of innocence through formative experiences.\n***Thematic Hook:*** A young person confronts experiences that challenge their worldview and force them to grow, discovering who they are and who they want to become through loss, friendship, and self-realization.\n***Narrative Scope:*** Personal, Intimate.\n***Tone:*** Reflective, Emotional, Bittersweet, Hopeful.\n***Tropes:*** Loss of innocence, First love, Mentor figure, Identity crisis, Finding your voice, Leaving home.\n***Literary Devices:*** Foreshadowing: Coming trials, Symbolism: Growth metaphors, Irony: Youthful vs mature perspective.\n***Subgenre:*** YA drama, Literary bildungsroman.\n***Pacing:*** Moderate, Introspective with emotional peaks.\n***POV:*** First-person or close third-person, Intimate voice.\n***Structure:*** Character arc-focused, Key formative moments.\n***Priority:*** Character growth > Emotional authenticity > Thematic depth.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Introduce the young protagonist in their familiar world. Establish their innocence, aspirations, and the relationships that define them. Plant seeds of the challenges ahead.",
+      "confrontation": "The protagonist faces experiences that challenge their beliefs and force growth—betrayal, loss, first love, moral dilemmas. Innocence fades as complexity emerges. Relationships evolve and strain.",
+      "resolution": "The protagonist emerges changed, having gained hard-won wisdom and a clearer sense of self. They accept loss, embrace growth, and step forward into a new phase of life with bittersweet understanding."
+    }
+  },
+  {
+    "id": "heist_caper",
+    "name": "Heist/Caper",
+    "category": [
+      "Crime",
+      "Thriller"
+    ],
+    "storyPrompt": "A skilled team assembles to pull off an elaborate, seemingly impossible heist. Intricate planning, clever cons, unexpected complications, and last-minute improvisation drive high-stakes robbery adventures.\n***Thematic Hook:*** A charismatic leader assembles a crew of specialists to execute an ingenious heist against a well-protected target, where meticulous planning meets unexpected chaos.\n***Narrative Scope:*** Contained, Team-focused.\n***Tone:*** Clever, Stylish, Tense, Fun.\n***Tropes:*** Assembling the crew, The big score, Inside man, Double-cross, Elaborate plan, Things go wrong.\n***Literary Devices:*** Foreshadowing: Setup and payoff, Symbolism: Minimal, Irony: Twists and reveals.\n***Subgenre:*** Caper, Crime thriller, Ensemble.\n***Pacing:*** Fast with deliberate planning sequences.\n***POV:*** Third-person ensemble or mastermind POV.\n***Structure:*** Plan reveal, execution, complications, twist.\n***Priority:*** Clever plot mechanics > Character dynamics > Stylish execution.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Introduce the mastermind and the irresistible score. Assemble the crew—each with specialized skills and personality quirks. Lay out the target and its formidable defenses. Begin planning.",
+      "confrontation": "Execute the heist. The plan unfolds with precision but complications arise—security changes, betrayals, unforeseen obstacles. The crew must improvise, use their skills, and adapt under pressure.",
+      "resolution": "The final twist and outcome. Did they get away with it? Was there a double-cross? Reveal the true scope of the plan and deliver a satisfying, clever conclusion with style."
+    }
+  },
+  {
+    "id": "urban_fantasy",
+    "name": "Urban Fantasy",
+    "category": [
+      "Fantasy"
+    ],
+    "storyPrompt": "Magic exists hidden within the modern world. Supernatural beings, secret societies, and mystical threats lurk beneath the surface of contemporary cities where the fantastic and mundane collide.\n***Thematic Hook:*** A protagonist discovers or navigates a hidden magical world existing alongside modern reality, where supernatural politics, ancient threats, and mystical rules govern the shadows of the city.\n***Narrative Scope:*** Urban, Contemporary with magic.\n***Tone:*** Gritty, Mysterious, Contemporary, Atmospheric.\n***Tropes:*** Hidden magic world, Supernatural creatures, Secret societies, Magic detective, Masquerade, Ancient vs modern.\n***Literary Devices:*** Foreshadowing: Magical hints, Symbolism: Urban decay vs magic, Irony: Mundane meets supernatural.\n***Subgenre:*** Paranormal detective, Magic in the modern world.\n***Pacing:*** Fast-paced with world-building beats.\n***POV:*** First-person or close third-person.\n***Structure:*** Mystery/case-based with magical escalation.\n***Priority:*** Magic system + world rules > Atmosphere > Plot.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Introduce the modern urban setting with magical undercurrents. Establish how magic works and stays hidden. Present the protagonist and the supernatural problem or mystery that draws them in.",
+      "confrontation": "The magical threat escalates. Supernatural politics complicate matters. The protagonist navigates both mundane and magical obstacles, learning rules and making allies or enemies in the hidden world.",
+      "resolution": "The final supernatural confrontation. Magical forces clash in the urban setting. The balance between hidden magic and modern world is restored or disrupted. Conclude with consequences and new understanding."
+    }
+  },
+  {
+    "id": "paranormal_romance",
+    "name": "Paranormal Romance",
+    "category": [
+      "Romance",
+      "Fantasy"
+    ],
+    "storyPrompt": "Passionate romance blooms between mortal and supernatural beings—vampires, werewolves, fae, or other creatures. Love transcends the boundaries between human and otherworldly, forbidden and dangerous.\n***Thematic Hook:*** A mortal falls for a supernatural being, navigating the dangerous attraction, forbidden nature, and complications of loving someone from another world with different rules and eternal consequences.\n***Narrative Scope:*** Intimate, Supernatural.\n***Tone:*** Passionate, Dark, Romantic, Intense.\n***Tropes:*** Forbidden love, Mortal/immortal romance, Protective supernatural, Dangerous attraction, Mate bonds, Two worlds colliding.\n***Literary Devices:*** Foreshadowing: Fated mates, Symbolism: Light/dark duality, Irony: Love as danger.\n***Subgenre:*** Supernatural romance, Varies on heat level.\n***Pacing:*** Moderate with emotional and sensual peaks.\n***POV:*** Dual POV or close third-person.\n***Structure:*** Romance arc with supernatural obstacles.\n***Priority:*** Romantic chemistry > Supernatural elements > Emotional intensity.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Introduce the mortal and supernatural love interest. Establish the forbidden or dangerous nature of their attraction. Show the supernatural world and its rules around relationships.",
+      "confrontation": "Love deepens despite mounting obstacles—rival supernatural factions, mortal danger, immortal complications, societal taboos. Passion intensifies as stakes rise. The relationship is tested by both worlds.",
+      "resolution": "The climactic choice between worlds or transformation. Supernatural threats resolve. Love triumphs through sacrifice, acceptance, or transformation. Conclude with union or bittersweet understanding."
+    }
+  },
+  {
+    "id": "western",
+    "name": "Western",
+    "category": [
+      "Western",
+      "Adventure"
+    ],
+    "storyPrompt": "Gunslingers, cowboys, and settlers navigate the harsh frontier where law is scarce and survival demands grit. Moral codes, revenge, redemption, and justice play out against vast, unforgiving landscapes.\n***Thematic Hook:*** A lone gunslinger or frontier character confronts outlaws, pursues justice, or seeks redemption in the lawless American West where personal codes matter more than civilization.\n***Narrative Scope:*** Frontier, Expansive yet personal.\n***Tone:*** Gritty, Stoic, Moral, Atmospheric.\n***Tropes:*** Showdown, Lone gunslinger, Revenge quest, Outlaw gang, Frontier justice, Redemption arc.\n***Literary Devices:*** Foreshadowing: Coming confrontation, Symbolism: Frontier vs civilization, Irony: Moral.\n***Subgenre:*** Classic Western, Revisionist Western.\n***Pacing:*** Slow-burn tension with explosive action.\n***POV:*** Third-person or tight first-person.\n***Structure:*** Journey or confrontation-based.\n***Priority:*** Atmosphere > Moral stakes > Action.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Establish the frontier setting—dusty towns, vast landscapes, lawless territories. Introduce the protagonist, their code, and the conflict or injustice that sets them on their path.",
+      "confrontation": "The protagonist pursues their goal—revenge, justice, or redemption—across the frontier. Tensions mount with outlaws, posses, or moral dilemmas. Violence looms. Alliances form or betray.",
+      "resolution": "The final showdown. Guns are drawn, codes are tested, and the confrontation plays out. Justice, revenge, or redemption is achieved or subverted. The frontier moves on, forever changed or unchanged."
+    }
+  },
+  {
+    "id": "spy_thriller",
+    "name": "Spy Thriller",
+    "category": [
+      "Thriller",
+      "Action"
+    ],
+    "storyPrompt": "Secret agents navigate a world of espionage, double-crosses, and international intrigue. Covert operations, high-tech gadgets, and moral ambiguity drive fast-paced missions where trust is a liability.\n***Thematic Hook:*** An elite intelligence operative undertakes a dangerous mission involving international conspiracies, double agents, and deadly secrets where loyalty is tested and no one is who they seem.\n***Narrative Scope:*** International, High-stakes.\n***Tone:*** Tense, Sophisticated, Paranoid, Fast-paced.\n***Tropes:*** Double agent, Asset turned, Secret identity, International conspiracy, Gadgets and tech, Betrayal.\n***Literary Devices:*** Foreshadowing: Planted clues, Symbolism: Masks and mirrors, Irony: Heavy twists.\n***Subgenre:*** Espionage thriller, Action-spy hybrid.\n***Pacing:*** Fast and relentless with strategic pauses.\n***POV:*** Third-person limited or first-person operative.\n***Structure:*** Mission-based with escalating reveals.\n***Priority:*** Twists and suspense > Action > Spy craft authenticity.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Introduce the operative and the intelligence agency. Present the mission—a target, secret, or conspiracy. Establish the international stakes and the web of players. Deploy the agent.",
+      "confrontation": "The mission goes sideways. Double-crosses emerge, allies become enemies, covers are blown. The operative must navigate a maze of deception, using skill and tradecraft while racing against time.",
+      "resolution": "The final operation. Identities are revealed, conspiracies exposed, and confrontations reached. The mission concludes with high-stakes action. Trust is proven or betrayed. The spy game continues."
+    }
+  },
+  {
+    "id": "slice_of_life",
+    "name": "Slice of Life",
+    "category": [
+      "Drama",
+      "Contemporary"
+    ],
+    "storyPrompt": "Everyday moments become meaningful through intimate character focus. Ordinary people navigate relationships, work, personal growth, and small victories in contemporary settings without major plot stakes.\n***Thematic Hook:*** Characters experience the beauty, humor, and poignancy of everyday life—relationships, personal reflection, small choices, and quiet moments that shape who we are without grand events or danger.\n***Narrative Scope:*** Intimate, Personal.\n***Tone:*** Warm, Reflective, Gentle, Authentic.\n***Tropes:*** Everyday moments, Character-driven, Relationship focus, Personal growth, Quiet epiphanies, Found family.\n***Literary Devices:*** Foreshadowing: Minimal, Symbolism: Everyday objects, Irony: Gentle situational.\n***Subgenre:*** Contemporary drama, Character study.\n***Pacing:*** Slow and contemplative, Moment-focused.\n***POV:*** Close third-person or first-person intimate.\n***Structure:*** Episodic or thematic, Low plot arc.\n***Priority:*** Character authenticity > Emotional resonance > Atmosphere.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Introduce characters in their everyday environment—work, home, community. Establish their routines, relationships, and the small concerns that occupy their thoughts. Keep stakes personal and grounded.",
+      "confrontation": "Characters face everyday challenges—relationship tensions, personal doubts, minor conflicts, or quiet realizations. Change comes gradually through accumulated moments rather than dramatic events.",
+      "resolution": "Characters reach small but meaningful conclusions—acceptance, understanding, connection, or growth. Life continues with subtle shifts. The everyday becomes profound through emotional honesty."
+    }
+  },
+  {
+    "id": "gothic_romance",
+    "name": "Gothic Romance",
+    "category": [
+      "Romance",
+      "Gothic"
+    ],
+    "storyPrompt": "Brooding mansions, dark family secrets, and mysterious strangers create an atmosphere of romantic dread. Heroines navigate forbidden love, supernatural hints, and psychological danger in shadowy estates.\n***Thematic Hook:*** A young woman arrives at a mysterious estate or encounters a brooding stranger, finding herself drawn into dark secrets, forbidden attraction, and atmospheric danger where romance and dread intertwine.\n***Narrative Scope:*** Contained, Estate or location-bound.\n***Tone:*** Atmospheric, Dark, Romantic, Mysterious, Brooding.\n***Tropes:*** Mysterious mansion, Brooding hero, Dark family secrets, Forbidden rooms, Madwoman in the attic, Supernatural hints.\n***Literary Devices:*** Foreshadowing: Ominous hints, Symbolism: Gothic imagery, Irony: Dark romantic.\n***Subgenre:*** Gothic, Dark romance.\n***Pacing:*** Slow-burn atmospheric with mounting dread.\n***POV:*** First-person or close third-person heroine.\n***Structure:*** Mystery revelation with romantic arc.\n***Priority:*** Atmosphere > Mystery > Romance.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Establish the Gothic setting—a shadowy estate, brooding manor, or isolated location. Introduce the heroine and the mysterious figure or situation. Plant atmospheric dread and romantic tension.",
+      "confrontation": "Dark secrets emerge through whispers, locked doors, and strange occurrences. The heroine investigates while drawn deeper into forbidden attraction. Danger and romance escalate. Trust becomes questionable.",
+      "resolution": "The dark secret is revealed—supernatural truth, family horror, or psychological manipulation. The romantic relationship resolves through acceptance, escape, or tragic understanding. Gothic atmosphere concludes."
+    }
+  },
+  {
+    "id": "superhero",
+    "name": "Superhero",
+    "category": [
+      "Action",
+      "Sci-Fi"
+    ],
+    "storyPrompt": "Powered individuals balance extraordinary abilities with personal struggles. Heroes confront villains, protect cities, and grapple with the responsibility of power while maintaining secret identities.\n***Thematic Hook:*** A powered individual must master their abilities, face supervillain threats, and wrestle with the burden of heroic responsibility while protecting those they love and maintaining their humanity.\n***Narrative Scope:*** Urban to global, High-stakes.\n***Tone:*** Heroic, Dynamic, Hopeful, Action-packed.\n***Tropes:*** Origin story, Secret identity, Supervillain, Power responsibility, Saving the city, Hero's sacrifice.\n***Literary Devices:*** Foreshadowing: Villain's plan, Symbolism: Hero iconography, Irony: Power vs humanity.\n***Subgenre:*** Superhero action, Varies tone.\n***Pacing:*** Fast with action sequences and character moments.\n***POV:*** Third-person hero or limited ensemble.\n***Structure:*** Villain threat escalation, Final battle.\n***Priority:*** Action and spectacle > Character arc > Power dynamics.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Introduce the hero, their powers, and their dual life. Establish what they protect and who they care about. Present the emerging supervillain threat and the stakes for the city or world.",
+      "confrontation": "The villain's plan escalates with attacks, schemes, and growing danger. The hero fights battles, makes sacrifices, and struggles with the burden of power. Loved ones are threatened. The hero faces limits.",
+      "resolution": "The final confrontation between hero and villain. Powers clash, the city hangs in the balance, and the hero makes the ultimate sacrifice or victory. Heroic responsibility is affirmed. The city is saved."
+    }
+  },
+  {
+    "id": "post_apocalyptic",
+    "name": "Post-Apocalyptic",
+    "category": [
+      "Sci-Fi",
+      "Drama"
+    ],
+    "storyPrompt": "Civilization has collapsed. Survivors navigate the ruins, building communities, facing raiders and environmental dangers while grappling with what it means to rebuild humanity after the end.\n***Thematic Hook:*** Survivors navigate a devastated world, seeking safety, community, and hope while confronting raiders, environmental dangers, and moral choices about rebuilding civilization from the ashes.\n***Narrative Scope:*** Varied—journey or settlement-based.\n***Tone:*** Grim, Hopeful resilience, Survivalist, Contemplative.\n***Tropes:*** Ruins of civilization, Scarcity, Rebuilding, Raider threat, Found community, Moral gray zones.\n***Literary Devices:*** Foreshadowing: Environmental/social, Symbolism: Rebirth from ruin, Irony: Progress vs collapse.\n***Subgenre:*** Post-apocalyptic drama, Rebuilding narrative.\n***Pacing:*** Moderate with tension and reflection.\n***POV:*** Close third-person or first-person survivor.\n***Structure:*** Journey or settlement arc.\n***Priority:*** World-building > Character resilience > Themes of humanity.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Establish the post-apocalyptic world—what ended, what remains. Introduce survivors and their fragile existence. Present the challenge: journey, settlement building, or external threat to their survival.",
+      "confrontation": "Survivors face mounting challenges—raiders, resource scarcity, environmental dangers, internal conflict. Moral choices test their humanity. Hope struggles against despair. Community forms or fractures.",
+      "resolution": "The crisis reaches its climax. Survivors defend what they've built, complete their journey, or face the ultimate threat. Conclude with renewed hope, hard-won stability, or bittersweet survival."
+    }
+  },
+  {
+    "id": "dystopian_social_drama",
+    "name": "Dystopian Social Drama",
+    "category": [
+      "Sci-Fi",
+      "Drama"
+    ],
+    "storyPrompt": "Oppressive societies control every aspect of life through surveillance, propaganda, and totalitarian rule. Characters navigate conformity, resistance, and the cost of freedom in dehumanizing systems.\n***Thematic Hook:*** An individual confronts the crushing weight of totalitarian society, awakening to oppression and facing impossible choices between conformity, resistance, or survival in a dehumanizing system.\n***Narrative Scope:*** Societal, Personal within system.\n***Tone:*** Oppressive, Bleak, Thought-provoking, Tense.\n***Tropes:*** Totalitarian regime, Surveillance state, Thought crime, Rebellion awakening, Propaganda, Individual vs system.\n***Literary Devices:*** Foreshadowing: System's reach, Symbolism: Control mechanisms, Irony: Heavy political.\n***Subgenre:*** Dystopian, Political drama.\n***Pacing:*** Moderate, Tension with philosophical weight.\n***POV:*** Close first-person or third-person.\n***Structure:*** Awakening, resistance, consequence.\n***Priority:*** Thematic depth > Atmosphere > Character awakening.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Establish the dystopian society and its oppressive systems—surveillance, propaganda, class divisions, thought control. Introduce the protagonist living within the system, initially conforming or unaware.",
+      "confrontation": "The protagonist awakens to the truth of their oppression. They question authority, witness brutality, or encounter resistance. The system tightens its grip. Choices become impossible—conform, resist, or flee.",
+      "resolution": "The final confrontation with the system—capture, rebellion, or escape. The protagonist faces the cost of resistance. Conclude with suppression, martyrdom, small victory, or haunting ambiguity."
+    }
+  },
+  {
+    "id": "steampunk",
+    "name": "Steampunk",
+    "category": [
+      "Sci-Fi",
+      "Fantasy"
+    ],
+    "storyPrompt": "Victorian aesthetics meet fantastical steam-powered technology. Airships, clockwork automatons, and brass gears define adventure in industrial-age alternate histories where invention and exploration reign.\n***Thematic Hook:*** Inventors, adventurers, and rebels navigate a Victorian-era world transformed by steam technology, where airships soar, automatons walk, and class tensions boil beneath brass-and-copper innovation.\n***Narrative Scope:*** Varied—adventure or political.\n***Tone:*** Adventurous, Industrial, Whimsical, Victorian.\n***Tropes:*** Airships, Clockwork devices, Mad inventor, Class warfare, Steam technology, Victorian aesthetic.\n***Literary Devices:*** Foreshadowing: Technical, Symbolism: Gears and progress, Irony: Progress vs cost.\n***Subgenre:*** Steampunk adventure or political.\n***Pacing:*** Moderate to fast, Adventure-focused.\n***POV:*** Third-person or adventurer first-person.\n***Structure:*** Invention/discovery arc or quest.\n***Priority:*** World-building > Aesthetic > Adventure.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Establish the steampunk world—Victorian cities, steam-powered technology, airships, automatons. Introduce the inventor, adventurer, or rebel and the challenge: invention, quest, or revolution.",
+      "confrontation": "The adventure escalates through mechanical dangers, class conflicts, or rival inventors. Steam technology both aids and endangers. Airship chases, clockwork battles, or industrial intrigue intensify.",
+      "resolution": "The final confrontation—a grand invention unveiled, airship battle won, or revolution sparked. Steam-powered resolution delivers spectacle. Conclude with progress, victory, or Victorian consequences."
+    }
+  },
+  {
+    "id": "hard_sci_fi",
+    "name": "Hard Sci-Fi",
+    "category": [
+      "Sci-Fi"
+    ],
+    "storyPrompt": "Rigorous scientific accuracy grounds speculative technology and space exploration. Characters confront realistic challenges of physics, biology, and engineering in plausible futures where science drives the narrative.\n***Thematic Hook:*** Scientists, engineers, or explorers face challenges grounded in real science—space travel physics, biological evolution, technological consequences—where scientific accuracy shapes every possibility and limitation.\n***Narrative Scope:*** Varied—can be intimate or cosmic.\n***Tone:*** Cerebral, Realistic, Speculative, Detailed.\n***Tropes:*** Scientific accuracy, Problem-solving, Space exploration realism, Technological consequences, Plausible futures.\n***Literary Devices:*** Foreshadowing: Scientific principles, Symbolism: Minimal, Irony: Unintended consequences.\n***Subgenre:*** Hard sci-fi, Realistic speculation.\n***Pacing:*** Moderate, Idea and problem-focused.\n***POV:*** Third-person technical or first-person scientist.\n***Structure:*** Problem-solution, Scientific discovery arc.\n***Priority:*** Scientific accuracy > Problem-solving > World-building.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Establish the scientifically grounded setting—realistic space travel, plausible technology, or biological speculation. Introduce the scientific problem, mission, or discovery that drives the narrative.",
+      "confrontation": "Scientific challenges escalate with realistic complications—equipment failure, physics limitations, biological dangers, mathematical problems. Characters apply rigorous thinking and engineering solutions.",
+      "resolution": "The scientific problem reaches climax through realistic means—calculations, experiments, engineering solutions. Conclude with discovery, mission success, or scientifically grounded consequences."
+    }
+  },
+  {
+    "id": "folk_horror",
+    "name": "Folk Horror",
+    "category": [
+      "Horror"
+    ],
+    "storyPrompt": "Rural isolation meets ancient pagan traditions and unsettling communities. Outsiders discover sinister rituals, cult-like behavior, and the horrifying power of old beliefs in remote, insular settings.\n***Thematic Hook:*** An outsider arrives in an isolated rural community only to discover ancient pagan practices, sinister traditions, and the horrifying realization that old beliefs hold terrifying power over the land and its people.\n***Narrative Scope:*** Isolated, Rural community.\n***Tone:*** Unsettling, Atmospheric, Dread-filled, Pagan.\n***Tropes:*** Isolated community, Pagan rituals, Outsider protagonist, Cult behavior, Ancient traditions, Nature horror.\n***Literary Devices:*** Foreshadowing: Ritual symbols, Symbolism: Nature and paganism, Irony: Tradition as horror.\n***Subgenre:*** Folk horror, Occult rural.\n***Pacing:*** Slow-burn with mounting dread.\n***POV:*** First-person outsider or close third-person.\n***Structure:*** Arrival, discovery, ritual climax.\n***Priority:*** Atmosphere > Dread > Cultural horror.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "The outsider arrives in an isolated rural community—remote village, farmland, or ancient countryside. Establish unsettling hospitality and strange customs. Plant subtle wrongness beneath pastoral surface.",
+      "confrontation": "The protagonist discovers disturbing truths—pagan rituals, sacrifices, cult-like devotion to old ways. The community closes ranks. Ancient traditions reveal their horrifying hold. Escape becomes difficult.",
+      "resolution": "The ritual climax. The true nature of the community's beliefs and practices is revealed in horrifying ceremony. The protagonist faces impossible choices. Conclude with terror, sacrifice, or dark understanding."
+    }
+  },
+  {
+    "id": "action_thriller",
+    "name": "Action Thriller - test name change",
+    "category": [
+      "Action",
+      "Thriller. test category"
+    ],
+    "storyPrompt": "High-octane action drives relentless narratives of ordinary people in extraordinary danger. Die-hard heroes face terrorists, criminals, or disasters with explosive set-pieces and non-stop tension.\n***Thematic Hook:*** An ordinary person or action hero finds themselves in extreme danger—terrorists, disasters, or criminal plots—and must use resourcefulness, guts, and relentless determination to survive and save others.\n***Narrative Scope:*** Contained crisis or expanding threat.\n***Tone:*** Intense, Fast-paced, Explosive, Heroic.\n***Tropes:*** Wrong place/wrong time, One-man army, Ticking clock, Explosive set-pieces, Determined hero, Escalating stakes.\n***Literary Devices:*** Foreshadowing: Action setup, Symbolism: Minimal, Irony: Situational tension.\n***Subgenre:*** Action thriller, Die-hard style.\n***Pacing:*** Relentless and explosive.\n***POV:*** Close third-person or first-person hero.\n***Structure:*** Escalating action set-pieces.\n***Priority:*** Action spectacle > Tension > Hero determination.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Introduce the ordinary hero and the contained setting—building, plane, city event. The crisis erupts—terrorists attack, disaster strikes, criminals take hostages. Stakes are immediate and personal.",
+      "confrontation": "The hero fights back through explosive action sequences. Obstacles escalate—more enemies, collapsing infrastructure, ticking bombs. Resourcefulness and determination drive survival against impossible odds.",
+      "resolution": "The final explosive confrontation. The hero faces the main villain or crisis climax with maximum spectacle. Heroic sacrifice or victory. The threat ends with exhaustion and triumph."
+    }
+  },
+  {
+    "id": "sports_drama",
+    "name": "Sports Drama",
+    "category": [
+      "Drama",
+      "Sports"
+    ],
+    "storyPrompt": "Athletes pursue excellence, overcome adversity, and find meaning through competition. Underdog stories, training montages, and climactic competitions explore dedication, teamwork, and personal growth through sport.\n***Thematic Hook:*** An athlete or team faces overwhelming odds, personal demons, or fierce competition, finding redemption, growth, and triumph through dedication, training, and the transformative power of sport.\n***Narrative Scope:*** Personal to team-based.\n***Tone:*** Inspirational, Determined, Emotional, Triumphant.\n***Tropes:*** Underdog story, Training montage, Big game, Mentor coach, Team unity, Personal demons overcome.\n***Literary Devices:*** Foreshadowing: Game preparation, Symbolism: Sport as metaphor, Irony: Victory in loss.\n***Subgenre:*** Sports drama, Inspirational.\n***Pacing:*** Moderate with competition peaks.\n***POV:*** Close third-person athlete or ensemble.\n***Structure:*** Training arc leading to competition.\n***Priority:*** Character growth > Sports authenticity > Inspirational themes.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Introduce the athlete or team and their circumstances—underdogs, fallen champions, or rising talents. Establish the competition, personal stakes, and the obstacles standing in their way. Begin training.",
+      "confrontation": "Intense training tests limits. Personal demons surface, team conflicts arise, injuries threaten. Preliminary competitions show progress and setbacks. Dedication is tested. The big game/match approaches.",
+      "resolution": "The climactic competition. Everything comes down to this moment. The athlete or team gives their all, applying lessons learned. Victory, noble defeat, or personal triumph. Conclude with growth achieved."
+    }
+  },
+  {
+    "id": "medical_drama",
+    "name": "Medical Drama",
+    "category": [
+      "Drama"
+    ],
+    "storyPrompt": "Doctors, nurses, and medical professionals navigate life-and-death decisions in hospital settings. Personal dramas intertwine with medical cases, ethical dilemmas, and the emotional weight of healing and loss.\n***Thematic Hook:*** Medical professionals confront challenging cases, ethical dilemmas, and personal crises within hospital walls, where every decision carries life-or-death weight and healing comes with emotional cost.\n***Narrative Scope:*** Hospital-based, Case-driven.\n***Tone:*** Intense, Emotional, Realistic, Hopeful yet heavy.\n***Tropes:*** Life-or-death surgery, Ethical dilemma, Doctor-patient bond, Medical mystery, Personal sacrifice, Code blue.\n***Literary Devices:*** Foreshadowing: Symptoms, Symbolism: Healing metaphors, Irony: Life vs death.\n***Subgenre:*** Medical drama, Hospital procedural.\n***Pacing:*** Moderate with crisis peaks.\n***POV:*** Ensemble third-person or doctor POV.\n***Structure:*** Case-based with personal subplots.\n***Priority:*** Medical authenticity > Character drama > Emotional resonance.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Introduce the medical professionals and hospital environment. Present the medical case or crisis—unusual diagnosis, emergency, or ethical dilemma. Establish personal stakes for doctors and patients.",
+      "confrontation": "The medical case deteriorates or complications arise. Treatments fail, time runs out, ethical choices become impossible. Personal dramas intersect with professional demands. Doctors face their limits.",
+      "resolution": "The critical surgery or treatment climax. Medical teams give everything to save the patient. Conclude with healing, loss, or bittersweet outcomes. Emotional and professional growth emerges from crisis."
+    }
+  },
+  {
+    "id": "legal_drama",
+    "name": "Legal Drama",
+    "category": [
+      "Drama"
+    ],
+    "storyPrompt": "Lawyers navigate courtrooms, depositions, and legal strategy in pursuit of justice or victory. Complex cases, moral ambiguity, and dramatic testimony explore the law's power and limitations.\n***Thematic Hook:*** Lawyers take on challenging cases that test their ethics, skill, and dedication, navigating legal strategy and courtroom drama where justice, truth, and victory hang in the balance.\n***Narrative Scope:*** Case-based, Courtroom-focused.\n***Tone:*** Tense, Intellectual, Dramatic, Morally complex.\n***Tropes:*** Courtroom showdown, Surprise witness, Legal loophole, Moral compromise, Underdog case, Final argument.\n***Literary Devices:*** Foreshadowing: Evidence, Symbolism: Justice scales, Irony: Legal vs moral.\n***Subgenre:*** Legal drama, Courtroom procedural.\n***Pacing:*** Moderate with courtroom peaks.\n***POV:*** Close third-person lawyer or ensemble.\n***Structure:*** Case investigation leading to trial.\n***Priority:*** Legal strategy > Character ethics > Dramatic reveals.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Introduce the lawyer and the challenging case—high stakes, moral complexity, or seeming impossibility. Establish the opposition, evidence, and what's at risk. Begin legal investigation.",
+      "confrontation": "The case builds through depositions, discovery, and strategy. Evidence emerges, witnesses complicate matters, ethical dilemmas surface. The opposition fights hard. The trial begins with mounting drama.",
+      "resolution": "The courtroom climax—final arguments, surprise revelations, jury deliberation. The verdict delivers justice, injustice, or moral complexity. Conclude with professional and personal consequences."
+    }
+  },
+  {
+    "id": "time_travel",
+    "name": "Time Travel",
+    "category": [
+      "Sci-Fi",
+      "Adventure"
+    ],
+    "storyPrompt": "Characters journey through time confronting paradoxes, historical events, and the consequences of changing the past. Temporal mechanics, butterfly effects, and causality create mind-bending adventures across eras.\n***Thematic Hook:*** Time travelers navigate the past, future, or alternate timelines, facing temporal paradoxes, the temptation to change history, and the profound consequences of tampering with causality itself.\n***Narrative Scope:*** Cross-temporal, Variable scale.\n***Tone:*** Mind-bending, Adventurous, Philosophical, Paradoxical.\n***Tropes:*** Temporal paradox, Butterfly effect, Historical figures, Alternate timeline, Bootstrap paradox, Temporal romance.\n***Literary Devices:*** Foreshadowing: Temporal hints, Symbolism: Clocks and circles, Irony: Causality loops.\n***Subgenre:*** Time travel adventure or drama.\n***Pacing:*** Varied by era, Tension with wonder.\n***POV:*** First-person or third-person traveler.\n***Structure:*** Non-linear or era-jumping.\n***Priority:*** Temporal mechanics > Historical/future detail > Character agency.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Establish time travel mechanics and rules. Introduce the traveler and their mission or accident. Present the temporal problem—paradox to prevent, history to correct, or timeline to restore.",
+      "confrontation": "Time travel complications escalate. Butterfly effects ripple, paradoxes threaten, alternate timelines emerge. The traveler faces moral choices about changing events. Causality becomes unstable.",
+      "resolution": "The temporal crisis climaxes. Paradoxes resolve, timelines stabilize, or consequences manifest. The traveler makes final choices about history. Conclude with restored causality or profound change."
+    }
+  },
+  {
+    "id": "portal_fantasy",
+    "name": "Portal Fantasy",
+    "category": [
+      "Fantasy",
+      "Adventure"
+    ],
+    "storyPrompt": "Ordinary people are transported to magical worlds through mysterious portals. They navigate fantastical realms, discover their role in another world's destiny, and grapple with leaving or belonging.\n***Thematic Hook:*** A person from our world crosses into a magical realm through a mysterious portal, discovering wonder, danger, and a destiny they never imagined while questioning whether they belong here or home.\n***Narrative Scope:*** Cross-world, Fantasy realm.\n***Tone:*** Wondrous, Adventurous, Coming-of-age, Magical.\n***Tropes:*** Portal to another world, Fish out of water, Prophesied savior, Return dilemma, Magical mentor, Fantastical creatures.\n***Literary Devices:*** Foreshadowing: Portal hints, Symbolism: Threshold crossing, Irony: Home vs belonging.\n***Subgenre:*** Portal fantasy, Isekai.\n***Pacing:*** Moderate with adventure peaks.\n***POV:*** Close first-person or third-person protagonist.\n***Structure:*** Discovery, quest, return dilemma.\n***Priority:*** World-building > Character growth > Adventure.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "The protagonist discovers the portal and crosses into the magical world. Establish wonder, danger, and the realm's rules. Introduce guides, prophecies, or the role they're meant to play.",
+      "confrontation": "The protagonist navigates this fantastical world, facing challenges, making allies, and discovering their importance to this realm's fate. Home becomes distant as they grow into their role. Danger escalates.",
+      "resolution": "The climactic battle or quest completion. The protagonist fulfills their destiny in the magical world. Face the choice: stay in the world where they've found belonging, or return home. Conclude transformation."
+    }
+  },
+  {
+    "id": "fairy_tale_retelling",
+    "name": "Fairy Tale Retelling",
+    "category": [
+      "Fantasy",
+      "Romance"
+    ],
+    "storyPrompt": "Classic fairy tales reimagined with new perspectives, darker twists, or modern settings. Familiar archetypes—princes, witches, curses—gain complexity, subversion, or contemporary relevance.\n***Thematic Hook:*** A beloved fairy tale unfolds anew with fresh perspective—villain's viewpoint, darker truths, modern context, or subverted expectations—revealing complexity beneath the archetypal story.\n***Narrative Scope:*** Varied, Tale-dependent.\n***Tone:*** Varies—can be dark, romantic, subversive, or whimsical.\n***Tropes:*** Subverted expectations, Villain's perspective, Curse transformation, True love redefined, Magic reimagined, Modern parallels.\n***Literary Devices:*** Foreshadowing: Fairy tale echoes, Symbolism: Archetypal, Irony: Subversion.\n***Subgenre:*** Fairy tale retelling, Fantasy romance.\n***Pacing:*** Moderate, Story-dependent.\n***POV:*** Varied—often alternate perspective.\n***Structure:*** Familiar beats with twists.\n***Priority:*** Fresh perspective > Original tale echoes > Character depth.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "Introduce the familiar fairy tale framework with fresh context—villain's backstory, modern setting, or altered circumstances. Establish how this retelling subverts or deepens the original. Plant recognizable elements.",
+      "confrontation": "The story unfolds through its familiar beats but with new meaning. Archetypal moments gain complexity—the curse has reasons, the villain has justification, true love is complicated. Subvert expectations.",
+      "resolution": "The fairy tale climax arrives transformed. The ending may echo the original or completely subvert it. Curses break differently, villains find redemption, or happily-ever-after takes unexpected forms."
+    }
+  },
+  {
+    "id": "redemption_arc ",
+    "name": "Redemption Arc",
+    "category": [
+      "Drama",
+      "Crime"
+    ],
+    "storyPrompt": "Thematic Hook: A fallen character seeks redemption for a defining mistake, navigating temptation, mistrust, and sacrifice to prove they can change—even if no one believes them.\nNarrative Scope: Personal, Intimate.\nTone: Somber, Hopeful, Reflective, Tense.\nTropes: Fallen hero, One last job, Estranged family, Protecting an innocent, Self-sacrifice.\nLiterary Devices: Foreshadowing: Guilt-laden callbacks, Symbolism: Stains/cleansing, Irony: Good deeds born from past sins.\nSubgenre: Character-driven drama, Crime redemption, Neo-noir drama.\nPacing: Moderate with emotional spikes around moral choices.\nPOV: First-person or close third-person focused on the protagonist’s inner turmoil.\nStructure: Past sin revealed, Attempts at atonement, Climactic moral test.\nPriority: Character growth > Moral tension > External plot.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+      "setup": "ntroduce the protagonist’s past failure or sin and the life they’ve built on top of it. Show the weight of guilt, broken relationships, and the seemingly small opportunity that offers them a chance at redemption.",
+      "confrontation": "Temptations, old habits, and external pressures pull the protagonist toward repeating their mistakes. People doubt their motives, stakes escalate, and they must choose between easy self-preservation and costly integrity.",
+      "resolution": "The protagonist faces a decisive moral test where they can finally act differently than before. Their choice brings either genuine redemption through sacrifice or tragic repetition, closing their arc with emotional finality."
+    },
+    "isTemplate": true
+  },
+    {
+    "id": "found_family",
+    "name": "Found Family",
+    "category": ["Drama", "Slice of Life"],
+    "storyPrompt": "Lonely, misfit, or estranged characters gradually form a close-knit group that becomes their true family. Shared struggles, in-jokes, and small acts of care forge bonds stronger than blood.\n***Thematic Hook:*** Strangers and outcasts discover belonging in each other, creating a chosen family as they weather conflict, support one another, and learn they deserve connection.\n***Narrative Scope:*** Personal, Group-focused.\n***Tone:*** Warm, Bittersweet, Heartfelt, Gentle with occasional angst.\n***Tropes:*** Ragtag group, Grumpy-and-sunshine dynamic, Protective older sibling figure, Shared home or hangout, Celebrating small milestones.\n***Literary Devices:*** Foreshadowing: Early gestures of care, Symbolism: Shared spaces and rituals, Irony: People who thought they were unlovable becoming beloved.\n***Subgenre:*** Contemporary drama, Cozy ensemble, Light-hearted character study.\n***Pacing:*** Moderate, Relationship-focused with low-to-moderate external stakes.\n***POV:*** Rotating close third-person or single intimate POV observing the group.\n***Structure:*** Meeting and forming group, Conflicts and tests, Affirmation of chosen family.\n***Priority:*** Character bonds > Emotional comfort > External plot.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+        "setup": "Introduce the core characters in their lonely or disconnected states. Show how they cross paths—through work, crisis, shared space, or chance—and hint at complementary strengths and wounds that could bind them.",
+        "confrontation": "The group grows closer through shared routines, adventures, and small acts of care. Conflicts, misunderstandings, or external pressures threaten to fracture their fragile bonds, forcing them to choose whether to stay and work through pain.",
+        "resolution": "Characters openly choose each other, reaffirming their bond as a chosen family. They create or reclaim a shared space, ritual, or promise that symbolizes lasting belonging, even if external circumstances remain imperfect."
+    }
+    },
+    {
+    "id": "villain_protagonist",
+    "name": "Villain Protagonist",
+    "category": ["Thriller", "Crime", "Fantasy"],
+    "storyPrompt": "The central character is an antihero or outright villain. They scheme, manipulate, and commit morally dark acts in pursuit of power, revenge, or obsession, dragging the audience along for the ride.\n***Thematic Hook:*** A charismatic but dangerous protagonist pursues selfish or destructive goals, raising the question of whether they can change, will be stopped, or will drag everyone down with them.\n***Narrative Scope:*** Personal with collateral impact.\n***Tone:*** Dark, Sharply ironic, Tense, Seductive.\n***Tropes:*** Morally corrupt lead, Loyal henchman, Cat-and-mouse with a hero, Hubris, Villain victory or downfall.\n***Literary Devices:*** Foreshadowing: Hubris and fatal flaw, Symbolism: Thrones, masks, and mirrors, Irony: Audience rooting for someone they know is wrong.\n***Subgenre:*** Psychological thriller, Crime saga, Dark fantasy.\n***Pacing:*** Moderate to fast, Plot and scheme-driven with introspective moments.\n***POV:*** First-person or tight third-person centered on the villain's mindset.\n***Structure:*** Rise in power, Escalating atrocities and opposition, Climactic reckoning.\n***Priority:*** Psychological depth > Moral tension > Plot twists.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+        "setup": "Introduce the villain protagonist's worldview, goals, and early schemes. Show both their competence and their moral flaws, as well as the people or systems they intend to exploit or destroy.",
+        "confrontation": "The villain's plans grow bolder, drawing attention from rivals, heroes, or authorities. Success feeds their hubris while cracks appear—loyalties strain, conscience flickers, or consequences spiral beyond their control.",
+        "resolution": "The villain faces the consequences of their path: a triumphant but hollow victory, a dramatic downfall, or a twisted partial redemption. Their final choice or fate redefines how their journey is remembered."
+    }
+    },
+    {
+    "id": "political_intrigue",
+    "name": "Political Intrigue",
+    "category": ["Drama", "Fantasy", "Historical"],
+    "storyPrompt": "Courts, senates, councils, and boardrooms seethe with hidden agendas. Alliances, blackmail, and betrayals quietly shift the balance of power long before any sword is drawn.\n***Thematic Hook:*** Ambitious players navigate a treacherous web of politics, using manipulation, negotiation, and espionage to gain influence while risking scandal, ruin, or revolution.\n***Narrative Scope:*** Institutional, Multi-faction.\n***Tone:*** Tense, Sophisticated, Paranoid, Slow-burn.\n***Tropes:*** Backroom deals, Secret alliances, Double agents, Public face vs private truth, Sacrificial pawns.\n***Literary Devices:*** Foreshadowing: Offhand comments and minor votes, Symbolism: Seals, sigils, and seats of power, Irony: Public virtue hiding private corruption.\n***Subgenre:*** Court intrigue, Political drama, Corporate thriller.\n***Pacing:*** Moderate, Dialogue and maneuver-heavy with sharp spikes at key events.\n***POV:*** Rotating close third-person or a single savvy operator POV.\n***Structure:*** Rising schemes and counter-schemes, Crisis point, Power reconfiguration.\n***Priority:*** Scheming and tension > World-building > Action.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+        "setup": "Establish the political arena—court, senate, council, or boardroom—and the factions vying for influence. Introduce key players, their public roles, and their hidden agendas, hinting at fault lines beneath polite speeches.",
+        "confrontation": "Schemes unfold: alliances are formed and broken, scandals surface, votes or decrees are contested. Quiet threats, blackmail, and backroom deals escalate as each move invites retaliation and raises the stakes.",
+        "resolution": "A decisive event—vote, coup, assassination, or scandal—reshapes the balance of power. Reveal which plans succeeded, which backfired, and what personal and societal costs were paid for the new political order."
+    }
+    },
+    {
+    "id": "road_trip_drama",
+    "name": "Road Trip Drama",
+    "category": ["Drama", "Contemporary"],
+    "storyPrompt": "Characters travel together toward a shared destination, trapped in cars, buses, trains, or caravans with their secrets, grudges, and unspoken feelings. Each stop along the way changes them.\n***Thematic Hook:*** A journey across distances becomes a journey through relationships and self-discovery, as shared experiences and crises on the road force characters to confront what they are running from or toward.\n***Narrative Scope:*** Linear journey, Episodic stops.\n***Tone:*** Reflective, Bittersweet, Sometimes comedic, Grounded.\n***Tropes:*** Forced proximity, Breakdown in the middle of nowhere, Small-town stopovers, Old haunt revisits, Roadside confessions.\n***Literary Devices:*** Foreshadowing: Route choices and detours, Symbolism: Roads, maps, and crossroads, Irony: Trying to escape problems that ride along inside the car.\n***Subgenre:*** Character drama, Dramedy, Travel fiction.\n***Pacing:*** Moderate, Alternating quieter stretches with intense emotional beats.\n***POV:*** First-person or close third-person following one or several travelers.\n***Structure:*** Departure, Transformative waypoints, Arrival and confrontation.\n***Priority:*** Character relationships > Thematic reflection > External plot.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+        "setup": "Introduce who is traveling, why the journey is happening, and what tensions or secrets already exist in the group. Show the first stretch of the road and an early stop that hints at the emotional terrain ahead.",
+        "confrontation": "As the journey continues, delays, detours, and mishaps force characters into vulnerable conversations and conflicts. Stops at significant places trigger memories, arguments, and unexpected moments of connection or rupture.",
+        "resolution": "Upon reaching—or choosing not to reach—the destination, characters confront the real issue at the heart of the trip. Relationships shift: some heal, some break, and each traveler leaves changed by the miles behind them."
+    }
+    },
+    {
+    "id": "sports_underdog",
+    "name": "Sports Underdog",
+    "category": ["Drama", "Sports"],
+    "storyPrompt": "An underestimated team or athlete trains, stumbles, and grows while chasing a seemingly impossible victory. The real win lies in who they become along the way.\n***Thematic Hook:*** A struggling athlete or team faces stronger opponents, internal doubts, and personal obstacles on the road to a big game or tournament where their heart matters more than the scoreboard.\n***Narrative Scope:*** Season or tournament arc.\n***Tone:*** Inspiring, Emotional, Grounded, Sometimes comedic.\n***Tropes:*** Training montage, Last-minute substitution, Rival team, Found family teammates, Coach with a past.\n***Literary Devices:*** Foreshadowing: Early glimpses of potential, Symbolism: Jerseys, trophies, and fields, Irony: A loss that feels like a victory or a win that costs dearly.\n***Subgenre:*** Sports drama, Team ensemble.\n***Pacing:*** Moderate to fast, Game sequences punctuating character beats.\n***POV:*** Key player, coach, or rotating team POV.\n***Structure:*** Early season struggle, Mid-season crisis, Climactic match.\n***Priority:*** Character growth > Emotional payoff > Game mechanics.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+        "setup": "Introduce the underdog athlete or team, their weaknesses, and why the odds are against them. Present the looming competition and the personal stakes that make winning—or simply playing—matter.",
+        "confrontation": "Training, early matches, and conflicts push the team or athlete to their limits. Injuries, losses, rivalries, and internal tensions threaten to break their resolve or unity, forcing them to decide what they truly play for.",
+        "resolution": "The big game or final event unfolds with high emotional stakes. Show how the characters have grown, whether they win or lose on the scoreboard, and what victory or defeat means for their futures and relationships."
+    }
+    },
+    {
+    "id": "wholesome_romance",
+    "name": "Wholesome Romance",
+    "category": ["Romance", "Slice of Life"],
+    "storyPrompt": "Two people slowly build a gentle, supportive relationship. Conflicts are soft, communication is honest, and the focus stays on comfort, everyday moments, and mutual care.\n***Thematic Hook:*** Rather than tearing the couple apart, life nudges them closer as they navigate small misunderstandings, personal growth, and cozy routines that deepen their bond.\n***Narrative Scope:*** Intimate, Everyday.\n***Tone:*** Warm, Tender, Calm, Hopeful.\n***Tropes:*** Mutual pining with communication, Domestic fluff, Shared hobbies, Comfort after bad days, Soft confessions.\n***Literary Devices:*** Foreshadowing: Tiny gestures hinting at deeper feelings, Symbolism: Shared mugs, blankets, and spaces, Irony: Big love expressed through small, ordinary acts.\n***Subgenre:*** Low-angst contemporary romance, Cozy slice-of-life romance.\n***Pacing:*** Gentle and steady, Relationship-focused.\n***POV:*** Dual POV or close single POV emphasizing emotional nuance.\n***Structure:*** Meeting and connection, Deepening everyday intimacy, Affirming commitment.\n***Priority:*** Emotional comfort > Character chemistry > External plot.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+        "setup": "Introduce the romantic leads in their ordinary lives and show how they meet or reconnect. Highlight the gentle spark between them through small kindnesses, shared interests, or easy conversation.",
+        "confrontation": "Their relationship deepens through everyday moments—shared meals, inside jokes, and being there for each other on hard days. Minor conflicts or insecurities arise but are handled with honesty and care rather than dramatic breakups.",
+        "resolution": "The couple openly acknowledges and affirms their love, choosing a future together. Show a cozy, grounded vision of their shared life, emphasizing ongoing support, comfort, and joy in the ordinary."
+    }
+    },
+    {
+    "id": "monster_of_the_week",
+    "name": "Monster of the Week",
+    "category": ["Urban Fantasy", "Horror", "Superhero"],
+    "storyPrompt": "Each new threat, case, or creature brings a fresh crisis to solve. Behind the episodic battles and investigations, a slow-burning mystery or emotional arc quietly grows.\n***Thematic Hook:*** A small team or lone hunter tackles a series of supernatural, criminal, or supervillain threats, learning more about themselves and an overarching danger with every encounter.\n***Narrative Scope:*** Episodic, Serial thread.\n***Tone:*** Variable—can be pulpy, dark, or playful—but consistently adventure-focused.\n***Tropes:*** Procedural cases, Monster-of-the-week, Secret lair or base, Recurring antagonist, Clues to a bigger plot.\n***Literary Devices:*** Foreshadowing: Background hints about the meta-plot, Symbolism: Repeating imagery tied to the overarching threat, Irony: Saving the day while losing ground in personal life.\n***Subgenre:*** Procedural urban fantasy, Superhero episodic, Occult detective.\n***Pacing:*** Fast-paced per episode, moderate for long-term arcs.\n***POV:*** Protagonist or team POV, often close third-person or first-person.\n***Structure:*** Case-of-the-day arcs embedded in a longer season arc.\n***Priority:*** Fun episodic threats > Team dynamics > Slow-burn overarching story.",
+    "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+    "phasePrompts": {
+        "setup": "Introduce the protagonist or team, their base of operations, and the rules of their world. Present an early case or monster that shows how they work together and hint at a mysterious larger threat in the background.",
+        "confrontation": "A sequence of distinct threats or cases tests the team's skills and relationships. Each episode-like conflict reveals new clues about the overarching mystery or antagonist, while personal stakes and complications build.",
+        "resolution": "The long-foreshadowed major threat finally steps into the foreground. The team confronts their toughest challenge yet, drawing on everything they've learned from prior encounters to resolve the overarching arc—though new mysteries may remain."
+    }
+    }
+    {
+      "id": "isolation_survival_horror",
+      "name": "Cabin in the woods (Isolation Survival Horror)",
+      "category": ["Horror", "Thriller"],
+      "storyPrompt": "A small group is trapped in an isolated location—cabin, island, oil rig, research station, or similar—cut off from help as something hunts them. Every noise, shadow, and creaking floorboard tightens the noose as trust frays and survival demands terrible choices.\n***Thematic Hook:*** Survivors trapped in a remote, inescapable setting must confront an escalating threat, dwindling resources, and mounting paranoia as they realize that no rescue is coming and not everyone will make it out alive.\n***Narrative Scope:*** Contained, Location-bound.\n***Tone:*** Claustrophobic, Tense, Grim, Paranoid.\n***Tropes:*** Isolated location, Cut off from civilization, Unknown or unseen threat, Group turning on itself, \"Don't go outside\", One-way radio or failing comms.\n***Literary Devices:*** Foreshadowing: Ominous noises, missing supplies, strange signs. Symbolism: Flickering lights, locked doors, encroaching darkness. Irony: Safety measures becoming traps.\n***Subgenre:*** Survival horror, Siege horror, Remote outpost horror.\n***Pacing:*** Tense with bursts of violence or panic; quiet stretches of dread between incidents.\n***POV:*** Close third-person or first-person focused on one key survivor, or a tight rotating POV among the group.\n***Structure:*** Initial arrival or entrapment, escalating attacks and paranoia, final stand or escape attempt.\n***Priority:*** Atmosphere and tension > Survival stakes > Mystery of the threat.",
+      "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+      "phasePrompts": {
+        "setup": "Establish the remote, isolated setting (cabin, island, rig, station) and why the characters are there. Show how they become cut off—storm, sabotage, lost signal—and tease the first unsettling signs that something is wrong.",
+        "confrontation": "The threat escalates through attacks, disappearances, or inexplicable events. Supplies dwindle, escape plans fail, and paranoia turns the group against itself as they argue over whether to fortify, flee, or confront the danger.",
+        "resolution": "The survivors make a desperate final stand or last escape attempt. Reveal or partially reveal the nature of the threat as sacrifices are made, the location is abandoned or destroyed, and the cost of survival—or failure—becomes brutally clear."
+      }
+    }
+]

@@ -471,7 +471,7 @@
 /* Compact prompt editor in right column */
 .storymode-cover-prompt-editor {
     padding: 12px;
-    background: var(--black30a);
+    background: transparent;
     border-radius: var(--sm-radius-sm);
     border: 1px solid var(--SmartThemeBorderColor);
     max-height: 500px;
@@ -481,6 +481,13 @@
 .storymode-cover-prompt-editor textarea {
     resize: vertical;
     min-height: 60px;
+}
+
+/* Full-width prompt details section below two-column layout */
+.storymode-cover-prompt-details {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 /* Note: .storymode-btn-primary and .storymode-btn-danger are defined in style.css */

@@ -1,1 +1,27 @@
+# macOS system files
 .DS_Store
+
+# Backup files
+*.backup
+
+# Claude Code personal configuration
+.claude/
+
+# Personal development files
+.zprofile.bk
+chutes_claude_code_env.sh
+
+# Debugging and workflow state (personal/temporary)
+Debugging/
+WORKFLOW-STATE-*.json
+
+# Planning documents (private development notes)
+Planning/
+
+# Root-level plan documents at project root
+PLAN-*.md
+TESTING-*.md
+
+# But keep README and documentation
+!README.md
+!CLAUDE.md

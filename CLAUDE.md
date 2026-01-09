@@ -30,6 +30,8 @@ Story Mode is a third-party SillyTavern extension that provides narrative struct
 - `lib/event-handlers.js` (~414 lines) - Message events, round progression, arc completion
 - `lib/wand-menu.js` (~250 lines) - Quick controls dropdown menu
 - `lib/blueprint-module.js` (~2,670 lines) - Story Blueprints feature (LLM-generated story structure)
+- `lib/blueprint-schema.js` (~420 lines) - Blueprint field definitions, validation rules, dropdown options (single source of truth)
+- `lib/blueprint-editor.js` (~1,808 lines) - Split-panel blueprint editor with field editing and scene management
 - `lib/loading-indicator.js` (~300 lines) - Standalone loading indicator with authorship-themed messages
 - `lib/loading-indicator.css` (~175 lines) - Styles for the loading indicator
 
@@ -830,6 +832,284 @@ console.log('[Story Mode] Connection Manager disabled:', isDisabled);
 | 404 error when generating | Calling `/api/generate` directly | Use `ConnectionManagerRequestService.sendRequest()` |
 | Selection not persisting | Not saving to extension_settings | Save to `blueprintSettings.generationApi` |
 | Modal dropdown not populating | Populating after `await popup.show()` | Populate before `await` since it waits for close |
+
+### Blueprint Schema Architecture
+
+**Overview:**
+The blueprint schema is centralized in `lib/blueprint-schema.js`, which serves as the single source of truth for field definitions, validation rules, dropdown options, and default values. This architecture makes adding new fields predictable and discoverable.
+
+**Key Files:**
+- `lib/blueprint-schema.js` - Schema definitions, dropdown options, validation utilities
+- `lib/blueprint-module.js` - Blueprint typedef, normalizeBlueprint(), generation functions
+- `lib/blueprint-editor.js` - Split-panel editor UI (imports from blueprint-schema.js)
+- `lib/ui-components.js` - Blueprint preview and display components
+
+**Schema Components:**
+
+```javascript
+// lib/blueprint-schema.js exports:
+export const DROPDOWN_OPTIONS = {
+    antagonistNature: [...],
+    metaphorLevel: [...],
+    violenceLevel: [...],
+    romanceLevel: [...],
+    scenePhase: [...]
+};
+
+export const BLUEPRINT_FIELDS = {
+    field_name: {
+        type: 'string' | 'number' | 'boolean' | 'object' | 'array',
+        required: true | false,
+        default: null | undefined,
+        min: number,           // For string length or number value
+        max: number,
+        enum: [...],           // For dropdown fields
+        pattern: /regex/,      // For validation
+        nested: {...}          // For object types
+    }
+};
+
+// Validation utilities:
+export function getFieldDefinition(path)
+export function isFieldRequired(path)
+export function getFieldOptions(path)
+export function validateField(path, value)
+```
+
+### Adding New Blueprint Fields
+
+When adding a new field to the blueprint schema, follow these steps:
+
+**Step 1: Define in Blueprint Schema** (`lib/blueprint-schema.js`)
+```javascript
+// Add to BLUEPRINT_FIELDS object
+export const BLUEPRINT_FIELDS = {
+    // ... existing fields ...
+
+    opening_message: {
+        type: 'string',
+        required: false,           // Optional field
+        min: 1,
+        max: 50000,
+        description: 'Pre-generated opening message (optional)'
+    }
+};
+
+// If the field uses a dropdown, add to DROPDOWN_OPTIONS
+export const DROPDOWN_OPTIONS = {
+    // ... existing options ...
+
+    myNewDropdown: [
+        { value: 'option1', label: 'Option 1' },
+        { value: 'option2', label: 'Option 2' }
+    ]
+};
+```
+
+**Step 2: Update Blueprint Typedef** (`lib/blueprint-module.js`)
+```javascript
+/**
+ * @typedef {Object} Blueprint
+ * @property {string} blueprint_id - Unique identifier
+ * // ... existing properties ...
+ * @property {string} [opening_message] - Pre-generated opening message (optional)
+ */
+```
+
+**Step 3: Update normalizeBlueprint()** (`lib/blueprint-module.js`)
+```javascript
+export function normalizeBlueprint(blueprint) {
+    const normalized = { /* ... */ };
+
+    // Add normalization for new field
+    if (Object.prototype.hasOwnProperty.call(blueprint, 'opening_message')) {
+        // Validate and sanitize
+        const openingMsg = blueprint.opening_message;
+        if (typeof openingMsg === 'string' && openingMsg.trim().length > 0 && openingMsg.length < 50000) {
+            normalized.opening_message = openingMsg.trim();
+        } else {
+            console.warn('[BlueprintModule] Invalid opening_message in blueprint, discarding');
+            normalized.opening_message = undefined;
+        }
+    } else {
+        normalized.opening_message = undefined;  // Use undefined for optional fields
+    }
+
+    return normalized;
+}
+```
+
+**Step 4: Add Getter/Setter Functions** (`lib/blueprint-module.js`)
+
+For fields that need special handling, add dedicated functions:
+
+```javascript
+/**
+ * Save opening message to the current blueprint
+ * @param {string} openingText - The opening message text
+ * @returns {Promise<Object>} Result object with success status
+ */
+export async function saveOpeningMessageToBlueprint(openingText) {
+    const blueprintState = getBlueprintState();
+    if (!blueprintState.blueprint) {
+        return { success: false, error: 'No blueprint loaded' };
+    }
+
+    // Validate and sanitize
+    if (typeof openingText !== 'string' || openingText.trim().length === 0) {
+        console.warn('[BlueprintModule] Invalid opening message provided');
+        return { success: false, error: 'Invalid opening message' };
+    }
+
+    if (openingText.length >= 50000) {
+        console.warn('[BlueprintModule] Opening message too long, truncating');
+        openingText = openingText.substring(0, 50000);
+    }
+
+    blueprintState.blueprint.opening_message = openingText.trim();
+    await saveBlueprintState(blueprintState);
+    console.log('[Story Mode Blueprint] Opening message saved to blueprint');
+    return { success: true };
+}
+
+/**
+ * Get stored opening message from current blueprint
+ * @returns {string|null} The stored opening message, or null if none exists
+ */
+export function getStoredOpeningMessage() {
+    const blueprintState = getBlueprintState();
+    return blueprintState.blueprint?.opening_message || null;
+}
+```
+
+**Step 5: Add UI Components** (`lib/ui-components.js`)
+
+Add display sections for your new field:
+
+```javascript
+export function renderBlueprintSpoilerPanel(BlueprintModule, escapeHtml) {
+    const bp = blueprintState.blueprint;
+
+    // Add section to display the field (if it exists)
+    ${bp.opening_message ? `
+    <div class="storymode-card">
+        <h4 class="storymode-card-title"><i class="fa-solid fa-book-open"></i> Stored Opening Message</h4>
+        <div style="background: var(--black30a); padding: 12px; border-radius: 8px; max-height: 200px; overflow-y: auto;">
+            ${escapeHtml(bp.opening_message)}
+        </div>
+    </div>
+    ` : ''}
+}
+```
+
+**Step 6: Add Editor Fields** (`lib/blueprint-editor.js`)
+
+If the field should be editable in the blueprint editor:
+
+```javascript
+function buildDetailsTabContent(bp, storyTypes, authorStyles) {
+    return `
+        <div class="storymode-form-section">
+            <h3 class="storymode-section-title">Opening Message</h3>
+            <div class="storymode-form-group">
+                <label for="edit_opening_message">Opening Message (Optional)</label>
+                <textarea id="edit_opening_message" class="storymode-textarea"
+                          data-field="opening_message" rows="6"
+                          placeholder="Pre-generated opening message for Scene 1..."
+                >${escapeHtml(bp.opening_message || '')}</textarea>
+            </div>
+        </div>
+    `;
+}
+```
+
+**Step 7: Add Event Handlers** (`index.js`)
+
+Wire up UI interactions:
+
+```javascript
+// Event handler for generation button
+$(document).on('click', '#generate_opening_btn', async function() {
+    const btn = $(this);
+    const originalText = btn.html();
+    const saveToBlueprint = $('#save_opening_to_blueprint').is(':checked');
+
+    // Set loading state
+    btn.prop('disabled', true);
+    btn.html('<i class="fa-solid fa-circle-notch fa-spin"></i> Generating...');
+    LoadingIndicator.show('Generating opening message...');
+
+    try {
+        const result = await BlueprintModule.generateOpeningMessage({ saveToBlueprint });
+        if (result.success) {
+            const statusText = saveToBlueprint
+                ? 'Opening message generated and saved to blueprint!'
+                : 'Opening message generated! (not saved)';
+            toastr.success(statusText, 'Blueprint');
+
+            // Refresh UI to show the stored message
+            if (saveToBlueprint) {
+                // Update displays...
+            }
+        } else {
+            toastr.error(`Failed: ${result.error}`, 'Blueprint');
+        }
+    } catch (error) {
+        console.error('[Story Mode] Error generating opening message:', error);
+        toastr.error(`Failed: ${error.message}`, 'Blueprint');
+    } finally {
+        // Always restore button state
+        LoadingIndicator.hide();
+        btn.prop('disabled', false);
+        btn.html(originalText);
+    }
+});
+```
+
+**Important Patterns:**
+
+1. **Optional vs Required Fields:**
+   - Required fields: Use `null` or empty defaults, validate on save
+   - Optional fields: Use `undefined` when missing, allows clean JSON export
+
+2. **Field Access Pattern:**
+   ```javascript
+   // ✅ CORRECT - Use optional chaining
+   const value = blueprint.opening_message || null;
+   const nested = blueprint.metadata?.coverGallery || [];
+
+   // ❌ WRONG - Don't assume presence
+   const value = blueprint.opening_message;  // May be undefined
+   ```
+
+3. **Validation:**
+   - Validate at normalization (import/load time)
+   - Validate at save time (user input)
+   - Use schema definitions from `blueprint-schema.js`
+
+4. **Backward Compatibility:**
+   - Optional fields must not break old blueprints
+   - Use `hasOwnProperty` checks in normalization
+   - Provide sensible defaults (usually `undefined`)
+
+5. **Export/Import:**
+   - Fields are automatically included in JSON export
+   - PNG export stores blueprint in image metadata
+   - Normalization ensures imported data is validated
+
+**Example: The opening_message Field**
+
+The `opening_message` field was added following this exact pattern:
+- Defined in `BLUEPRINT_FIELDS` as optional string (lines 284-290 in blueprint-schema.js)
+- Added to Blueprint typedef (line 174 in blueprint-module.js)
+- Normalized with validation (lines 1520-1529 in blueprint-module.js)
+- Getter/setter functions added (lines 2421-2448 in blueprint-module.js)
+- UI display section added (lines 1311-1331 in ui-components.js)
+- Event handlers added (lines 1679-1710 in index.js)
+- Checkbox control for "Save to blueprint" (line 1684 in index.js)
+- Integration with "Start Story" flow (lines 1779-1792 in index.js)
+
+This demonstrates the complete workflow from schema definition to user-facing feature.
 
 ## Loading Indicator Module
 

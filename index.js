@@ -1,8 +1,7 @@
 /**
- * Story Mode Extension for SillyTavern
- * Provides narrative scaffolding with story arcs, phases, and author styles
- */
-
+* Story Mode Extension for SillyTavern
+* Provides narrative scaffolding with story arcs, phases, and author styles
+*/
 import {
     eventSource,
     event_types,
@@ -15,2305 +14,2357 @@ import {
     saveMetadata,
     generateRaw,
     addOneMessage,
+    animation_duration,
+    sendSystemMessage,
+    system_message_types,
+    saveChatConditional,
+    main_api,
 } from '/script.js';
 
 import {
     extension_settings,
+    getContext,
 } from '/scripts/extensions.js';
-
 import { getFileText, download } from '/scripts/utils.js';
-import { callGenericPopup, Popup, POPUP_TYPE } from '/scripts/popup.js';
+import { callGenericPopup, Popup, POPUP_TYPE, POPUP_RESULT } from '/scripts/popup.js';
+import { Popper } from '/lib.js';
 
-const MODULE_NAME = 'story_mode';
+// Import Blueprint module (Story Blueprints feature)
+import * as BlueprintModule from './lib/blueprint-module.js';
 
-// Get the base URL of this extension
-  const extensionBaseUrl = new URL('.', import.meta.url).href;
+// Import Blueprint Editor module
+import { openBlueprintEditor } from './lib/blueprint-editor.js';
 
-// Default settings
-const defaultSettings = {
-    enabled: false,
-    storyArcEnabled: false,
-    selectedStoryType: '',
-    selectedAuthorStyle: '',
-    arcLength: 30,
-    currentStep: 0,
-    authorStyleEnabled: false,
-    nsfwEnabled: false,
-    epilogueEnabled: false,
-    summaryEnabled: false,
-    summaryMessageCount: 0, // 0 = entire chat, >0 = last N messages
-    debugMode: false,
-    position: extension_prompt_types.IN_CHAT,
-    depth: 4,
-    role: extension_prompt_roles.SYSTEM,
-    // Note: storyTypes and authorStyles are now stored in localForage, not extension_settings
-};
+// Import Blueprint Integration module (Library API + PNG Storage)
+import {
+    getLibrary,
+    initBlueprintIntegration,
+    createBlueprint,
+    editLibraryBlueprint,
+    deleteLibraryBlueprint,
+    searchBlueprints,
+    getBlueprintsFromFolder,
+    setBlueprintFavorite,
+    encodeBlueprintAsPNG,
+    decodeBlueprintFromPNG,
+    isBlueprintPNG,
+} from './lib/blueprint-integration.js';
 
-// Data storage
+// Import Loading Indicator module
+import * as LoadingIndicator from './lib/loading-indicator.js';
+
+// Import State Manager module
+import {
+    MODULE_NAME,
+    extensionBaseUrl,
+    defaultSettings,
+    getStoryTypes,
+    getAuthorStyles,
+    setStoryTypes as setStoryTypesInManager,
+    setAuthorStyles as setAuthorStylesInManager,
+    getFuseStoryTypes,
+    getFuseAuthorStyles,
+    loadSettings,
+    getSettings,
+    getChatStoryState,
+    saveChatStoryState,
+    loadStoryTypes,
+    loadAuthorStyles,
+    saveStoryTypesToStorage,
+    saveAuthorStylesToStorage,
+    loadFuseJS,
+    loadOriginalStoryTypes,
+    loadOriginalAuthorStyles,
+    getOriginalStoryType,
+    getOriginalAuthorStyle,
+    getConnectionProfiles,
+    migrateFromExtensionSettings,
+} from './lib/state-manager.js';
+
+// Import Arc Engine module
+import {
+    getPhaseInfo,
+    buildStoryBlueprint,
+    buildPhaseInjection,
+    buildFullInjection,
+    updateStoryPrompt,
+} from './lib/arc-engine.js';
+
+// Import Wand Menu module
+import {
+    registerWandMenuEntry,
+    updateWandMenuStatus,
+} from './lib/wand-menu.js';
+
+// Import UI Components module
+import {
+    escapeHtml,
+    renderMainPanel,
+    renderBlueprintPreview,
+    buildSidebarContent,
+    buildStoryArcSubtab,
+    buildAuthorStyleSubtab,
+    buildBlueprintSettingsSubtab,
+    buildPostArcOptionsSubtab,
+    buildAPIOptionsSubtab,
+    buildSettingsTabContent,
+    buildGenerateBlueprintSubtab,
+    buildBlueprintTabContent,
+    renderBlueprintOverviewSubtab,
+    renderBlueprintScenesSubtab,
+    renderBlueprintCharactersSubtab,
+    renderBlueprintJsonSubtab,
+    buildSummaryTabContent,
+    buildLibraryTabContent,
+    renderBlueprintCard,
+} from './lib/ui-components.js';
+
+// Import Type Editors module
+import {
+    showStoryTypesEditor,
+    showAuthorStylesEditor,
+    addStoryType,
+    editStoryType,
+    deleteStoryType,
+    addAuthorStyle,
+    editAuthorStyle,
+    deleteAuthorStyle,
+    showStoryTypeEditForm,
+    showAuthorStyleEditForm,
+    importStoryTypes,
+    exportStoryTypes,
+    importAuthorStyles,
+    exportAuthorStyles,
+    refreshStoryTypesList,
+    refreshAuthorStylesList,
+} from './lib/type-editors.js';
+
+// Import Event Handlers module
+import {
+    onMessageReceived,
+    handleUserMessageStep,
+    handleAIMessageChecks,
+    handleArcCompletion,
+    pushStoryMessage,
+    generateEpilogueForStory,
+    summarizeChatMainForStory,
+    setRegenerating,
+    setLoadingChat,
+    isRegenerating as getIsRegenerating,
+    isLoadingChat as getIsLoadingChat,
+    jumpToRound,
+} from './lib/event-handlers.js';
+
+// Local aliases for backward compatibility with existing code
+// These will be replaced as we extract more modules
+const getStoryTypesLocal = () => getStoryTypes();
+const getAuthorStylesLocal = () => getAuthorStyles();
+
+// Convenience accessors that return the arrays directly for existing code
 let storyTypes = [];
 let authorStyles = [];
 let fuseStoryTypes = null;
 let fuseAuthorStyles = null;
 
-// Track regeneration state
-let isRegenerating = false;
-let isLoadingChat = false;
+// Function to sync local references with state manager
+function syncDataReferences() {
+    storyTypes = getStoryTypes();
+    authorStyles = getAuthorStyles();
+    fuseStoryTypes = getFuseStoryTypes();
+    fuseAuthorStyles = getFuseAuthorStyles();
+}
+
+// Track regeneration state (now managed by event-handlers module)
+// Use getter functions to access: getIsRegenerating(), getIsLoadingChat()
+// Use setter functions to modify: setRegenerating(value), setLoadingChat(value)
 let lastMessageId = null;
 
-  /**
-   * Load story types from localForage storage.
-   * Falls back to loading from the JSON file if nothing is stored.
-   * Initializes Fuse.js for fuzzy search after loading.
-   * 
-   * @async
-   * @returns {Promise<void>}
-   */
-async function loadStoryTypes() {
-    try {
-        // Try to load from localForage first
-        const stored = await localforage.getItem('story_mode_story_types');
+// Arc engine functions now imported from arc-engine.js
+// UI rendering functions now imported from ui-components.js
+// Event handler functions now imported from event-handlers.js
 
-        if (stored && Array.isArray(stored) && stored.length > 0) {
-            storyTypes = stored;
-            console.log('[Story Mode] Loaded', storyTypes.length, 'story types from storage');
-        } else {
-            // Fallback to JSON file on first load
-            const response = await fetch(new URL('data/story_types.json', extensionBaseUrl));
-            if (response.ok) {
-                const data = await response.json();
-                storyTypes = data;
-                // Save to localForage for future use
-                await localforage.setItem('story_mode_story_types', storyTypes);
-                console.log('[Story Mode] Loaded', storyTypes.length, 'story types from file and saved to storage');
-            }
-        }
-
-        // Initialize Fuse.js for fuzzy search
-        if (typeof Fuse !== 'undefined') {
-            try {
-                fuseStoryTypes = new Fuse(storyTypes, {
-                    keys: ['name', 'category', 'storyPrompt'],
-                    threshold: 0.3,
-                });
-            } catch (fuseError) {
-                console.error('[Story Mode] Failed to initialize Fuse.js:', fuseError);
-            }
-        }
-        
-    } catch (error) {
-        console.error('[Story Mode] Failed to load story types:', error);
-    }
-}
-
-  /**
-   * Load author styles from localForage storage.
-   * Falls back to loading from the JSON file if nothing is stored.
-   * Initializes Fuse.js for fuzzy search after loading.
-   * 
-   * @async
-   * @returns {Promise<void>}
-   */
-async function loadAuthorStyles() {
-    try {
-        // Try to load from localForage first
-        const stored = await localforage.getItem('story_mode_author_styles');
-
-        if (stored && Array.isArray(stored) && stored.length > 0) {
-            authorStyles = stored;
-            console.log('[Story Mode] Loaded', authorStyles.length, 'author styles from storage');
-        } else {
-            // Fallback to JSON file on first load
-            const response = await fetch(new URL('data/author_styles.json', extensionBaseUrl));
-            if (response.ok) {
-                const data = await response.json();
-                authorStyles = data;
-                // Save to localForage for future use
-                await localforage.setItem('story_mode_author_styles', authorStyles);
-                console.log('[Story Mode] Loaded', authorStyles.length, 'author styles from file and saved to storage');
-            }
-        }
-
-        // Initialize Fuse.js for fuzzy search
-        if (typeof Fuse !== 'undefined') {
-            fuseAuthorStyles = new Fuse(authorStyles, {
-                keys: ['name', 'category', 'authorPrompt', 'keywords'],
-                threshold: 0.3,
-            });
-        }
-    } catch (error) {
-        console.error('[Story Mode] Failed to load author styles:', error);
-    }
-}
-
-  /**
-   * Load extension settings from the global extension_settings object.
-   * Merges loaded settings with defaults to ensure all properties exist.
-   * 
-   * @returns {void}
-   */
-function loadSettings() {
-    if (!extension_settings[MODULE_NAME]) {
-        extension_settings[MODULE_NAME] = structuredClone(defaultSettings);
-    }
-
-    // Merge with defaults
-    extension_settings[MODULE_NAME] = Object.assign(
-        {},
-        defaultSettings,
-        extension_settings[MODULE_NAME]
-    );
-
-    console.log('[Story Mode] Settings loaded:', extension_settings[MODULE_NAME]);
-}
-
- /**
-   * Get the current per-chat story mode state from chat metadata.
-   * Initializes the metadata object with global defaults if not present.
-   * 
-   * @returns {Object} The chat's story mode state containing currentStep, arcStarted,
-   *                   epilogueShown, summaryShown, selectedStoryType, selectedAuthorStyle, and arcLength.
-   */
-function getChatStoryState() {
-    // Always pull a fresh context to ensure we're reading the latest state
-    const { chatMetadata } = SillyTavern.getContext();
-
-    if (!chatMetadata[MODULE_NAME]) {
-        // Initialize new chat with current global settings
-        const settings = extension_settings[MODULE_NAME];
-        chatMetadata[MODULE_NAME] = {
-            currentStep: 0,
-            arcStarted: false,
-            epilogueShown: false,
-            summaryShown: false,
-            selectedStoryType: settings.selectedStoryType || '',
-            selectedAuthorStyle: settings.selectedAuthorStyle || '',
-            arcLength: settings.arcLength || 30,
-        };
-        console.log('[Story Mode] Initialized new chat with global settings:', chatMetadata[MODULE_NAME]);
-    }
-    return chatMetadata[MODULE_NAME];
-}
-
-  /**
-   * Save the per-chat story mode state to metadata and persist to server.
-   * Emits a CHAT_METADATA_UPDATED event after saving.
-   * 
-   * @async
-   * @param {Object} state - The story mode state object to save.
-   * @returns {Promise<void>}
-   */
-async function saveChatStoryState(state) {
-    // Always pull a fresh context
-    const { chatMetadata, saveMetadata } = SillyTavern.getContext();
-
-    // Update this chat's metadata
-    chatMetadata[MODULE_NAME] = state;
-
-    console.log('[Story Mode] saving story_mode state:', chatMetadata[MODULE_NAME]);
-
-    // Persist to the server/chat file
-    await saveMetadata();
-
-    // Optional notification
-    eventSource.emit(event_types.CHAT_METADATA_UPDATED);
-}
-/**
- * Calculate phase information based on current step and arc length.
- * Divides the story into three phases: setup (33%), confrontation (34%), resolution (33%).
- *
- * @param {number} currentStep - The current step number in the story arc.
- * @param {number} arcLength - The total length of the story arc.
- * @returns {Object} Phase information containing phase, positionInPhase, totalInPhase,
- *                   percentInPhase, phaseStart, and phaseEnd.
- */
-function getPhaseInfo(currentStep, arcLength) {
-     // Validate inputs
-      if (!arcLength || arcLength <= 0) {
-          arcLength = 30; // fallback to default
-          console.warn('[Story Mode] Invalid arcLength, using default 30');
-      }
-    // Calculate phase boundaries
-    const setupEnd = Math.floor(arcLength * 0.33);
-    const confrontationEnd = Math.floor(arcLength * 0.66);
-
-    let phase, phaseStart, phaseEnd, positionInPhase;
-
-    if (currentStep <= setupEnd) {
-        phase = 'setup';
-        phaseStart = 1;
-        phaseEnd = setupEnd;
-        positionInPhase = currentStep;
-    } else if (currentStep <= confrontationEnd) {
-        phase = 'confrontation';
-        phaseStart = setupEnd + 1;
-        phaseEnd = confrontationEnd;
-        positionInPhase = currentStep - setupEnd;
-    } else {
-        phase = 'resolution';
-        phaseStart = confrontationEnd + 1;
-        phaseEnd = arcLength;
-        positionInPhase = currentStep - confrontationEnd;
-    }
-
-    const totalInPhase = phaseEnd - phaseStart + 1;
-    const percentInPhase = Math.round((positionInPhase / totalInPhase) * 100);
-
-    return {
-        phase,
-        positionInPhase,
-        totalInPhase,
-        percentInPhase,
-        phaseStart,
-        phaseEnd
-    };
-}
+console.log('[Story Mode] All modules imported and initialized successfully');
 
 /**
- * Build the story blueprint from a story type.
- * Returns the story prompt that guides the LLM on narrative structure.
- *
- * @param {Object} storyType - The story type object containing storyPrompt.
- * @returns {string} The story prompt text, or empty string if undefined.
- */
-function buildStoryBlueprint(storyType) {
-    // Now just return the storyPrompt directly
-    return storyType.storyPrompt || '';
-}
-
- /**
-   * Build the phase injection text with template variable substitution.
-   * Replaces placeholders in the progress template with actual values.
-   * Appends phase-specific guidance for the current story phase.
-   * 
-   * @param {Object} storyType - The story type object containing progressTemplate and phasePrompts.
-   * @param {Object} phaseInfo - Phase information from getPhaseInfo (phase, positionInPhase, totalInPhase, etc.).
-   * @param {Object} chatState - Current chat story state containing arcLength.
-   * @returns {string} The formatted phase injection text with debug notes if debugMode is enabled.
-   */
-function buildPhaseInjection(storyType, phaseInfo, chatState) {
-    const settings = extension_settings[MODULE_NAME];
-    const nextStep = chatState.currentStep + 1; // We're about to generate the next message
-
-    // Substitute variables in progress template - use chatState.arcLength
-    let progressText = storyType.progressTemplate
-        .replace(/{currentStep}/g, nextStep)
-        .replace(/{arcLength}/g, chatState.arcLength)
-        .replace(/{arcPercent}/g, Math.round((nextStep / chatState.arcLength) * 100))
-        .replace(/{phase}/g, phaseInfo.phase)
-        .replace(/{positionInPhase}/g, phaseInfo.positionInPhase)
-        .replace(/{totalInPhase}/g, phaseInfo.totalInPhase)
-        .replace(/{phasePercent}/g, phaseInfo.percentInPhase)
-        .replace(/{phaseStart}/g, phaseInfo.phaseStart)
-        .replace(/{phaseEnd}/g, phaseInfo.phaseEnd);
-
-    // Get phase guidance
-    const phaseGuidance = storyType.phasePrompts?.[phaseInfo.phase] || '';
-
-    let output = `${progressText}\n\n${phaseGuidance}`;
-
-    // Add debug mode instruction (debugMode is global setting, not per-chat)
-    if (settings.debugMode) {
-        output += `\n\n[IMPORTANT: At the end of your response, include a debug note in this exact format: "(OOC: Step ${nextStep}/${chatState.arcLength}, Phase: ${phaseInfo.phase})"]`;
-    }
-
-    return output;
-}
-
- /**
-   * Build the full extension prompt injection string.
-   * Combines story arc and author style content based on current settings.
-   * 
-   * @param {boolean} isPreview - If true, ignore arc length limits and build full prompt for preview.
-   * @returns {string} The complete injection text, or empty string if disabled.
-   */
-function buildFullInjection(isPreview) {
-    const settings = extension_settings[MODULE_NAME];
-    const chatState = getChatStoryState();
-
-    if (!settings.enabled) {
-        return '';
-    }
-
-    let parts = [];
-
-    // Story arc injection - use chat state for story type and arc length
-    if (settings.storyArcEnabled && chatState.selectedStoryType) {
-        const storyType = storyTypes.find(t => t.id === chatState.selectedStoryType);
-
-        if (storyType && (chatState.currentStep < chatState.arcLength || isPreview)) {
-            const nextStep = chatState.currentStep + 1;
-            const phaseInfo = getPhaseInfo(nextStep, chatState.arcLength);
-
-            // Build comprehensive story content
-            let storyContent = buildStoryBlueprint(storyType);
-
-            // Add phase guidance - pass chatState instead of settings for arcLength
-            const phaseText = buildPhaseInjection(storyType, phaseInfo, chatState);
-            storyContent += `\n\n${phaseText}`;
-            parts.push(`<story>\n${storyContent}\n</story>`);
-        }
-    }
-
-    // Author style injection - use chat state for author style
-    if (settings.authorStyleEnabled && chatState.selectedAuthorStyle) {
-        const authorStyle = authorStyles.find(s => s.id === chatState.selectedAuthorStyle);
-
-        if (authorStyle) {
-            let styleContent = authorStyle.authorPrompt;
-
-            if (settings.nsfwEnabled && authorStyle.nsfwPrompt) {
-                styleContent += `\n\n${authorStyle.nsfwPrompt}`;
-            }
-
-            parts.push(`<style>\n${styleContent}\n</style>`);
-        }
-    }
-
-    return parts.join('\n\n');
-}
-
-
-/**
-   * Update the extension prompt injection in SillyTavern.
-   * Clears the prompt if extension is disabled or no content to inject.
-   * 
-   * @returns {void}
-   */
-function updateStoryPrompt() {
-    const settings = extension_settings[MODULE_NAME];
-
-    if (!settings.enabled) {
-        setExtensionPrompt(MODULE_NAME, '', extension_prompt_types.NONE, 0);
-        console.debug('[Story Mode] Prompt cleared (disabled)');
-        return;
-    }
-
-    const promptText = buildFullInjection(false);
-
-    if (!promptText) {
-        setExtensionPrompt(MODULE_NAME, '', extension_prompt_types.NONE, 0);
-        console.debug('[Story Mode] Prompt cleared (no content)');
-        return;
-    }
-
-    // Inject the prompt
-    setExtensionPrompt(
-        MODULE_NAME,
-        promptText,
-        settings.position,
-        settings.depth,
-        false,
-        settings.role
-    );
-
-    console.debug('[Story Mode] Prompt injected:', promptText);
-}
-
- /**
-   * Render the compact main panel HTML for the UI sidebar.
-   * Returns HTML string containing the enable toggle and status display.
-   * 
-   * @returns {string} The HTML string for the main story mode panel.
-   */
-function renderMainPanel() {
-    const settings = extension_settings[MODULE_NAME];
-    const chatState = getChatStoryState();
-
-    const statusText = settings.enabled
-        ? `Enabled | Arc: ${chatState.currentStep}/${chatState.arcLength}`
-        : 'Disabled';
-
-    const html = `
-        <div id="story_mode_panel" class="storymode-panel">
-            <div class=inline-drawer>
-                <div class="inline-drawer-toggle inline-drawer-header">
-                    <b data-i18n="Story Mode">Story Mode</b>
-                    <div class="inline-drawer-icon fa-solid interactable down fa-circle-chevron-down" tabindex="0" role="button"></div>
-                </div>
-                <div id="story_mode_base_settings" class="inline-drawer-content" style="display: none;">
-                    <div class="storymode-settings-panel">
-                        <label class="checkbox_label">
-                            <input type="checkbox" id="story_mode_enabled" ${settings.enabled ? 'checked' : ''} />
-                            <span>Enable Story Mode</span>
-                        </label>
-                        <div id="story_mode_settings_btn">
-                            <button id="open_story_mode_settings" class="menu_button">
-                                <i class="fa-solid fa-gear"></i> Story Mode Settings
-                            </button>
-                        </div>
-                    </div>
-                     <div class="storymode-status">
-                            ${statusText}
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-
-    return html;
-}
-
-  /**
-   * Show the full settings dialog popup.
-   * Displays all story mode configuration options and a prompt preview.
-   * 
-   * @async
-   * @returns {Promise<void>}
-   */
+* Show the full settings dialog popup with unified modal layout.
+* Displays sidebar with overview and tabbed content area.
+*
+* @async
+* @returns {Promise<void>}
+*/
 async function showSettingsDialog() {
-    const settings = extension_settings[MODULE_NAME];
-    const chatState = getChatStoryState();
-
-    const html = `
-        <div class="storymode-settings-dialog">
-            <div class="storymode-header-dialog">
-                <h2>Story Mode</h2>
-                <p class="storymode-tagline"></p>
-            </div>
-            <div class="storymode-section" id="story_mode_content">
-                <!-- Story Arc Section -->
-                <div class="storymode-subsection">
-                    <label class="checkbox_label">
-                        <input type="checkbox" id="story_arc_enabled" ${settings.storyArcEnabled ? 'checked' : ''} />
-                        <span>Enable Story Arc</span>
-                    </label>
-
-                    <div id="story_arc_controls" style="${settings.storyArcEnabled ? '' : 'display:none;'}">
-                        <div class="storymode-field">
-                            <label>Story Type</label>
-                            <div class="flex-container">
-                                <select id="story_type_select" class="text_pole">
-                                    <option value="">None</option>
-                                </select>
-                                <button id="edit_story_types_btn" class="menu_button" title="Edit Story Types">
-                                    <i class="fa-solid fa-pencil"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="storymode-field">
-                            <label>Arc Length: <span id="arc_length_value">${chatState.arcLength}</span></label>
-                            <input type="range" id="arc_length_slider" min="5" max="300" value="${chatState.arcLength}" />
-                        </div>
-
-                        <div class="storymode-badge" id="arc_progress_badge">
-                            Step ${chatState.currentStep}/${chatState.arcLength} | ${chatState.currentStep > 0 ? getPhaseInfo(chatState.currentStep, chatState.arcLength).phase : 'Not Started'}
-                        </div>
-
-                        <button id="reset_arc_btn" class="menu_button">
-                            <i class="fa-solid fa-rotate-left"></i> Reset Arc
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Author Style Section -->
-                <div class="storymode-subsection">
-                    <label class="checkbox_label">
-                        <input type="checkbox" id="author_style_enabled" ${settings.authorStyleEnabled ? 'checked' : ''} />
-                        <span>Enable Author Style</span>
-                    </label>
-
-                    <div id="author_style_controls" style="${settings.authorStyleEnabled ? '' : 'display:none;'}">
-                        <div class="storymode-field">
-                            <label>Author Style</label>
-                            <div class="flex-container">
-                                <input type="text" id="author_style_search" class="text_pole" placeholder="Search styles..." />
-                                <button id="edit_author_styles_btn" class="menu_button" title="Edit Author Styles">
-                                    <i class="fa-solid fa-pencil"></i>
-                                </button>
-                            </div>
-                            <select id="author_style_select" class="text_pole" size="5">
-                                <option value="">None</option>
-                            </select>
-                        </div>
-
-                        <label class="checkbox_label">
-                            <input type="checkbox" id="nsfw_enabled" ${settings.nsfwEnabled ? 'checked' : ''} />
-                            <span>Include NSFW/Heat Guidance in prompts</span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Post-Arc Options -->
-                <div class="storymode-subsection">
-                    <h4>Post-Arc Options</h4>
-                    <label class="checkbox_label">
-                        <input type="checkbox" id="epilogue_enabled" ${settings.epilogueEnabled ? 'checked' : ''} />
-                        <span>Auto-Epilogue After Arc</span>
-                    </label>
-                    <label class="checkbox_label">
-                        <input type="checkbox" id="summary_enabled" ${settings.summaryEnabled ? 'checked' : ''} />
-                        <span>Offer Summary After Epilogue</span>
-                    </label>
-                    <div class="storymode-field" style="margin-left: 20px;">
-                        <label>Messages to Summarize: <span id="summary_message_count_value">${settings.summaryMessageCount === 0 ? 'Entire Chat' : settings.summaryMessageCount}</span></label>
-                        <input type="range" id="summary_message_count_slider" min="0" max="300" step="5" value="${settings.summaryMessageCount}" />
-                        <small class="notes">0 = entire chat, or select the number of recent messages to include in summary (5-300)</small>
-                    </div>
-                    <label class="checkbox_label">
-                        <input type="checkbox" id="debug_mode_enabled" ${settings.debugMode ? 'checked' : ''} />
-                        <span>Debug Mode (Show Step/Phase in AI Responses)</span>
-                    </label>
-                    <small class="notes">When enabled, the AI will include step and phase information at the end of each response as an out-of-character (OOC) note.</small>
-                </div>
-
-                <!-- Injection Settings -->
-                <div class="storymode-subsection">
-                    <h4>Injection Settings</h4>
-                    <div class="storymode-field">
-                        <label>Position</label>
-                        <select id="injection_position" class="text_pole">
-                            <option value="${extension_prompt_types.IN_PROMPT}" ${settings.position === extension_prompt_types.IN_PROMPT ? 'selected' : ''}>In Prompt</option>
-                            <option value="${extension_prompt_types.IN_CHAT}" ${settings.position === extension_prompt_types.IN_CHAT ? 'selected' : ''}>In Chat (at depth)</option>
-                            <option value="${extension_prompt_types.BEFORE_PROMPT}" ${settings.position === extension_prompt_types.BEFORE_PROMPT ? 'selected' : ''}>Before Prompt</option>
-                        </select>
-                    </div>
-                    <div class="storymode-field">
-                        <label>Depth (for In Chat)</label>
-                        <input type="number" id="injection_depth" class="text_pole" min="0" max="100" value="${settings.depth}" />
-                    </div>
-                    <div class="storymode-field">
-                        <label>Role</label>
-                        <select id="injection_role" class="text_pole">
-                            <option value="${extension_prompt_roles.SYSTEM}" ${settings.role === extension_prompt_roles.SYSTEM ? 'selected' : ''}>System</option>
-                            <option value="${extension_prompt_roles.USER}" ${settings.role === extension_prompt_roles.USER ? 'selected' : ''}>User</option>
-                            <option value="${extension_prompt_roles.ASSISTANT}" ${settings.role === extension_prompt_roles.ASSISTANT ? 'selected' : ''}>Assistant</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Preview -->
-                <div class="storymode-subsection">
-                    <h4>Prompt Preview</h4>
-                    <div id="prompt_preview" class="storymode-preview"></div>
-                </div>
-            </div>
-        </div>
-    `;
-
-    const content = $(html);
-
-    // Set up event listeners for the dialog
-    setupDialogEventListeners(content);
-
-    // Populate dropdowns
-    updateStoryTypeDropdownInDialog(content);
-    updateAuthorStyleDropdownInDialog(content);
-    updatePreviewInDialog(content);
-
-    // Show popup
-    const popup = new Popup(content, POPUP_TYPE.TEXT, '', {
-        okButton: 'Close',
-        wide: true,
-        large: true,
-        allowVerticalScrolling: true,
-    });
-
-    await popup.show();
-}
-
-/**
- * Add UI components to the SillyTavern extensions panel.
- * Renders the main control panel and sets up event listeners.
- *
- * @async
- * @returns {Promise<void>}
- */
-async function addUI() {
-    const container = $('#extensions_settings2');
-    if (container.length === 0) {
-        console.warn('[Story Mode] Extensions settings container not found');
-        return;
-    }
-
-    container.append(renderMainPanel());
-    setupEventListeners();
-    updateStatusDisplay();
-
-    console.log('[Story Mode] UI added');
-}
-
-/**
- * Setup event listeners for the main control panel.
- * Handles the enable toggle and settings dialog button.
- *
- * @returns {void}
- */
-function setupEventListeners() {
-    // Master toggle
-    $('#story_mode_enabled').on('change', function() {
-        const enabled = $(this).is(':checked');
-        extension_settings[MODULE_NAME].enabled = enabled;
-        saveSettingsDebounced();
-        updateStoryPrompt();
-        updateStatusDisplay();
-    });
-
-    // Open settings dialog
-    $('#open_story_mode_settings').on('click', showSettingsDialog);
-}
-
-/**
- * Setup event listeners for the settings dialog.
- * Handles all form inputs including toggles, dropdowns, sliders, and buttons.
- *
- * @param {jQuery} content - The jQuery content object containing the dialog UI.
- * @returns {void}
- */
-function setupDialogEventListeners(content) {
-    // Master toggle in dialog (syncs with main)
-    content.find('#story_mode_enabled').on('change', function() {
-        const enabled = $(this).is(':checked');
-        extension_settings[MODULE_NAME].enabled = enabled;
-        $('#story_mode_enabled').prop('checked', enabled); // Sync with main panel
-        content.find('#story_mode_content').toggle(enabled);
-        saveSettingsDebounced();
-        updateStoryPrompt();
-        updateStatusDisplay();
-    });
-
-    // Story arc toggle
-    content.find('#story_arc_enabled').on('change', function() {
-        const enabled = $(this).is(':checked');
-        extension_settings[MODULE_NAME].storyArcEnabled = enabled;
-        content.find('#story_arc_controls').toggle(enabled);
-        saveSettingsDebounced();
-        updateStoryPrompt();
-        updatePreviewInDialog(content);
-        updateStatusDisplay();
-    });
-
-    // Story type selection
-    content.find('#story_type_select').on('change', async function() {
-        const selectedType = $(this).val();
-
-        // Update global settings (default for new chats)
-        extension_settings[MODULE_NAME].selectedStoryType = selectedType;
-        saveSettingsDebounced();
-
-        // Update current chat metadata
-        const chatState = getChatStoryState();
-        chatState.selectedStoryType = selectedType;
-        await saveChatStoryState(chatState);
-
-        updateStoryPrompt();
-        updatePreviewInDialog(content);
-        updateStatusDisplay();
-    });
-
-    // Arc length slider
-    content.find('#arc_length_slider').on('input', async function() {
-        const value = parseInt($(this).val());
-
-        // Update global settings (default for new chats)
-        extension_settings[MODULE_NAME].arcLength = value;
-        content.find('#arc_length_value').text(value);
-        saveSettingsDebounced();
-
-        // Update current chat metadata
-        const chatState = getChatStoryState();
-        chatState.arcLength = value;
-        await saveChatStoryState(chatState);
-
-        updateArcBadgeInDialog(content);
-        updatePreviewInDialog(content);
-        updateStatusDisplay();
-    });
-
-    // Reset arc
-    content.find('#reset_arc_btn').on('click', function() {
-        if (confirm('Reset the story arc? This will set the step counter back to 0.')) {
-            const chatState = getChatStoryState();
-            chatState.currentStep = 0;
-            chatState.arcStarted = false;
-            chatState.epilogueShown = false;
-            chatState.summaryShown = false;
-            saveChatStoryState(chatState);
-            updateArcBadgeInDialog(content);
-            updateStoryPrompt();
-            updatePreviewInDialog(content);
-            updateStatusDisplay();
-            toastr.success('Story arc reset');
-        }
-    });
-
-    // Author style toggle
-    content.find('#author_style_enabled').on('change', function() {
-        const enabled = $(this).is(':checked');
-        extension_settings[MODULE_NAME].authorStyleEnabled = enabled;
-        content.find('#author_style_controls').toggle(enabled);
-        saveSettingsDebounced();
-        updateStoryPrompt();
-        updatePreviewInDialog(content);
-    });
-
-    // Author style search
-    content.find('#author_style_search').on('input', function() {
-        const query = $(this).val();
-        updateAuthorStyleDropdownInDialog(content, query);
-    });
-
-    // Author style selection
-    content.find('#author_style_select').on('change', async function() {
-        const selectedStyle = $(this).val();
-
-        // Update global settings (default for new chats)
-        extension_settings[MODULE_NAME].selectedAuthorStyle = selectedStyle;
-        saveSettingsDebounced();
-
-        // Update current chat metadata
-        const chatState = getChatStoryState();
-        chatState.selectedAuthorStyle = selectedStyle;
-        await saveChatStoryState(chatState);
-
-        updateStoryPrompt();
-        updatePreviewInDialog(content);
-        updateStatusDisplay();
-    });
-
-    // NSFW toggle
-    content.find('#nsfw_enabled').on('change', function() {
-        extension_settings[MODULE_NAME].nsfwEnabled = $(this).is(':checked');
-        saveSettingsDebounced();
-        updateStoryPrompt();
-        updatePreviewInDialog(content);
-    });
-
-    // Epilogue toggle
-    content.find('#epilogue_enabled').on('change', function() {
-        extension_settings[MODULE_NAME].epilogueEnabled = $(this).is(':checked');
-        saveSettingsDebounced();
-    });
-
-    // Summary toggle
-    content.find('#summary_enabled').on('change', function() {
-        extension_settings[MODULE_NAME].summaryEnabled = $(this).is(':checked');
-        saveSettingsDebounced();
-    });
-
-    // Summary message count slider
-    content.find('#summary_message_count_slider').on('input', function() {
-        const value = parseInt($(this).val());
-        extension_settings[MODULE_NAME].summaryMessageCount = value;
-        content.find('#summary_message_count_value').text(value === 0 ? 'Entire Chat' : value);
-        saveSettingsDebounced();
-    });
-
-    // Debug mode toggle
-    content.find('#debug_mode_enabled').on('change', function() {
-        extension_settings[MODULE_NAME].debugMode = $(this).is(':checked');
-        saveSettingsDebounced();
-        updateStoryPrompt();
-    });
-
-    // Injection settings
-    content.find('#injection_position').on('change', function() {
-        extension_settings[MODULE_NAME].position = parseInt($(this).val());
-        saveSettingsDebounced();
-        updateStoryPrompt();
-    });
-
-    content.find('#injection_depth').on('change', function() {
-        extension_settings[MODULE_NAME].depth = parseInt($(this).val());
-        saveSettingsDebounced();
-        updateStoryPrompt();
-    });
-
-    content.find('#injection_role').on('change', function() {
-        extension_settings[MODULE_NAME].role = parseInt($(this).val());
-        saveSettingsDebounced();
-        updateStoryPrompt();
-    });
-
-    // Edit buttons
-    content.find('#edit_story_types_btn').on('click', showStoryTypesEditor);
-    content.find('#edit_author_styles_btn').on('click', showAuthorStylesEditor);
-}
-
-/**
- * Update the status display on the main panel.
- * Shows current story type, author style, and arc progress.
- *
- * @returns {void}
- */
-function updateStatusDisplay() {
-    const settings = extension_settings[MODULE_NAME];
-    const chatState = getChatStoryState();
-
-    let statusText;
-
-    if (!settings.enabled) {
-        statusText = 'Disabled';
-    } else {
-        // Get story type name from CHAT STATE (per-chat)
-        const storyName = settings.storyArcEnabled && chatState.selectedStoryType
-            ? storyTypes.find(t => t.id === chatState.selectedStoryType)?.name || 'None'
-            : 'None';
-
-        // Get author style name from CHAT STATE (per-chat)
-        const authorName = settings.authorStyleEnabled && chatState.selectedAuthorStyle
-            ? authorStyles.find(s => s.id === chatState.selectedAuthorStyle)?.name || 'Disabled'
-            : 'Disabled';
-
-        // Build compact status - all values from CHAT STATE
-        statusText = `Story: ${storyName} | Author: ${authorName} | Arc ${chatState.currentStep}/${chatState.arcLength}`;
-    }
-
-    //update the status text
-    const statusEl = $('.storymode-status');
-    if (statusEl.length > 0) {
-        statusEl.html(`<small>${statusText}</small>`);
-    }
-
-    // Also update the arc badge if the settings dialog is currently open
-    const badge = $('#arc_progress_badge');
-    if (badge.length > 0) {
-        if (chatState.currentStep === 0) {
-            badge.text(`Step 0/${chatState.arcLength} | Not Started`);
-        } else if (chatState.currentStep >= chatState.arcLength) {
-            badge.text(`Arc Complete (${chatState.arcLength}/${chatState.arcLength})`);
-        } else {
-            const phaseInfo = getPhaseInfo(chatState.currentStep, chatState.arcLength);
-            badge.text(`Step ${chatState.currentStep}/${chatState.arcLength} | ${phaseInfo.phase}`);
-        }
-    }
-}
-
-/**
- * Update the story type dropdown in the settings dialog.
- * Populates options from the storyTypes array with the current selection preserved.
- *
- * @param {jQuery} content - The jQuery content object containing the dialog.
- * @returns {void}
- */
-function updateStoryTypeDropdownInDialog(content) {
-    const dropdown = content.find('#story_type_select');
-    const chatState = getChatStoryState();
-    const selected = chatState.selectedStoryType; // Read from chat state
-
-    dropdown.empty();
-    dropdown.append('<option value="">None</option>');
-
-    // Sort story types alphabetically by name
-    const sortedTypes = [...storyTypes].sort((a, b) => a.name.localeCompare(b.name));
-
-    sortedTypes.forEach(type => {
-        const option = $('<option></option>')
-            .val(type.id)
-            .text(type.name + ' (' + type.category.join(', ') + ')');
-
-        if (type.id === selected) {
-            option.prop('selected', true);
-        }
-
-        dropdown.append(option);
-    });
-}
-
-/**
- * Update the author style dropdown in the settings dialog.
- * Supports optional fuzzy search via the searchQuery parameter.
- *
- * @param {jQuery} content - The jQuery content object containing the dialog.
- * @param {string} [searchQuery=''] - Optional search query for filtering styles.
- * @returns {void}
- */
-function updateAuthorStyleDropdownInDialog(content, searchQuery = '') {
-    const dropdown = content.find('#author_style_select');
-    const chatState = getChatStoryState();
-    const selected = chatState.selectedAuthorStyle; // Read from chat state
-
-    dropdown.empty();
-    dropdown.append('<option value="">None</option>');
-
-    let filteredStyles = authorStyles;
-
-    // Apply fuzzy search if query provided
-    if (searchQuery && fuseAuthorStyles) {
-        const results = fuseAuthorStyles.search(searchQuery);
-        filteredStyles = results.map(r => r.item);
-    } else {
-        // Sort alphabetically by name when not searching
-        filteredStyles = [...authorStyles].sort((a, b) => a.name.localeCompare(b.name));
-    }
-
-    filteredStyles.forEach(style => {
-        const option = $('<option></option>')
-            .val(style.id)
-            .text(style.name + ' (' + style.category.join(', ') + ')');
-
-        if (style.id === selected) {
-            option.prop('selected', true);
-        }
-
-        dropdown.append(option);
-    });
-}
-
-/**
- * Update the arc progress badge in the settings dialog.
- * Displays current step, arc length, and current phase.
- *
- * @param {jQuery} content - The jQuery content object containing the dialog.
- * @returns {void}
- */
-function updateArcBadgeInDialog(content) {
-    const chatState = getChatStoryState();
-    const badge = content.find('#arc_progress_badge');
-
-    if (chatState.currentStep === 0) {
-        badge.text(`Step 0/${chatState.arcLength} | Not Started`);
-    } else if (chatState.currentStep >= chatState.arcLength) {
-        badge.text(`Arc Complete (${chatState.arcLength}/${chatState.arcLength})`);
-    } else {
-        const phaseInfo = getPhaseInfo(chatState.currentStep, chatState.arcLength);
-        badge.text(`Step ${chatState.currentStep}/${chatState.arcLength} | ${phaseInfo.phase}`);
-    }
-}
-
-/**
- * Update the prompt preview section in the settings dialog.
- * Shows the full injection text with arc length ignored for preview purposes.
- *
- * @param {jQuery} content - The jQuery content object containing the dialog.
- * @returns {void}
- */
-function updatePreviewInDialog(content) {
-    const preview = content.find('#prompt_preview');
-    const promptText = buildFullInjection(true);
-
-    if (promptText) {
-        preview.text(promptText);
-    } else {
-        preview.text('(No prompt will be injected with current settings)');
-    }
-}
-
-/**
- * Update story type dropdown
- */
-function updateStoryTypeDropdown() {
-    const dropdown = $('#story_type_select');
-    const chatState = getChatStoryState();
-    const selected = chatState.selectedStoryType;
-
-    dropdown.empty();
-    dropdown.append('<option value="">None</option>');
-
-    // Sort story types alphabetically by name
-    const sortedTypes = [...storyTypes].sort((a, b) => a.name.localeCompare(b.name));
-
-    sortedTypes.forEach(type => {
-        const option = $('<option></option>')
-            .val(type.id)
-            .text(type.name + ' (' + type.category.join(', ') + ')');
-
-        if (type.id === selected) {
-            option.prop('selected', true);
-        }
-
-        dropdown.append(option);
-    });
-}
-
-/**
- * Update author style dropdown with optional search
- */
-function updateAuthorStyleDropdown(searchQuery = '') {
-    const dropdown = $('#author_style_select');
-    const chatState = getChatStoryState();
-    const selected = chatState.selectedAuthorStyle;
-
-    dropdown.empty();
-    dropdown.append('<option value="">None</option>');
-
-    let filteredStyles = authorStyles;
-
-    // Apply fuzzy search if query provided
-    if (searchQuery && fuseAuthorStyles) {
-        const results = fuseAuthorStyles.search(searchQuery);
-        filteredStyles = results.map(r => r.item);
-    } else {
-        // Sort alphabetically by name when not searching
-        filteredStyles = [...authorStyles].sort((a, b) => a.name.localeCompare(b.name));
-    }
-
-    filteredStyles.forEach(style => {
-        const option = $('<option></option>')
-            .val(style.id)
-            .text(style.name + ' (' + style.category.join(', ') + ')');
-
-        if (style.id === selected) {
-            option.prop('selected', true);
-        }
-
-        dropdown.append(option);
-    });
-}
-
-/**
- * Update arc progress badge
- */
-function updateArcBadge() {
-    const chatState = getChatStoryState();
-    const badge = $('#arc_progress_badge');
-
-    if (chatState.currentStep === 0) {
-        badge.text(`Step 0/${chatState.arcLength} | Not Started`);
-    } else if (chatState.currentStep >= chatState.arcLength) {
-        badge.text(`Arc Complete (${chatState.arcLength}/${chatState.arcLength})`);
-    } else {
-        const phaseInfo = getPhaseInfo(chatState.currentStep, chatState.arcLength);
-        badge.text(`Step ${chatState.currentStep}/${chatState.arcLength} | ${phaseInfo.phase}`);
-    }
-}
-
-/**
- * Update prompt preview
- */
-function updatePreview() {
-    const preview = $('#prompt_preview');
-    const promptText = buildFullInjection(true);
-
-    if (promptText) {
-        preview.text(promptText);
-    } else {
-        preview.text('(No prompt will be injected with current settings)');
-    }
-}
-
-/**
- * Show the story types editor modal.
- * Displays add/import/export controls and a list of editable story types.
- *
- * @async
- * @returns {Promise<void>}
- */
-async function showStoryTypesEditor() {
-    const html = `
-        <div class="storymode-editor">
-            <div class="storymode-editor-controls">
-                <button id="add_story_type_btn" class="menu_button">
-                    <i class="fa-solid fa-plus"></i> Add Story Type
-                </button>
-                <button id="import_story_types_btn" class="menu_button">
-                    <i class="fa-solid fa-file-import"></i> Import JSON
-                </button>
-                <button id="export_story_types_btn" class="menu_button">
-                    <i class="fa-solid fa-file-export"></i> Export JSON
-                </button>
-                <input type="file" id="import_story_types_file" accept=".json" style="display:none;" />
-            </div>
-            <div class="storymode-field" style="margin: 15px 0;">
-                <input type="text" id="story_types_search" class="text_pole" placeholder="Search story types..." />
-            </div>
-            <div id="story_types_list" class="storymode-editor-list"></div>
-        </div>
-    `;
-
-    // Create content wrapper and attach event listeners BEFORE creating popup
-    const content = $(html);
-
-    // Attach event listeners to elements within the content
-    content.find('#add_story_type_btn').on('click', () => {
-        addStoryType().then(() => {
-            refreshStoryTypesListInPopup(content);
-        });
-    });
-
-    content.find('#import_story_types_btn').on('click', () => {
-        content.find('#import_story_types_file').click();
-    });
-
-    content.find('#import_story_types_file').on('change', (e) => {
-        importStoryTypes(e.target).then(() => {
-            refreshStoryTypesListInPopup(content);
-        });
-    });
-
-    content.find('#export_story_types_btn').on('click', () => {
-        exportStoryTypes();
-    });
-
-    // Search functionality
-    content.find('#story_types_search').on('input', function() {
-        const query = $(this).val().toLowerCase();
-        refreshStoryTypesListInPopup(content, query);
-    });
-
-    // Populate the initial list
-    refreshStoryTypesListInPopup(content);
-
-    // Create and show popup
-    const popup = new Popup(content, POPUP_TYPE.TEXT, '', {
-        okButton: 'Close',
-        wide: true,
-        large: true,
-        allowVerticalScrolling: true,
-    });
-
-    await popup.show();
-}
-
-/**
- * Generic function to refresh a story types list container.
- * Includes search filtering and HTML escaping for security.
- *
- * @param {jQuery} container - The jQuery container element to populate.
- * @param {string} [searchQuery=''] - Optional search query to filter results.
- * @returns {void}
- */
-function refreshStoryTypesListGeneric(container, searchQuery = '') {
-    if (container.length === 0) return;
-    container.empty();
-
-    if (storyTypes.length === 0) {
-        container.append('<p class="notes">No story types defined. Click "Add Story Type" to create one.</p>');
-        return;
-    }
-
-    // Sort alphabetically and filter by search (if provided)
-    let filteredTypes = [...storyTypes].sort((a, b) => a.name.localeCompare(b.name));
-
-    if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        filteredTypes = filteredTypes.filter(type =>
-            type.name.toLowerCase().includes(q) ||
-            type.category.some(cat => cat.toLowerCase().includes(q)) ||
-            (type.storyPrompt && type.storyPrompt.toLowerCase().includes(q))
-        );
-    }
-
-    if (filteredTypes.length === 0) {
-        container.append('<p class="notes">No story types match your search.</p>');
-        return;
-    }
-
-    filteredTypes.forEach(type => {
-        const item = $(`
-            <div class="storymode-editor-item">
-                <div class="storymode-editor-item-header">
-                    <strong>${escapeHtml(type.name)}</strong>
-                    <span class="storymode-editor-category">${escapeHtml(type.category.join(', '))}</span>
-                </div>
-                <div class="storymode-editor-item-content">
-                    <p>${escapeHtml(type.storyPrompt || '')}</p>
-                </div>
-                <div class="storymode-editor-item-actions">
-                    <button class="menu_button menu_button_icon" data-id="${type.id}" data-action="edit" title="Edit">
-                        <i class="fa-solid fa-pencil"></i>
-                    </button>
-                    <button class="menu_button menu_button_icon" data-id="${type.id}" data-action="delete" title="Delete">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-        `);
-
-        item.find('[data-action="edit"]').on('click', () => editStoryType(type.id));
-        item.find('[data-action="delete"]').on('click', () => deleteStoryType(type.id));
-
-        container.append(item);
-    });
-}
-
-/**
- * Refresh the story types list in the popup editor.
- * Wraps the generic list function with a content-scoped selector.
- *
- * @param {jQuery} content - The jQuery content object containing the popup.
- * @param {string} [searchQuery=''] - Optional search query to filter results.
- * @returns {void}
- */
-function refreshStoryTypesListInPopup(content, searchQuery = '') {
-    const container = content.find('#story_types_list');
-    refreshStoryTypesListGeneric(container, searchQuery);
-}
-
-/**
- * Refresh the story types list in the main editor (global selector).
- * Wraps the generic list function with a global jQuery selector.
- *
- * @returns {void}
- */
-function refreshStoryTypesList() {
-    const container = $('#story_types_list');
-    refreshStoryTypesListGeneric(container);
-}
-
-
-/**
- * Add a new custom story type.
- * Creates a default template and opens the edit form for user customization.
- *
- * @async
- * @returns {Promise<void>}
- */
-async function addStoryType() {
-    const newType = {
-        id: 'custom_' + Date.now(),
-        name: 'New Story Type',
-        category: ['Custom'],
-        storyPrompt: '',
-        progressTemplate: 'Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).',
-        phasePrompts: {
-            setup: '',
-            confrontation: '',
-            resolution: ''
-        }
-    };
-
-    const result = await showStoryTypeEditForm(newType, true);
-    if (result) {
-        const { storyType } = result;
-        storyTypes.push(storyType);
-        await saveStoryTypesToStorage();
-        refreshStoryTypesList();
-        updateStoryTypeDropdown();
-        toastr.success('Story type added');
-    }
-}
-
-/**
- * Edit an existing story type by ID.
- * Opens the edit form pre-populated with the current type's data.
- *
- * @async
- * @param {string} id - The unique identifier of the story type to edit.
- * @returns {Promise<void>}
- */
-async function editStoryType(id) {
-    const type = storyTypes.find(t => t.id === id);
-    if (!type) return;
-
-    const result = await showStoryTypeEditForm(type, false);
-    if (result) {
-        const { storyType } = result;
-        const index = storyTypes.findIndex(t => t.id === id);
-        storyTypes[index] = storyType;
-        await saveStoryTypesToStorage();
-        refreshStoryTypesList();
-        updateStoryTypeDropdown();
-        toastr.success('Story type updated');
-    }
-}
-
-/**
- * Delete a story type by ID.
- * Also clears the selection if the deleted type was currently selected.
- *
- * @async
- * @param {string} id - The unique identifier of the story type to delete.
- * @returns {Promise<void>}
- */
-async function deleteStoryType(id) {
-    if (!confirm('Delete this story type?')) return;
-
-    storyTypes = storyTypes.filter(t => t.id !== id);
-    await saveStoryTypesToStorage();
-    refreshStoryTypesList();
-    updateStoryTypeDropdown();
-
-    // Clear selection if deleted type was selected
-    const chatState = getChatStoryState();
-    if (chatState.selectedStoryType === id) {
-        chatState.selectedStoryType = '';
-        await saveChatStoryState(chatState);
-        updateStoryPrompt();
-    }
-
-    toastr.success('Story type deleted');
-}
-
-/**
- * Escape HTML entities for textarea
- */
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-// Storage for original (unmodified) versions for revert functionality
-let originalStoryTypes = [];
-
-/**
- * Load original (unmodified) story types for revert functionality.
- * Retrieves from localForage or creates a backup from current loaded types.
- *
- * @async
- * @returns {Promise<void>}
- */
-async function loadOriginalStoryTypes() {
-    try {
-        // Try to load from localForage first
-        const stored = await localforage.getItem('story_mode_original_story_types');
-
-        if (stored && Array.isArray(stored) && stored.length > 0) {
-            originalStoryTypes = stored;
-            console.log('[Story Mode] Loaded', originalStoryTypes.length, 'original story types from storage');
-        } else if (storyTypes.length > 0) {
-            // First load - save current story types as originals (deep copy)
-            originalStoryTypes = JSON.parse(JSON.stringify(storyTypes));
-            await localforage.setItem('story_mode_original_story_types', originalStoryTypes);
-            console.log('[Story Mode] Saved', originalStoryTypes.length, 'original story types for revert functionality');
-        }
-    } catch (error) {
-        console.error('[Story Mode] Error loading original story types:', error);
-    }
-}
-
-/**
- * Get an original (unmodified) story type by ID.
- * Used to revert user customizations to the default version.
- *
- * @param {string} id - The unique identifier of the story type.
- * @returns {Object|undefined} The original story type object, or undefined if not found.
- */
-function getOriginalStoryType(id) {
-    return originalStoryTypes.find(t => t.id === id);
-}
-
-// Storage for original (unmodified) author styles for revert functionality
-let originalAuthorStyles = [];
-
-/**
- * Load original (unmodified) author styles for revert functionality.
- * Retrieves from localForage or creates a backup from current loaded styles.
- *
- * @async
- * @returns {Promise<void>}
- */
-async function loadOriginalAuthorStyles() {
-    try {
-        // Try to load from localForage first
-        const stored = await localforage.getItem('story_mode_original_author_styles');
-
-        if (stored && Array.isArray(stored) && stored.length > 0) {
-            originalAuthorStyles = stored;
-            console.log('[Story Mode] Loaded', originalAuthorStyles.length, 'original author styles from storage');
-        } else if (authorStyles.length > 0) {
-            // First load - save current author styles as originals (deep copy)
-            originalAuthorStyles = JSON.parse(JSON.stringify(authorStyles));
-            await localforage.setItem('story_mode_original_author_styles', originalAuthorStyles);
-            console.log('[Story Mode] Saved', originalAuthorStyles.length, 'original author styles for revert functionality');
-        }
-    } catch (error) {
-        console.error('[Story Mode] Error loading original author styles:', error);
-    }
-}
-
-/**
- * Get an original (unmodified) author style by ID.
- * Used to revert user customizations to the default version.
- *
- * @param {string} id - The unique identifier of the author style.
- * @returns {Object|undefined} The original author style object, or undefined if not found.
- */
-function getOriginalAuthorStyle(id) {
-    return originalAuthorStyles.find(s => s.id === id);
-}
-
-/**
- * Show the story type edit form modal.
- * Displays form fields for editing or creating a story type.
- * Includes revert button if editing a non-original type.
- *
- * @async
- * @param {Object} type - The story type object to edit or use as template.
- * @param {boolean} isNew - True if creating a new type, false if editing existing.
- * @returns {Promise<Object|null>} Object with storyType property if saved, null if cancelled.
- */
-async function showStoryTypeEditForm(type, isNew) {
-    const hasOriginal = !isNew && getOriginalStoryType(type.id);
-    const revertButtonHtml = hasOriginal ? `<button id="revert_to_default_btn" class="menu_button" style="margin-top: 10px;">
-                    <i class="fa-solid fa-rotate-left"></i> Revert to Original
-                </button>` : '';
-
-    const html = `
-        <div class="storymode-edit-form">
-            <h4>Basic Information</h4>
-            <div class="storymode-field">
-                <label>Name</label>
-                <input type="text" id="edit_type_name" class="text_pole" value="${escapeHtml(type.name || '')}" />
-            </div>
-            <div class="storymode-field">
-                <label>Category (comma-separated)</label>
-                <input type="text" id="edit_type_category" class="text_pole" value="${escapeHtml(type.category ? type.category.join(', ') : '')}" />
-            </div>
-
-            <h4>Story Blueprint</h4>
-            <div class="storymode-field">
-                <label>Story Prompt</label>
-                <textarea id="edit_type_story_prompt" class="text_pole" rows="15">${escapeHtml(type.storyPrompt || '')}</textarea>
-                <small class="notes">The complete story blueprint and guidance for the LLM. Edit freely to customize the storytelling approach.</small>
-                ${revertButtonHtml}
-            </div>
-
-            <h4>Arc Progress & Phases</h4>
-            <div class="storymode-field">
-                <label>Progress Template</label>
-                <textarea id="edit_type_template" class="text_pole" rows="2">${escapeHtml(type.progressTemplate || '')}</textarea>
-                <small class="notes">Variables: {currentStep}, {arcLength}, {arcPercent}, {phase}, {positionInPhase}, {totalInPhase}, {phasePercent}</small>
-            </div>
-            <div class="storymode-field">
-                <label>Setup Phase Prompt (First ~33%)</label>
-                <textarea id="edit_type_setup" class="text_pole" rows="2">${escapeHtml(type.phasePrompts ? type.phasePrompts.setup || '' : '')}</textarea>
-            </div>
-            <div class="storymode-field">
-                <label>Confrontation Phase Prompt (Middle ~33%)</label>
-                <textarea id="edit_type_confrontation" class="text_pole" rows="2">${escapeHtml(type.phasePrompts ? type.phasePrompts.confrontation || '' : '')}</textarea>
-            </div>
-            <div class="storymode-field">
-                <label>Resolution Phase Prompt (Final ~33%)</label>
-                <textarea id="edit_type_resolution" class="text_pole" rows="2">${escapeHtml(type.phasePrompts ? type.phasePrompts.resolution || '' : '')}</textarea>
-            </div>
-
-            ${isNew ? `<h4>Template Options</h4>
-            <label class="checkbox_label">
-                <input type="checkbox" id="mark_as_template" />
-                <span>Mark as Template</span>
-            </label>
-            <small class="notes">If checked, this story type will be marked as a reusable template.</small>` : ''}
-        </div>
-    `;
-
-    const content = $(html);
-
-    // Set up revert to original button if it exists
-    content.find('#revert_to_default_btn').on('click', function() {
-        const originalType = getOriginalStoryType(type.id);
-        if (originalType) {
-            if (confirm(`Revert "${type.name}" to its original story prompt? Your current changes will be lost.`)) {
-                // Update the textarea with original content
-                content.find('#edit_type_story_prompt').val(originalType.storyPrompt || '');
-                toastr.info('Story prompt reverted to original. Click Save to apply changes.');
-            }
-        }
-    });
-
-    const popup = new Popup(content, POPUP_TYPE.TEXT, '', {
-        okButton: isNew ? 'Add' : 'Save',
-        cancelButton: 'Cancel',
-        wide: true,
-        large: true,
-        allowVerticalScrolling: true,
-    });
-
-    const result = await popup.show();
-
-    if (result) {
-        const name = content.find('#edit_type_name').val().trim();
-        const categoryText = content.find('#edit_type_category').val().trim();
-        const storyPrompt = content.find('#edit_type_story_prompt').val().trim();
-        const template = content.find('#edit_type_template').val().trim();
-        const setup = content.find('#edit_type_setup').val().trim();
-        const confrontation = content.find('#edit_type_confrontation').val().trim();
-        const resolution = content.find('#edit_type_resolution').val().trim();
-        const markAsTemplate = isNew ? content.find('#mark_as_template').is(':checked') : type.isTemplate || false;
-
-        if (!name) {
-            toastr.error('Name is required');
-            return null;
-        }
-
-        const categories = categoryText.split(',').map(c => c.trim()).filter(c => c);
-
-        const editedType = {
-            ...type,
-            name,
-            category: categories,
-            storyPrompt,
-            progressTemplate: template,
-            phasePrompts: {
-                setup,
-                confrontation,
-                resolution
-            },
-            isTemplate: markAsTemplate
-        };
-
-        return {
-            storyType: editedType
-        };
-    }
-
-    return null;
-}
-
-/**
- * Import story types from a JSON file.
- * Merges with existing types, replacing duplicates by ID.
- *
- * @async
- * @param {HTMLInputElement} fileInput - The file input element containing the JSON file.
- * @returns {Promise<void>}
- */
-async function importStoryTypes(fileInput) {
-    const file = fileInput.files[0];
-    if (!file) return;
-
-    try {
-        const text = await getFileText(file);
-        const imported = JSON.parse(text);
-
-        if (!Array.isArray(imported)) {
-            throw new Error('Invalid format: expected an array of story types');
-        }
-
-        // Validate and merge
-        imported.forEach(type => {
-            if (!type.id || !type.name) {
-                throw new Error('Invalid story type: missing id or name');
-            }
-
-            // Check for duplicates
-            const existing = storyTypes.findIndex(t => t.id === type.id);
-            if (existing >= 0) {
-                storyTypes[existing] = type;
-            } else {
-                storyTypes.push(type);
-            }
-        });
-
-        await saveStoryTypesToStorage();
-        refreshStoryTypesList();
-        updateStoryTypeDropdown();
-
-        toastr.success(`Imported ${imported.length} story types`);
-
-        // Clear file input
-        $(fileInput).val('');
-    } catch (error) {
-        console.error('[Story Mode] Import failed:', error);
-        toastr.error(`Import failed: ${error.message}`);
-    }
-}
-
-/**
- * Export story types to a JSON file.
- * Includes timestamp in the generated filename.
- *
- * @returns {void}
- */
-function exportStoryTypes() {
-    const json = JSON.stringify(storyTypes, null, 2);
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-    download(json, `story-types-${timestamp}.json`, 'application/json');
-    toastr.success('Story types exported');
-}
-
-/**
- * Show the author styles editor modal.
- * Displays add/import/export controls and a list of editable author styles.
- *
- * @async
- * @returns {Promise<void>}
- */
-async function showAuthorStylesEditor() {
-    const html = `
-        <div class="storymode-editor">
-            <div class="storymode-editor-controls">
-                <button id="add_author_style_btn" class="menu_button">
-                    <i class="fa-solid fa-plus"></i> Add Author Style
-                </button>
-                <button id="import_author_styles_btn" class="menu_button">
-                    <i class="fa-solid fa-file-import"></i> Import JSON
-                </button>
-                <button id="export_author_styles_btn" class="menu_button">
-                    <i class="fa-solid fa-file-export"></i> Export JSON
-                </button>
-                <input type="file" id="import_author_styles_file" accept=".json" style="display:none;" />
-            </div>
-            <div class="storymode-field" style="margin-bottom: 10px;">
-                <input type="text" id="author_styles_search" class="text_pole" placeholder="Search author styles..." />
-            </div>
-            <div id="author_styles_list" class="storymode-editor-list"></div>
-        </div>
-    `;
-
-    // Create content wrapper and attach event listeners BEFORE creating popup
-    const content = $(html);
-
-    // Attach event listeners to elements within the content
-    content.find('#add_author_style_btn').on('click', () => {
-        addAuthorStyle().then(() => {
-            refreshAuthorStylesListInPopup(content);
-        });
-    });
-
-    content.find('#import_author_styles_btn').on('click', () => {
-        content.find('#import_author_styles_file').click();
-    });
-
-    content.find('#import_author_styles_file').on('change', (e) => {
-        importAuthorStyles(e.target).then(() => {
-            refreshAuthorStylesListInPopup(content);
-        });
-    });
-
-    content.find('#export_author_styles_btn').on('click', () => {
-        exportAuthorStyles();
-    });
-
-    // Search functionality
-    content.find('#author_styles_search').on('input', (e) => {
-        const query = $(e.target).val().trim();
-        refreshAuthorStylesListInPopup(content, query);
-    });
-
-    // Populate the initial list
-    refreshAuthorStylesListInPopup(content);
-
-    // Create and show popup
-    const popup = new Popup(content, POPUP_TYPE.TEXT, '', {
-        okButton: 'Close',
-        wide: true,
-        large: true,
-        allowVerticalScrolling: true,
-    });
-
-    await popup.show();
-}
-
-/**
- * Generic function to refresh an author styles list container.
- * Includes fuzzy search and NSFW badge display.
- *
- * @param {jQuery} container - The jQuery container element to populate.
- * @param {string} [searchQuery=''] - Optional search query for filtering.
- * @returns {void}
- */
-function refreshAuthorStylesListGeneric(container, searchQuery = '') {
-    if (container.length === 0) return;
-    container.empty();
-
-    if (authorStyles.length === 0) {
-        container.append('<p class="notes">No author styles defined. Click "Add Author Style" to create one.</p>');
-        return;
-    }
-
-    // Filter and sort styles
-    let filteredStyles = authorStyles;
-
-    if (searchQuery && fuseAuthorStyles) {
-        const results = fuseAuthorStyles.search(searchQuery);
-        filteredStyles = results.map(r => r.item);
-    } else {
-        filteredStyles = [...authorStyles].sort((a, b) => a.name.localeCompare(b.name));
-    }
-
-    if (filteredStyles.length === 0) {
-        container.append('<p class="notes">No author styles found matching your search.</p>');
-        return;
-    }
-
-    filteredStyles.forEach(style => {
-        const hasNSFW = style.nsfwPrompt && style.nsfwPrompt.length > 0;
-        const nsfwBadge = hasNSFW
-            ? '<span class="storymode-nsfw-badge" title="Has NSFW Guidance"></span>'
-            : '';
-
-        const item = $(`
-            <div class="storymode-editor-item">
-                <div class="storymode-editor-item-header">
-                    <strong>${escapeHtml(style.name)}</strong>
-                    <span class="storymode-editor-category">${escapeHtml(style.category.join(', '))}</span>
-                    ${nsfwBadge}
-                </div>
-                <div class="storymode-editor-item-content">
-                    <p>${escapeHtml(style.authorPrompt)}</p>
-                    ${hasNSFW ? `<p class="storymode-nsfw-text"><strong>NSFW:</strong> ${escapeHtml(style.nsfwPrompt)}</p>` : ''}
-                </div>
-                <div class="storymode-editor-item-actions">
-                    <button class="menu_button menu_button_icon" data-id="${style.id}" data-action="edit" title="Edit">
-                        <i class="fa-solid fa-pencil"></i>
-                    </button>
-                    <button class="menu_button menu_button_icon" data-id="${style.id}" data-action="delete" title="Delete">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-        `);
-
-        item.find('[data-action="edit"]').on('click', () => editAuthorStyle(style.id));
-        item.find('[data-action="delete"]').on('click', () => deleteAuthorStyle(style.id));
-
-        container.append(item);
-    });
-}
-
-/**
- * Refresh the author styles list in the popup editor.
- * Wraps the generic list function with a content-scoped selector.
- *
- * @param {jQuery} content - The jQuery content object containing the popup.
- * @param {string} [searchQuery=''] - Optional search query to filter results.
- * @returns {void}
- */
-function refreshAuthorStylesListInPopup(content, searchQuery = '') {
-    const container = content.find('#author_styles_list');
-    refreshAuthorStylesListGeneric(container, searchQuery);
-}
-
-/**
- * Refresh the author styles list in the main editor (global selector).
- * Wraps the generic list function with a global jQuery selector.
- *
- * @returns {void}
- */
-function refreshAuthorStylesList() {
-    const container = $('#author_styles_list');
-    refreshAuthorStylesListGeneric(container);
-}
-
-
-/**
- * Add new author style
- */
-async function addAuthorStyle() {
-    const newStyle = {
-        id: 'custom_' + Date.now(),
-        name: 'New Author Style',
-        category: ['Custom'],
-        authorPrompt: '',
-        nsfwPrompt: '',
-        keywords: []
-    };
-
-    const edited = await showAuthorStyleEditForm(newStyle, true);
-    if (edited) {
-        authorStyles.push(edited);
-        await saveAuthorStylesToStorage();
-        refreshAuthorStylesList();
-        updateAuthorStyleDropdown();
-        toastr.success('Author style added');
-    }
-}
-
-/**
- * Edit author style
- */
-async function editAuthorStyle(id) {
-    const style = authorStyles.find(s => s.id === id);
-    if (!style) return;
-
-    const edited = await showAuthorStyleEditForm(style, false);
-    if (edited) {
-        const index = authorStyles.findIndex(s => s.id === id);
-        authorStyles[index] = edited;
-        await saveAuthorStylesToStorage();
-        refreshAuthorStylesList();
-        updateAuthorStyleDropdown();
-        toastr.success('Author style updated');
-    }
-}
-
-/**
- * Delete author style
- */
-async function deleteAuthorStyle(id) {
-    if (!confirm('Delete this author style?')) return;
-
-    authorStyles = authorStyles.filter(s => s.id !== id);
-    await saveAuthorStylesToStorage();
-    refreshAuthorStylesList();
-    updateAuthorStyleDropdown();
-
-    // Clear selection if deleted style was selected
-    const chatState = getChatStoryState();
-    if (chatState.selectedAuthorStyle === id) {
-        chatState.selectedAuthorStyle = '';
-        await saveChatStoryState(chatState);
-        updateStoryPrompt();
-    }
-
-    toastr.success('Author style deleted');
-}
-
-/**
- * Show author style edit form
- */
-async function showAuthorStyleEditForm(style, isNew) {
-    const settings = extension_settings[MODULE_NAME];
-    const hasOriginal = !isNew && getOriginalAuthorStyle(style.id);
-    const revertButtonHtml = hasOriginal ? `<button id="revert_author_to_original_btn" class="menu_button" style="margin-top: 10px;">
-                    <i class="fa-solid fa-rotate-left"></i> Revert to Original
-                </button>` : '';
-
-    // Only show NSFW field if NSFW is enabled in settings
-    const nsfwFieldHtml = settings.nsfwEnabled ? `
-            <div class="storymode-field">
-                <label>NSFW/Heat Guidance (Optional)</label>
-                <textarea id="edit_style_nsfw" class="text_pole" rows="2">${escapeHtml(style.nsfwPrompt || '')}</textarea>
-                <small class="notes">How this author handles mature/adult content. Leave empty if not applicable.</small>
-            </div>` : '';
-
-    const html = `
-        <div class="storymode-edit-form">
-            <div class="storymode-field">
-                <label>Name</label>
-                <input type="text" id="edit_style_name" class="text_pole" value="${escapeHtml(style.name)}" />
-            </div>
-            <div class="storymode-field">
-                <label>Category (comma-separated)</label>
-                <input type="text" id="edit_style_category" class="text_pole" value="${escapeHtml(style.category.join(', '))}" />
-            </div>
-            <div class="storymode-field">
-                <label>Author Style Description</label>
-                <textarea id="edit_style_description" class="text_pole" rows="3">${escapeHtml(style.authorPrompt)}</textarea>
-                <small class="notes">Describe the author's writing style, voice, and characteristics.</small>
-                ${revertButtonHtml}
-            </div>
-            ${nsfwFieldHtml}
-            <div class="storymode-field">
-                <label>Keywords (comma-separated)</label>
-                <input type="text" id="edit_style_keywords" class="text_pole" value="${escapeHtml(style.keywords.join(', '))}" />
-                <small class="notes">Searchable keywords associated with this style.</small>
-            </div>
-
-            ${isNew ? `<h4>Template Options</h4>
-            <label class="checkbox_label">
-                <input type="checkbox" id="mark_style_as_template" />
-                <span>Mark as Template</span>
-            </label>
-            <small class="notes">If checked, this author style will be marked as a reusable template.</small>` : ''}
-        </div>
-    `;
-
-    const content = $(html);
-
-    // Set up revert to original button if it exists
-    content.find('#revert_author_to_original_btn').on('click', function() {
-        const originalStyle = getOriginalAuthorStyle(style.id);
-        if (originalStyle) {
-            if (confirm(`Revert "${style.name}" to its original content? Your current changes will be lost.`)) {
-                // Update the textareas with original content
-                content.find('#edit_style_description').val(originalStyle.authorPrompt || '');
-                content.find('#edit_style_nsfw').val(originalStyle.nsfwPrompt || '');
-                toastr.info('Author style reverted to original. Click Save to apply changes.');
-            }
-        }
-    });
-
-    const popup = new Popup(content, POPUP_TYPE.TEXT, '', {
-        okButton: isNew ? 'Add' : 'Save',
-        cancelButton: 'Cancel',
-        wide: true,
-        large: false,
-        allowVerticalScrolling: true,
-    });
-
-    const result = await popup.show();
-
-    if (result) {
-        const settings = extension_settings[MODULE_NAME];
-        const name = content.find('#edit_style_name').val().trim();
-        const categoryText = content.find('#edit_style_category').val().trim();
-        const description = content.find('#edit_style_description').val().trim();
-        // Only get NSFW value if the field exists (when nsfwEnabled is true)
-        const nsfw = settings.nsfwEnabled ? content.find('#edit_style_nsfw').val().trim() : (style.nsfwPrompt || '');
-        const keywordsText = content.find('#edit_style_keywords').val().trim();
-        const markAsTemplate = isNew ? content.find('#mark_style_as_template').is(':checked') : style.isTemplate || false;
-
-        if (!name || !description) {
-            toastr.error('Name and description are required');
-            return null;
-        }
-
-        const categories = categoryText.split(',').map(c => c.trim()).filter(c => c);
-        const keywords = keywordsText.split(',').map(k => k.trim()).filter(k => k);
-
-        return {
-            ...style,
-            name,
-            category: categories,
-            authorPrompt: description,
-            nsfwPrompt: nsfw,
-            keywords,
-            isTemplate: markAsTemplate
-        };
-    }
-
-    return null;
-}
-
-/**
- * Import author styles from JSON
- */
-async function importAuthorStyles(fileInput) {
-    const file = fileInput.files[0];
-    if (!file) return;
-
-    try {
-        const text = await getFileText(file);
-        const imported = JSON.parse(text);
-
-        if (!Array.isArray(imported)) {
-            throw new Error('Invalid format: expected an array of author styles');
-        }
-
-        // Validate and merge
-        imported.forEach(style => {
-            if (!style.id || !style.name) {
-                throw new Error('Invalid author style: missing id or name');
-            }
-
-            // Check for duplicates
-            const existing = authorStyles.findIndex(s => s.id === style.id);
-            if (existing >= 0) {
-                authorStyles[existing] = style;
-            } else {
-                authorStyles.push(style);
-            }
-        });
-
-        await saveAuthorStylesToStorage();
-        refreshAuthorStylesList();
-        updateAuthorStyleDropdown();
-
-        toastr.success(`Imported ${imported.length} author styles`);
-
-        // Clear file input
-        $(fileInput).val('');
-    } catch (error) {
-        console.error('[Story Mode] Import failed:', error);
-        toastr.error(`Import failed: ${error.message}`);
-    }
-}
-
-/**
- * Export author styles to JSON
- */
-function exportAuthorStyles() {
-    const json = JSON.stringify(authorStyles, null, 2);
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-    download(json, `author-styles-${timestamp}.json`, 'application/json');
-    toastr.success('Author styles exported');
-}
-
-/**
- * Save story types to localForage
- */
-async function saveStoryTypesToStorage() {
-    try {
-        await localforage.setItem('story_mode_story_types', storyTypes);
-        console.log('[Story Mode] Story types saved to storage');
-
-        // Reinitialize Fuse.js
-        if (typeof Fuse !== 'undefined') {
-            fuseStoryTypes = new Fuse(storyTypes, {
-                keys: ['name', 'category', 'storyPrompt'],
-                threshold: 0.3,
-            });
-        }
-    } catch (error) {
-        console.error('[Story Mode] Failed to save story types:', error);
-        toastr.error('Failed to save story types');
-    }
-}
-
-/**
- * Save author styles to localForage
- */
-async function saveAuthorStylesToStorage() {
-    try {
-        await localforage.setItem('story_mode_author_styles', authorStyles);
-        console.log('[Story Mode] Author styles saved to storage');
-
-        // Reinitialize Fuse.js
-        if (typeof Fuse !== 'undefined') {
-            fuseAuthorStyles = new Fuse(authorStyles, {
-                keys: ['name', 'category', 'authorPrompt', 'keywords'],
-                threshold: 0.3,
-            });
-        }
-    } catch (error) {
-        console.error('[Story Mode] Failed to save author styles:', error);
-        toastr.error('Failed to save author styles');
-    }
-}
-
-/**
- * Load Fuse.js library for fuzzy search
- */
-async function loadFuseJS() {
-    if (typeof Fuse !== 'undefined') {
-        console.log('[Story Mode] Fuse.js already loaded');
-        return;
-    }
-
-    try {
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js';
-        script.async = true;
-
-        await new Promise((resolve, reject) => {
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
-        });
-
-        console.log('[Story Mode] Fuse.js loaded');
-    } catch (error) {
-        console.error('[Story Mode] Failed to load Fuse.js:', error);
-    }
-}
-
-/**
- * Hook: Before generation starts, determine if its a increment in the story or a regenerated story
- */
-eventSource.on(event_types.GENERATION_STARTED, () => {
-    // Clear the loading flag when generation starts
-    isLoadingChat = false;
-
-    if (chat.length > 0) {
-        isRegenerating = false; // fresh generation
-        console.debug('[Story Mode] Generation started (normal)');
-        updateStoryPrompt();
-    }
-    else {
-        isRegenerating = true; // This is the inital message and chat set up, don't increment the story count
-        console.debug('[Story Mode] inital message set up - no increment');
-    }
-});
-
-eventSource.on(event_types.MESSAGE_SWIPED, (data) => {
-    isRegenerating = true;
-    console.debug('[Story Mode] Swipe/regenerate detected:', data);
-    updateStoryPrompt();
-});
-
-if (event_types.MESSAGE_REGENERATED) {
-    eventSource.on(event_types.MESSAGE_REGENERATED, (data) => {
-        isRegenerating = true;
-        console.debug('[Story Mode] Regenerate detected:', data);
-        updateStoryPrompt();
-    });
-}
-
-/**
- * Hook: After message is received
- */
-async function onMessageReceived(data) {
-    const settings = extension_settings[MODULE_NAME];
-
-    if (data && data.is_user) {
-        console.debug('[Story Mode] Skipping increment (user message detected)');
-        return;
-    }
-
-    if (isLoadingChat) {
-        console.debug('[Story Mode] Skipping increment (chat is loading)');
-        return;
-    }
-
-    if (isRegenerating) {
-        console.debug('[Story Mode] Skipping increment (regeneration detected)');
-        isRegenerating = false;
-        return;
-    }
-
-    if (!settings.enabled || !settings.storyArcEnabled) {
-        console.debug('[Story Mode] Skipping increment (story mode not enabled)');
-        return;
-    }
-
-    const chatState = getChatStoryState();
-
-    if (chatState.currentStep < chatState.arcLength) {
-        const oldStep = chatState.currentStep;
-        chatState.currentStep++;
-        await saveChatStoryState(chatState);
-        console.log(
-            `[Story Mode] Step incremented: ${oldStep} → ${chatState.currentStep} (Arc: ${chatState.currentStep}/${chatState.arcLength})`
-        );
-        updateStoryPrompt();
-        updateStatusDisplay();
-    } else if (chatState.currentStep === chatState.arcLength) {
-        console.log('[Story Mode] Arc completed. Epilogue enabled:', settings.epilogueEnabled );
-        // Generate and push epilogue if enabled
-        if (settings.epilogueEnabled && !chatState.epilogueShown) {
-            toastr.success('[Story Mode] Arc completed - generating epilogue. Please wait while the epilogue generates.');
-            const epilogue = await generateEpilogueForStory();
-            if (epilogue) {
-                await pushStoryMessage(epilogue); // LLM generates the heading
-                chatState.epilogueShown = true;
-                await saveChatStoryState(chatState);
-                console.log('[Story Mode] Epilogue generated and pushed');
-
-                // Wait a moment for UI to settle before generating summary
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            }
-        }
-        // Generate and push summary if enabled and epilogue is done
-        if (settings.summaryEnabled && !chatState.summaryShown) {
-            toastr.success('[Story Mode] I will now generate a summary. Please wait while it is generating.');
-            const summary = await summarizeChatMainForStory();
-            if (summary) {
-                await pushStoryMessage(summary); // LLM generates the heading
-                chatState.summaryShown = true;
-                await saveChatStoryState(chatState);
-                console.log('[Story Mode] Summary generated and pushed');
-
-                // Wait a moment for UI to settle before showing end notice
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            }
-        }
-        // Show end notice if both are done OR the applicable ones are done
-      const conditionsMet = 
-                        // A) neither epilogue nor summary are enabled
-                        (!settings.epilogueEnabled && !settings.summaryEnabled)
-                        // B) epilogue enabled and shown, but not waiting on summary
-                        || (settings.epilogueEnabled && chatState.epilogueShown &&
-                            (!settings.summaryEnabled || chatState.summaryShown))
-                        // C) summary enabled and shown, but not waiting on epilogue
-                        || (settings.summaryEnabled && chatState.summaryShown &&
-                            (!settings.epilogueEnabled || chatState.epilogueShown));
-
-      if (conditionsMet) {
-          const NOTICE_TEXT = '**<center>You have reached the end of this story arc. ' +
-              'Feel free to continue, or if you would like to start a new arc, ' +
-              'click Reset Arc in the Story Mode settings.</center>**';
-          await pushStoryMessage(NOTICE_TEXT);
-      }
-    }
-}
-
-// Push a story message (epilogue or summary) into the chat
-async function pushStoryMessage(messageText) {
-    console.log('[Story Mode] Message to push:', messageText);
-
-    const message = {
-        is_user: false,
-        mes: messageText, // LLM has already generated the heading
-        is_system: false,
-        name: 'Story Mode',
-        force_avatar: 'img/quill.png', // Use server-relative path (quill icon for story/narrative)
-        send_date: Date.now(),
-    };
-
-    // Push message to chat array first
-    chat.push(message);
-
-    // Render the message in the UI without swipe arrows
-    addOneMessage(message, { scroll: true, showSwipes: false });
-
-    console.log('[Story Mode] Message pushed and rendered');
-}
-
-// Generate epilogue for the completed story arc
-async function generateEpilogueForStory() {
-    const ctx = SillyTavern.getContext();
-    const { chat } = ctx;
-
-    // Get the recent chat context for the epilogue
-    const recentMessages = chat
-        .filter(m => !m.is_system && m.mes)
-        .slice(-20) // Last 20 messages for full arc context
-        .map(m => m.mes)
-        .join('\n\n');
-
-    if (!recentMessages.trim()) {
-        console.warn('[Story Mode] No messages to create epilogue from');
-        return '';
-    }
-
-    const systemPrompt = `You are wrapping up a completed story arc. The story has reached its conclusion at the planned arc length. Write an epilogue that:
-- Wraps up loose threads
-- Brings the narrative to a satisfying close
-- Provides closure for character arcs
-- Sets the tone for what comes after
-
-IMPORTANT: Start your response with the heading "**Epilogue**" on its own line, followed by a blank line, then write the epilogue content.`;
-
-    const userPrompt = `Based on the recent story context below, write an epilogue that wraps up this story arc:\n\n${recentMessages}`;
-
-    try {
-        const epilogue = await generateRaw({
-            prompt: userPrompt,
-            systemPrompt: systemPrompt,
-        });
-        return epilogue?.trim() || '';
-    } catch (error) {
-        console.error('[Story Mode] Failed to generate epilogue:', error);
-        return '';
-    }
-}
-
-//summarize the story
-const STORY_SUMMARY_PROMPT = `
-You are a summarization assistant for a fictional story. Provide a comprehensive summary of the story arc using at most {{words}} words.
-
-Include:
-- **Character Development**: How each major character has changed and grown
-- **Key Events**: The most important moments in chronological order
-- **Important Elements**: Significant objects, locations, and relationships
-- **Major Themes**: The underlying themes and messages explored
-- **Resolution Status**: What was resolved and what remains open
-
-Format this as a clear, well-organized narrative summary. Use markdown formatting and section headings to organize the summary.
-
-IMPORTANT: Start your response with the heading "**Story Arc Summary**" on its own line, followed by a blank line, then write the summary content with your subsection headings.
+const settings = extension_settings[MODULE_NAME];
+const chatState = getChatStoryState();
+const html = `
+<div class="storymode-unified-modal">
+<!-- Modal Heading -->
+<div class="storymode-modal-heading">
+<h2><i class="fa-solid fa-book-open"></i> Story Mode</h2>
+</div>
+<!-- Content Area -->
+<div class="storymode-content-area">
+<!-- Tab Navigation -->
+<div class="storymode-tabs">
+<button class="storymode-tab active" data-tab="settings" title="Configure story arc, author style, and blueprint settings">
+<i class="fa-solid fa-gear"></i> Settings
+</button>
+<button class="storymode-tab" data-tab="blueprint" title="Generate and manage story blueprints">
+<i class="fa-solid fa-scroll"></i> Blueprint
+</button>
+<button class="storymode-tab" data-tab="summary" title="View story arc summaries">
+<i class="fa-solid fa-file-lines"></i> Summary
+</button>
+<button class="storymode-tab" data-tab="library" title="Save and manage your blueprint collection">
+<i class="fa-solid fa-folder-open"></i> Library
+</button>
+</div>
+<!-- Tab Content -->
+<div class="storymode-tab-content">
+<div id="tab_settings" class="storymode-tab-pane active">
+${buildSettingsTabContent()}
+</div>
+<div id="tab_blueprint" class="storymode-tab-pane">
+${buildBlueprintTabContent()}
+</div>
+<div id="tab_summary" class="storymode-tab-pane">
+${buildSummaryTabContent()}
+</div>
+<div id="tab_library" class="storymode-tab-pane">
+${buildLibraryTabContent()}
+</div>
+</div>
+</div>
+</div>
 `;
+const content = $(html);
 
-function getStoryTextToSummarize() {
-    const ctx = SillyTavern.getContext();
-    const { chat } = ctx;
+// Tab switching - attached to content BEFORE showing popup
+content.find('.storymode-tab').on('click', function() {
+    const tabName = $(this).data('tab');
+    console.log('[Story Mode] Tab clicked:', tabName);
+
+    // Update tab buttons
+    content.find('.storymode-tab').removeClass('active');
+    $(this).addClass('active');
+
+    // Update tab panes - use class manipulation only (CSS handles display)
+    content.find('.storymode-tab-pane').removeClass('active');
+    content.find(`#tab_${tabName}`).addClass('active');
+
+    console.log('[Story Mode] Tab pane classes after switch:');
+    content.find('.storymode-tab-pane').each(function() {
+        console.log('[Story Mode]', $(this).attr('id'), 'has active:', $(this).hasClass('active'));
+    });
+});
+
+// Settings subtab switching
+content.on('click', '.storymode-settings-subtab', function() {
+    const subtabName = $(this).data('subtab');
+    // Update subtab buttons
+    content.find('.storymode-settings-subtab').removeClass('active');
+    $(this).addClass('active');
+    // Update subtab panes
+    content.find('.storymode-settings-subtab-pane').removeClass('active');
+    content.find(`#settings_subtab_${subtabName}`).addClass('active');
+    // Re-populate connection profiles if switching to API Options tab
+    if (subtabName === 'api_options') {
+        populateConnectionProfiles(content);
+    }
+});
+
+// Blueprint subtab switching
+content.on('click', '.storymode-blueprint-subtab', function() {
+    const subtabName = $(this).data('subtab');
+    // Update subtab buttons
+    content.find('.storymode-blueprint-subtab').removeClass('active');
+    $(this).addClass('active');
+
+    // Update content
+    const contentDiv = content.find('#blueprint_subtab_content');
+    if (subtabName === 'generate') {
+        // Show generate form
+        contentDiv.html(buildGenerateBlueprintSubtab());
+    } else {
+        // Show blueprint detail tabs
+        const blueprintState = BlueprintModule.getBlueprintState();
+        const blueprint = blueprintState.blueprint;
+        if (!blueprint) {
+            contentDiv.html('<p class="storymode-form-hint">No blueprint available. Generate one first.</p>');
+            return;
+        }
+        const chatState = getChatStoryState();
+        const currentScene = BlueprintModule.getCurrentScene(
+            blueprint,
+            chatState.currentStep,
+            chatState.arcLength,
+            blueprintState.sceneMode || 'auto',
+            blueprintState.currentSceneIndex || 0
+        );
+        if (subtabName === 'overview') {
+            contentDiv.html(renderBlueprintOverviewSubtab(blueprint, currentScene));
+        } else if (subtabName === 'scenes') {
+            contentDiv.html(renderBlueprintScenesSubtab(blueprint));
+        } else if (subtabName === 'characters') {
+            contentDiv.html(renderBlueprintCharactersSubtab(blueprint));
+        } else if (subtabName === 'json') {
+            contentDiv.html(renderBlueprintJsonSubtab(blueprint));
+        }
+    }
+});
+
+// Set up all event listeners
+setupUnifiedDialogEventListeners(content);
+
+// Populate connection profiles dropdown
+populateConnectionProfiles(content);
+
+// Update prompt preview
+updatePreviewInDialog(content);
+
+// Show popup
+const popup = new Popup(content, POPUP_TYPE.TEXT, 'Story Mode Settings', {
+okButton: 'Close',
+wide: true,
+large: true,
+allowVerticalScrolling: true,
+});
+
+await popup.show();
+}
+/**
+* Populate connection profiles dropdowns in the dialog
+*/
+function populateConnectionProfiles(content) {
     const settings = extension_settings[MODULE_NAME];
+    const profiles = getConnectionProfiles();
 
-    // Filter non-system messages
-    const filteredMessages = chat.filter(m => !m.is_system && m.mes);
+    console.log('[Story Mode] populateConnectionProfiles - Found profiles:', profiles.length);
 
-    // Use either entire chat (if 0) or last N messages
-    const messagesToSummarize = settings.summaryMessageCount === 0
-        ? filteredMessages // Entire chat
-        : filteredMessages.slice(-settings.summaryMessageCount); // Last N messages
+    // Define all dropdown selectors and their corresponding settings keys
+    const dropdowns = [
+        { selector: '#blueprint_generation_api', settingsKey: 'blueprintSettings.generationApi' },
+        { selector: '#opening_message_api', settingsKey: 'blueprintSettings.openingMessageApi' },
+        { selector: '#epilogue_api', settingsKey: 'epilogueApi' },
+        { selector: '#summary_api', settingsKey: 'summaryApi' }
+    ];
 
-    const parts = messagesToSummarize.map(m => m.mes);
+    dropdowns.forEach(({ selector, settingsKey }) => {
+        const dropdown = content.find(selector);
+        if (dropdown.length === 0) return;
 
-    return parts.join('\n\n');
+        // Get selected value from nested settings path
+        const keys = settingsKey.split('.');
+        let selectedProfileId = settings;
+        for (const key of keys) {
+            selectedProfileId = selectedProfileId?.[key];
+        }
+        selectedProfileId = selectedProfileId || '';
+
+        dropdown.empty();
+        dropdown.append('<option value="">Default API</option>');
+
+        if (profiles.length === 0) {
+            dropdown.append('<option value="" disabled>No profiles available</option>');
+            return;
+        }
+
+        profiles.forEach(profile => {
+            const option = $('<option>').val(profile.id).text(`${profile.name} (${profile.id})`);
+            dropdown.append(option);
+        });
+
+        dropdown.val(selectedProfileId || '');
+    });
 }
 
-async function summarizeChatMainForStory() {
-    const storyText = getStoryTextToSummarize();
-    if (!storyText.trim()) {
-        console.warn('[Story Mode] No text to summarize');
-        return '';
+/**
+ * Helper function to update blueprint setting and refresh UI
+ * @param {string} key - Setting key
+ * @param {any} value - Setting value
+ */
+function updateBlueprintSetting(key, value) {
+    if (!extension_settings[MODULE_NAME].blueprintSettings) {
+        extension_settings[MODULE_NAME].blueprintSettings = {};
+    }
+    extension_settings[MODULE_NAME].blueprintSettings[key] = value;
+    saveSettingsDebounced();
+    updateStoryPrompt();
+}
+
+/**
+* Setup event listeners for the unified settings dialog.
+*
+* @param {jQuery} content - The jQuery content object containing the dialog UI.
+*/
+function setupUnifiedDialogEventListeners(content) {
+// Story arc toggle
+content.find('#story_arc_enabled').on('change', function() {
+const enabled = $(this).is(':checked');
+extension_settings[MODULE_NAME].storyArcEnabled = enabled;
+content.find('#story_arc_controls').toggle(enabled);
+saveSettingsDebounced();
+updateStoryPrompt();
+updatePreviewInDialog(content);
+updateStatusDisplay();
+});
+// Story type selection
+content.find('#story_type_select').on('change', async function() {
+const selectedType = $(this).val();
+extension_settings[MODULE_NAME].selectedStoryType = selectedType;
+saveSettingsDebounced();
+const chatState = getChatStoryState();
+chatState.selectedStoryType = selectedType;
+await saveChatStoryState(chatState);
+// Update story type description
+const selectedStoryType = storyTypes.find(t => t.id === selectedType);
+const description = selectedStoryType ? selectedStoryType.storyPrompt : 'Select a story type to see its description';
+content.find('#story_type_description').text(description);
+// One-way sync: Update blueprint dropdown if it exists
+content.find('#blueprint_story_type').val(selectedType);
+updateStoryPrompt();
+updatePreviewInDialog(content);
+updateStatusDisplay();
+refreshSidebar(content);
+});
+// Arc length slider and input
+const updateArcLength = async function(value) {
+const clampedValue = Math.max(5, Math.min(150, parseInt(value)));
+extension_settings[MODULE_NAME].arcLength = clampedValue;
+content.find('#arc_length_slider').val(clampedValue);
+content.find('#arc_length_value').val(clampedValue);
+saveSettingsDebounced();
+const chatState = getChatStoryState();
+chatState.arcLength = clampedValue;
+await saveChatStoryState(chatState);
+updatePreviewInDialog(content);
+updateStatusDisplay();
+};
+content.find('#arc_length_slider').on('input', async function() {
+await updateArcLength($(this).val());
+});
+content.find('#arc_length_value').on('change', async function() {
+await updateArcLength($(this).val());
+});
+// Author style toggle
+content.find('#author_style_enabled').on('change', function() {
+const enabled = $(this).is(':checked');
+extension_settings[MODULE_NAME].authorStyleEnabled = enabled;
+content.find('#author_style_controls').toggle(enabled);
+saveSettingsDebounced();
+updateStoryPrompt();
+updatePreviewInDialog(content);
+});
+// Author style selection
+content.find('#author_style_select').on('change', async function() {
+const selectedStyle = $(this).val();
+extension_settings[MODULE_NAME].selectedAuthorStyle = selectedStyle;
+saveSettingsDebounced();
+const chatState = getChatStoryState();
+chatState.selectedAuthorStyle = selectedStyle;
+await saveChatStoryState(chatState);
+// Update author style description
+const selectedAuthorStyle = authorStyles.find(s => s.id === selectedStyle);
+const description = selectedAuthorStyle ? selectedAuthorStyle.authorPrompt : 'Select an author style to see its guidance';
+content.find('#author_style_description').text(description);
+// One-way sync: Update blueprint dropdown if it exists
+content.find('#blueprint_author_style').val(selectedStyle);
+updateStoryPrompt();
+updatePreviewInDialog(content);
+updateStatusDisplay();
+refreshSidebar(content);
+});
+// NSFW toggle
+content.find('#nsfw_enabled').on('change', function() {
+extension_settings[MODULE_NAME].nsfwEnabled = $(this).is(':checked');
+saveSettingsDebounced();
+updateStoryPrompt();
+updatePreviewInDialog(content);
+});
+// Epilogue toggle
+content.find('#epilogue_enabled').on('change', function() {
+extension_settings[MODULE_NAME].epilogueEnabled = $(this).is(':checked');
+saveSettingsDebounced();
+});
+// Summary toggle
+content.find('#summary_enabled').on('change', function() {
+extension_settings[MODULE_NAME].summaryEnabled = $(this).is(':checked');
+saveSettingsDebounced();
+});
+// Summary message count slider
+content.find('#summary_message_count_slider').on('input', function() {
+const value = parseInt($(this).val());
+extension_settings[MODULE_NAME].summaryMessageCount = value;
+content.find('#summary_message_count_value').text(value === 0 ? 'All' : value);
+saveSettingsDebounced();
+});
+// Debug mode toggle
+content.find('#debug_mode_enabled').on('change', function() {
+extension_settings[MODULE_NAME].debugMode = $(this).is(':checked');
+saveSettingsDebounced();
+updateStoryPrompt();
+});
+// Injection settings
+content.find('#injection_position').on('change', function() {
+extension_settings[MODULE_NAME].position = parseInt($(this).val());
+saveSettingsDebounced();
+updateStoryPrompt();
+});
+content.find('#injection_depth').on('change', function() {
+extension_settings[MODULE_NAME].depth = parseInt($(this).val());
+saveSettingsDebounced();
+updateStoryPrompt();
+});
+content.find('#injection_role').on('change', function() {
+extension_settings[MODULE_NAME].role = parseInt($(this).val());
+saveSettingsDebounced();
+updateStoryPrompt();
+});
+// Edit buttons
+content.find('#edit_story_types_btn').on('click', showStoryTypesEditor);
+content.find('#edit_author_styles_btn').on('click', showAuthorStylesEditor);
+// Reset arc button (sidebar)
+content.find('#sidebar_reset_arc_btn').on('click', async function() {
+if (confirm('Reset the story arc? This will set the round counter back to 0.')) {
+const chatState = getChatStoryState();
+chatState.currentStep = 0;
+chatState.arcStarted = false;
+chatState.epilogueShown = false;
+chatState.summaryShown = false;
+chatState.endNoticeShown = false;
+await saveChatStoryState(chatState);
+updateStoryPrompt();
+updateStatusDisplay();
+toastr.success('Story arc reset');
+// Refresh current step display
+content.find('#current_step_display').text('Not Started');
+}
+});
+// Blueprint settings
+content.find('#blueprint_enabled, #blueprint_enabled_tab').on('change', function() {
+const enabled = $(this).is(':checked');
+if (!extension_settings[MODULE_NAME].blueprintSettings) {
+extension_settings[MODULE_NAME].blueprintSettings = {};
+}
+extension_settings[MODULE_NAME].blueprintSettings.enabled = enabled;
+saveSettingsDebounced();
+updateStoryPrompt();
+updateStatusDisplay();
+populateConnectionProfiles(content);
+setupUnifiedDialogEventListeners(content);
+});
+content.find('#blueprint_use_scene_prompts').on('change', function() {
+const enabled = $(this).is(':checked');
+if (!extension_settings[MODULE_NAME].blueprintSettings) {
+extension_settings[MODULE_NAME].blueprintSettings = {};
+}
+extension_settings[MODULE_NAME].blueprintSettings.useScenePrompts = enabled;
+saveSettingsDebounced();
+updateStoryPrompt();
+});
+content.find('#blueprint_beat_tracking').on('change', function() {
+    updateBlueprintSetting('beatTrackingEnabled', $(this).is(':checked'));
+    // Refresh main panel to show/hide beat progress
+    $('#story_mode_panel').replaceWith(renderMainPanel());
+    setupEventListeners();
+});
+content.find('#blueprint_scene_transition_notify').on('change', function() {
+const value = $(this).val() || 'none';
+if (!extension_settings[MODULE_NAME].blueprintSettings) {
+extension_settings[MODULE_NAME].blueprintSettings = {};
+}
+extension_settings[MODULE_NAME].blueprintSettings.sceneTransitionNotify = value;
+saveSettingsDebounced();
+});
+// Scene Summarization settings
+const summarizationSettings = [
+    { selector: '#blueprint_summarization_enabled', key: 'summarizationEnabled', transform: v => $(v).is(':checked') },
+    { selector: '#blueprint_summarize_after_scenes', key: 'summarizeAfterScenes', transform: v => parseInt($(v).val()) },
+    { selector: '#blueprint_summary_max_tokens', key: 'summaryMaxTokens', transform: v => parseInt($(v).val()) },
+    { selector: '#blueprint_include_summaries', key: 'includeSummariesInPrompt', transform: v => $(v).is(':checked'), updatePrompt: true },
+    { selector: '#blueprint_summary_style', key: 'summaryStyle', transform: v => $(v).val() },
+];
+
+summarizationSettings.forEach(({ selector, key, transform, updatePrompt }) => {
+    content.find(selector).on('change', function() {
+        if (!extension_settings[MODULE_NAME].blueprintSettings) {
+            extension_settings[MODULE_NAME].blueprintSettings = {};
+        }
+        extension_settings[MODULE_NAME].blueprintSettings[key] = transform(this);
+        saveSettingsDebounced();
+        if (updatePrompt) {
+            updateStoryPrompt();
+        }
+    });
+});
+// Edit scene summary prompt template button
+content.find('#edit_scene_summary_prompt').on('click', async function() {
+    const currentPrompt = BlueprintModule.getEffectiveSceneSummaryPrompt();
+    const result = await Popup.show.input(
+        'Edit Scene Summary Prompt Template',
+        'Enter the prompt template for scene summarization. Variables like {{CONTEXT}}, {{MESSAGES}}, and {{REQUIREMENTS}} will be replaced at generation time.',
+        currentPrompt,
+        { rows: 15, okButton: 'Save', wide: true, large: true }
+    );
+    if (result) {
+        if (!extension_settings[MODULE_NAME].blueprintSettings) {
+            extension_settings[MODULE_NAME].blueprintSettings = {};
+        }
+        extension_settings[MODULE_NAME].blueprintSettings.sceneSummaryPrompt = result;
+        saveSettingsDebounced();
+        toastr.success('Scene summary prompt template updated');
+    }
+});
+// Cover generation settings
+const coverGenerationSettings = [
+    { selector: '#cover_gen_enabled', key: 'enabled', transform: v => $(v).is(':checked') },
+    { selector: '#cover_auto_generate', key: 'autoGenerate', transform: v => $(v).is(':checked') },
+    { selector: '#cover_add_to_gallery', key: 'addToGallery', transform: v => $(v).is(':checked') },
+    { selector: '#cover_max_gallery', key: 'maxGallerySize', transform: v => parseInt($(v).val()) || 10 },
+    { selector: '#cover_auto_select_latest', key: 'autoSelectLatest', transform: v => $(v).is(':checked') },
+    { selector: '#cover_default_quality', key: 'defaultQuality', transform: v => $(v).val() },
+    { selector: '#cover_default_aspect', key: 'defaultAspectRatio', transform: v => $(v).val() },
+    { selector: '#cover_default_style', key: 'defaultStyle', transform: v => $(v).val() },
+    { selector: '#cover_show_prompt', key: 'showPromptOnGenerate', transform: v => $(v).is(':checked') },
+    { selector: '#cover_confirm_delete', key: 'confirmDeleteCover', transform: v => $(v).is(':checked') },
+    { selector: '#cover_keyboard_nav', key: 'keyboardNavigation', transform: v => $(v).is(':checked') },
+    { selector: '#cover_show_counter', key: 'showGalleryCounter', transform: v => $(v).is(':checked') },
+];
+
+coverGenerationSettings.forEach(({ selector, key, transform }) => {
+    content.find(selector).on('change', function() {
+        const settings = extension_settings[MODULE_NAME];
+        settings.blueprintSettings = settings.blueprintSettings || {};
+        settings.blueprintSettings.coverGeneration = settings.blueprintSettings.coverGeneration || {};
+        settings.blueprintSettings.coverGeneration[key] = transform(this);
+        saveSettingsDebounced();
+    });
+});
+content.find('#blueprint_generation_api').on('change', function() {
+const selectedApi = $(this).val() || null;
+extension_settings[MODULE_NAME].blueprintSettings = extension_settings[MODULE_NAME].blueprintSettings || {};
+extension_settings[MODULE_NAME].blueprintSettings.generationApi = selectedApi;
+saveSettingsDebounced();
+console.log('[Story Mode] Settings Dialog: Generation API changed to:', selectedApi || 'main API');
+console.log('[Story Mode] Settings Dialog: Full blueprintSettings.generationApi:', extension_settings[MODULE_NAME].blueprintSettings.generationApi);
+});
+// Opening message API dropdown
+content.find('#opening_message_api').on('change', function() {
+const selectedApi = $(this).val() || null;
+extension_settings[MODULE_NAME].blueprintSettings = extension_settings[MODULE_NAME].blueprintSettings || {};
+extension_settings[MODULE_NAME].blueprintSettings.openingMessageApi = selectedApi;
+saveSettingsDebounced();
+});
+// Epilogue API dropdown
+content.find('#epilogue_api').on('change', function() {
+const selectedApi = $(this).val() || null;
+extension_settings[MODULE_NAME].epilogueApi = selectedApi;
+saveSettingsDebounced();
+});
+// Summary API dropdown
+content.find('#summary_api').on('change', function() {
+const selectedApi = $(this).val() || null;
+extension_settings[MODULE_NAME].summaryApi = selectedApi;
+saveSettingsDebounced();
+});
+// Loading Indicator settings
+content.find('#loading_indicator_enabled').on('change', function() {
+const enabled = $(this).is(':checked');
+LoadingIndicator.updateSettings({ enabled });
+});
+content.find('#loading_indicator_position').on('change', function() {
+const position = $(this).val();
+LoadingIndicator.updateSettings({ position });
+});
+content.find('#loading_indicator_animation').on('change', function() {
+const animationStyle = $(this).val();
+LoadingIndicator.updateSettings({ animationStyle });
+});
+content.find('#loading_indicator_gif_url').on('change', function() {
+const customGifUrl = $(this).val() || null;
+LoadingIndicator.updateSettings({ customGifUrl });
+});
+content.find('#loading_indicator_phrases').on('change', function() {
+const phrasesText = $(this).val();
+const phrases = phrasesText.split('\n').map(p => p.trim()).filter(p => p.length > 0);
+LoadingIndicator.updateSettings({ phrases });
+});
+content.find('#loading_indicator_preview').on('click', function() {
+// Start animated preview
+LoadingIndicator.startPreview();
+});
+// Reset Arc button (Story Arc subtab)
+content.find('#reset_arc_btn').on('click', async function() {
+if (confirm('Reset the story arc? This will set the round counter back to 0 and clear arc completion flags.')) {
+const chatState = getChatStoryState();
+chatState.currentStep = 0;
+chatState.arcStarted = false;
+chatState.epilogueShown = false;
+chatState.summaryShown = false;
+chatState.endNoticeShown = false;
+await saveChatStoryState(chatState);
+updateStoryPrompt();
+updateStatusDisplay();
+toastr.success('Story arc reset');
+// Refresh current step display in the Story Arc subtab
+content.find('#current_step_display').text('Step 0 / ' + chatState.arcLength);
+}
+});
+// Generate blueprint button (Generate Blueprint subtab)
+content.on('click', '#blueprint_generate_btn', async function() {
+const btn = $(this);
+const originalText = btn.html();
+// Set loading state
+btn.prop('disabled', true);
+btn.html('<i class="fa-solid fa-circle-notch fa-spin"></i> Generating...');
+LoadingIndicator.show('Generating story blueprint...');
+try {
+// Gather form data
+const selectedCharacterIds = [];
+content.find('input[name="blueprint_character"]:checked').each(function() {
+const charId = $(this).val();
+if (charId) {
+selectedCharacterIds.push(charId);
+}
+});
+console.log('[Story Mode] Selected character IDs:', selectedCharacterIds);
+const selectedPersonas = [];
+content.find('input[name="blueprint_persona"]:checked').each(function() {
+const personaId = $(this).val();
+const personaName = $(this).data('name');
+if (personaId) {
+selectedPersonas.push({
+id: personaId,
+name: personaName || personaId
+});
+}
+});
+console.log('[Story Mode] Selected personas:', selectedPersonas);
+const scenario = content.find('#blueprint_scenario').val() || '';
+const metaphorLevel = content.find('#blueprint_metaphor_level').val() || 'mixed';
+const storyLength = content.find('#blueprint_story_length').val() || 'medium';
+const customRounds = content.find('#blueprint_custom_rounds').val();
+const customMasterPrompt = content.find('#blueprint_master_prompt').val() || null;
+// Get story type and author style from new dropdowns
+const storyTypeId = content.find('#blueprint_story_type').val() || '';
+const authorStyleId = content.find('#blueprint_author_style').val() || '';
+// Use custom rounds if provided and valid, otherwise use the selected story length
+const finalStoryLength = customRounds && parseInt(customRounds) > 0 ? parseInt(customRounds) : parseInt(storyLength);
+// Build character data from context
+const context = getContext();
+const characterData = [];
+if (context.groupId) {
+// Group chat: get all characters from the group
+const group = context.groups?.find(g => g.id === context.groupId);
+if (group && group.members) {
+group.members.forEach(memberFilename => {
+// Find the character in the characters array by matching filename
+const charIndex = (context.characters || []).findIndex(c =>
+c.filename === memberFilename ||
+c.avatar === memberFilename ||
+(typeof c === 'string' && c === memberFilename)
+);
+if (charIndex !== -1 && selectedCharacterIds.includes(charIndex.toString())) {
+const char = context.characters[charIndex];
+if (char) {
+characterData.push({
+name: char.name,
+description: char.description,
+personality: char.personality,
+scenario: char.scenario,
+greeting: char.greeting
+});
+}
+}
+});
+}
+} else {
+// Single chat: get the main character
+if (selectedCharacterIds.includes(context.characterId?.toString())) {
+const char = context.characters?.[parseInt(context.characterId, 10)];
+if (char) {
+characterData.push({
+name: char.name,
+description: char.description,
+personality: char.personality,
+scenario: char.scenario,
+greeting: char.greeting
+});
+}
+}
+}
+// Build request config object
+const config = {
+    storyTypeId,
+    authorStyleId: authorStyleId || undefined,
+    characterData,
+    personaData: selectedPersonas,
+    scenario,
+    messageTarget: finalStoryLength,
+    metaphorLevel: metaphorLevel,
+    customMasterPrompt: customMasterPrompt
+};
+console.log('[Story Mode] Blueprint config:', {
+    storyTypeId: config.storyTypeId,
+    authorStyleId: config.authorStyleId,
+    characterDataCount: config.characterData.length,
+    personaDataCount: config.personaData.length,
+    messageTarget: config.messageTarget
+});
+// Call buildBlueprintRequest to get the proper request structure
+const request = BlueprintModule.buildBlueprintRequest(config);
+// Call BlueprintModule.generateBlueprint() with properly structured request
+const result = await BlueprintModule.generateBlueprint(request, storyTypes, authorStyles);
+if (result.success) {
+    // Sync blueprint settings to chat state with confirmation dialog
+    const syncResult = await BlueprintModule.syncBlueprintSettings(result.blueprint, true);
+
+    // Check if user cancelled the sync
+    if (!syncResult.confirmed) {
+        console.log('[Story Mode] User cancelled blueprint sync, blueprint not saved');
+        toastr.warning('Blueprint generated but not saved. Settings sync was cancelled.');
+        content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
+        return;
     }
 
-    const settings = extension_settings[MODULE_NAME];
-    const words = settings.summaryWords ?? 500; // or fixed number if no setting
+    // Save the blueprint to blueprint state
+    console.log('[Story Mode] Saving blueprint to blueprint state...');
+    const blueprintState = BlueprintModule.getBlueprintState();
+    blueprintState.blueprint = result.blueprint;
+    blueprintState.useBlueprint = true;
+    blueprintState.currentSceneIndex = 0;
+    blueprintState.sceneMode = 'auto';
+    await BlueprintModule.saveBlueprintState(blueprintState);
+    console.log('[Story Mode] Blueprint saved to blueprint state');
 
-    const systemPrompt = STORY_SUMMARY_PROMPT.replace('{{words}}', String(words));
+    toastr.success('Blueprint generated and settings synced');
+    content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
+    refreshSidebar(content);
+    updateStatusDisplay();
+} else {
+    // Extract error message from either string or array
+    const errorMessage = result.error || result.errors?.join(', ') || 'Unknown error';
+    toastr.error(`Failed to generate blueprint: ${errorMessage}`);
 
-    // Use the currently selected model/preset; just override systemPrompt and prompt
-    const summary = await generateRaw({
-        prompt: storyText,
-        systemPrompt,
-        responseLength: settings.summaryMaxTokens ?? 0, // 0 = use preset
+    if (result.isLikelyTruncated) {
+        console.warn('[Story Mode] Blueprint response was truncated. Consider increasing the token limit.');
+    }
+}
+} catch (error) {
+console.error('[Story Mode] Error generating blueprint:', error);
+toastr.error(`Failed to generate blueprint: ${error.message}`);
+} finally {
+// Restore button state
+LoadingIndicator.hide();
+btn.prop('disabled', false);
+btn.html(originalText);
+}
+});
+// Load blueprint button (Generate Blueprint subtab)
+content.on('click', '#blueprint_import_btn', function() {
+const input = document.createElement('input');
+input.type = 'file';
+input.accept = '.json';
+input.onchange = async (e) => {
+const file = e.target.files[0];
+if (file) {
+try {
+const reader = new FileReader();
+reader.onload = async (event) => {
+try {
+const blueprint = JSON.parse(event.target.result);
+// Validate blueprint
+const validation = BlueprintModule.validateBlueprint(blueprint);
+if (!validation.valid) {
+toastr.error('Invalid blueprint: ' + validation.errors.join(', '));
+return;
+}
+const blueprintState = BlueprintModule.getBlueprintState();
+blueprintState.blueprint = blueprint;
+blueprintState.useBlueprint = true;
+blueprintState.currentSceneIndex = 0;
+blueprintState.sceneMode = 'auto';
+await BlueprintModule.saveBlueprintState(blueprintState);
+// Sync blueprint settings to chat state with confirmation dialog
+await BlueprintModule.syncBlueprintSettings(blueprint, true);
+toastr.success('Blueprint loaded and settings synced');
+// Switch to Overview tab
+content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
+// Refresh sidebar
+refreshSidebar(content);
+updateStatusDisplay();
+} catch (parseError) {
+console.error('[Story Mode] Error parsing blueprint JSON:', parseError);
+toastr.error('Invalid blueprint JSON');
+}
+};
+reader.readAsText(file);
+} catch (error) {
+console.error('[Story Mode] Error reading blueprint file:', error);
+toastr.error('Failed to read file');
+}
+}
+};
+input.click();
+});
+// Generate opening message button (Blueprint Overview subtab)
+content.on('click', '#generate_opening_message_btn', async function() {
+const btn = $(this);
+btn.prop('disabled', true);
+LoadingIndicator.show('Crafting opening message...');
+try {
+const result = await BlueprintModule.generateOpeningMessage();
+if (result.success) {
+// Create and add the system message directly
+await pushStoryMessage(result.opening);
+await saveChatConditional();
+toastr.success('Opening message generated and added to chat');
+} else {
+toastr.error(`Failed to generate opening: ${result.error || 'Unknown error'}`);
+btn.prop('disabled', false);
+}
+} catch (error) {
+console.error('[Story Mode] Error generating opening message:', error);
+toastr.error(`Failed to generate opening: ${error.message}`);
+btn.prop('disabled', false);
+} finally {
+LoadingIndicator.hide();
+btn.prop('disabled', false);
+}
+});
+// Import blueprint button - supports both JSON and PNG
+content.find('#import_blueprint_btn').on('click', function() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,.png';
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        LoadingIndicator.show('Importing blueprint...');
+
+        try {
+            let blueprint;
+
+            // Check if it's a PNG file
+            if (file.name.toLowerCase().endsWith('.png')) {
+                // Verify it's a blueprint PNG
+                const isPNG = await isBlueprintPNG(file);
+                if (!isPNG) {
+                    toastr.error('This PNG does not contain blueprint data');
+                    return;
+                }
+                blueprint = await decodeBlueprintFromPNG(file);
+                console.log('[Story Mode] Decoded blueprint from PNG:', blueprint);
+            } else {
+                // Parse as JSON
+                const text = await file.text();
+                blueprint = JSON.parse(text);
+            }
+
+            // Validate blueprint
+            const validation = BlueprintModule.validateBlueprint(blueprint);
+            if (!validation.valid) {
+                toastr.error('Invalid blueprint: ' + validation.errors.join(', '));
+                return;
+            }
+
+            // Load into state
+            const blueprintState = BlueprintModule.getBlueprintState();
+            blueprintState.blueprint = blueprint;
+            blueprintState.useBlueprint = true;
+            blueprintState.currentSceneIndex = 0;
+            blueprintState.sceneMode = 'auto';
+            await BlueprintModule.saveBlueprintState(blueprintState);
+
+            // Sync blueprint settings to chat state with confirmation dialog
+            await BlueprintModule.syncBlueprintSettings(blueprint, true);
+
+            // Refresh tabs
+            content.find('#tab_blueprint').html(buildBlueprintTabContent());
+            refreshSidebar(content);
+            updateStatusDisplay();
+            refreshBlueprintPreview();
+
+            toastr.success(`Blueprint imported from ${file.name.endsWith('.png') ? 'PNG' : 'JSON'}`);
+        } catch (error) {
+            console.error('[Story Mode] Import error:', error);
+            toastr.error('Failed to import: ' + error.message);
+        } finally {
+            LoadingIndicator.hide();
+        }
+    };
+    input.click();
+});
+
+// Export blueprint button
+content.on('click', '#blueprint_export_btn', async function() {
+    const blueprintState = BlueprintModule.getBlueprintState();
+    if (!blueprintState.blueprint) {
+        toastr.error('No blueprint to export');
+        return;
+    }
+
+    const btn = $(this);
+    const originalText = btn.html();
+    btn.prop('disabled', true);
+    btn.html('<i class="fa-solid fa-spinner fa-spin"></i> Exporting...');
+    LoadingIndicator.show('Exporting blueprint as JSON...');
+
+    try {
+        // Use the simple JSON export function from blueprint-module.js
+        BlueprintModule.exportBlueprint(blueprintState.blueprint);
+        toastr.success('Blueprint exported successfully');
+    } catch (error) {
+        console.error('[Story Mode] Error exporting blueprint:', error);
+        toastr.error('Failed to export: ' + error.message);
+    } finally {
+        LoadingIndicator.hide();
+        btn.prop('disabled', false);
+        btn.html(originalText);
+    }
+});
+
+    // Edit blueprint button
+    content.on('click', '#blueprint_edit_btn', async function() {
+        const blueprintState = BlueprintModule.getBlueprintState();
+        if (!blueprintState.blueprint) {
+            toastr.error('No blueprint to edit');
+            return;
+        }
+
+        const btn = $(this);
+        const originalText = btn.html();
+        btn.prop('disabled', true);
+        btn.html('<i class="fa-solid fa-spinner fa-spin"></i> Opening...');
+
+        try {
+            const editedBlueprint = await openBlueprintEditor(blueprintState.blueprint);
+            if (editedBlueprint) {
+                // User saved changes
+                blueprintState.blueprint = editedBlueprint;
+                await BlueprintModule.saveBlueprintState(blueprintState);
+                // Refresh tabs to show updated blueprint
+                content.find('#tab_blueprint').html(buildBlueprintTabContent());
+                refreshSidebar(content);
+                updateStatusDisplay();
+                // Refresh the blueprint preview in the main panel sidebar
+                refreshBlueprintPreview();
+                toastr.success('Blueprint updated');
+            }
+            // If null, user cancelled - no action needed
+        } catch (error) {
+            console.error('[Story Mode] Error editing blueprint:', error);
+            toastr.error('Failed to open blueprint editor');
+        } finally {
+            btn.prop('disabled', false);
+            btn.html(originalText);
+        }
     });
 
-    return summary?.trim() || '';
+    // Clear blueprint button
+    content.on('click', '#blueprint_clear_btn', async function() {
+    if (!confirm('Clear the current blueprint? This cannot be undone.')) return;
+    const blueprintState = BlueprintModule.getBlueprintState();
+    blueprintState.blueprint = null;
+    blueprintState.useBlueprint = false;
+    blueprintState.currentSceneIndex = 0;
+    await BlueprintModule.saveBlueprintState(blueprintState);
+    // Refresh tabs
+    content.find('#tab_blueprint').html(buildBlueprintTabContent());
+    refreshSidebar(content);
+    updateStatusDisplay();
+    toastr.success('Blueprint cleared');
+    });
+
+    // Scene slider - click on scene marker to jump to that scene
+    content.on('click', '.storymode-scene-marker', async function() {
+        const sceneIndex = parseInt($(this).data('scene'));
+        const startRound = parseInt($(this).data('round'));
+
+        // Check if we're switching from auto to manual mode
+        const blueprintState = BlueprintModule.getBlueprintState();
+        const wasAutoMode = blueprintState.sceneMode === 'auto';
+
+        const result = await jumpToRound(startRound, sceneIndex);
+
+        if (result.success) {
+            toastr.success(result.message);
+            if (wasAutoMode) {
+                toastr.info('Switched to manual scene mode', 'Story Mode');
+            }
+            // Refresh the blueprint overview to show updated slider
+            const chatState = getChatStoryState();
+            const blueprint = blueprintState.blueprint;
+            if (blueprint) {
+                const currentScene = BlueprintModule.getCurrentScene(
+                    blueprint,
+                    chatState.currentStep,
+                    chatState.arcLength,
+                    blueprintState.sceneMode,
+                    blueprintState.currentSceneIndex
+                );
+                content.find('#blueprint_subtab_content').html(renderBlueprintOverviewSubtab(blueprint, currentScene));
+            }
+        } else {
+            toastr.error(result.message);
+        }
+    });
+
+    // Scene slider - click on round tick to jump to that round
+    content.on('click', '.storymode-round-ticks .tick', async function() {
+        const round = parseInt($(this).data('round'));
+
+        // Check if we're switching from auto to manual mode
+        const blueprintState = BlueprintModule.getBlueprintState();
+        const wasAutoMode = blueprintState.sceneMode === 'auto';
+
+        const result = await jumpToRound(round);
+
+        if (result.success) {
+            toastr.success(result.message);
+            if (wasAutoMode) {
+                toastr.info('Switched to manual scene mode', 'Story Mode');
+            }
+            // Refresh the blueprint overview to show updated slider
+            const chatState = getChatStoryState();
+            const blueprint = blueprintState.blueprint;
+            if (blueprint) {
+                const currentScene = BlueprintModule.getCurrentScene(
+                    blueprint,
+                    chatState.currentStep,
+                    chatState.arcLength,
+                    blueprintState.sceneMode,
+                    blueprintState.currentSceneIndex
+                );
+                content.find('#blueprint_subtab_content').html(renderBlueprintOverviewSubtab(blueprint, currentScene));
+            }
+        } else {
+            toastr.error(result.message);
+        }
+    });
+
+    // ========================================================================
+    // LIBRARY TAB EVENT HANDLERS
+    // ========================================================================
+
+    // Initialize library when Library tab is clicked
+    content.on('click', '.storymode-tab[data-tab="library"]', async function() {
+        await refreshLibraryView(content);
+    });
+
+    // Folder selection
+    content.on('click', '.storymode-folder-item', async function() {
+        const folderId = $(this).data('folder');
+        content.find('.storymode-folder-item').removeClass('active');
+        $(this).addClass('active');
+        await loadBlueprintsForFolder(content, folderId);
+    });
+
+    // Search input
+    content.on('input', '#library_search_input', debounce(async function() {
+        const query = $(this).val().trim();
+        if (query.length >= 2) {
+            await searchLibraryBlueprints(content, query);
+        } else if (query.length === 0) {
+            const activeFolder = content.find('.storymode-folder-item.active').data('folder') || 'all';
+            await loadBlueprintsForFolder(content, activeFolder);
+        }
+    }, 300));
+
+    // Save current blueprint to library
+    content.on('click', '#library_save_current_btn, #library_empty_save_btn', async function() {
+        const blueprintState = BlueprintModule.getBlueprintState();
+        if (!blueprintState.blueprint) {
+            toastr.error('No blueprint to save. Generate one first in the Blueprint tab.');
+            return;
+        }
+
+        const btn = $(this);
+        btn.prop('disabled', true);
+
+        try {
+            // Add user metadata if not present
+            if (!blueprintState.blueprint.userMetadata) {
+                blueprintState.blueprint.userMetadata = {};
+            }
+            if (!blueprintState.blueprint.userMetadata.title) {
+                blueprintState.blueprint.userMetadata.title = blueprintState.blueprint.core_premise?.substring(0, 50) || 'Untitled Blueprint';
+            }
+
+            await createBlueprint(blueprintState.blueprint, { saveToLibrary: true });
+            toastr.success('Blueprint saved to library!');
+            await refreshLibraryView(content);
+        } catch (error) {
+            console.error('[Story Mode] Error saving blueprint to library:', error);
+            toastr.error('Failed to save blueprint: ' + error.message);
+        } finally {
+            btn.prop('disabled', false);
+        }
+    });
+
+    // Blueprint card actions
+    content.on('click', '.storymode-blueprint-card [data-action]', async function(e) {
+        e.stopPropagation();
+        const action = $(this).data('action');
+        const card = $(this).closest('.storymode-blueprint-card');
+        const blueprintId = card.data('blueprint-id');
+
+        switch (action) {
+            case 'load':
+                await loadBlueprintFromLibrary(content, blueprintId);
+                break;
+            case 'play':
+                await playBlueprintFromLibrary(content, blueprintId);
+                break;
+            case 'edit':
+                await editBlueprintFromLibrary(content, blueprintId);
+                break;
+            case 'favorite':
+                await toggleBlueprintFavorite(content, blueprintId, $(this));
+                break;
+            case 'delete':
+                await deleteBlueprintFromLibrary(content, blueprintId);
+                break;
+            case 'export':
+                await exportBlueprintFromLibrary(blueprintId);
+                break;
+        }
+    });
+
+    // Blueprint cover image click - opens editor
+    content.on('click', '.storymode-blueprint-card .storymode-card-cover', async function(e) {
+        // Don't trigger if clicking the favorite button
+        if ($(e.target).closest('.storymode-card-favorite').length > 0) {
+            return;
+        }
+        const card = $(this).closest('.storymode-blueprint-card');
+        const blueprintId = card.data('blueprint-id');
+        await editBlueprintFromLibrary(content, blueprintId);
+    });
+
+    // View toggle (grid/list)
+    content.on('click', '#library_view_grid, #library_view_list', function() {
+        const viewType = $(this).attr('id') === 'library_view_grid' ? 'grid' : 'list';
+        content.find('.storymode-view-toggle .menu_button').removeClass('active');
+        $(this).addClass('active');
+        content.find('.storymode-library-grid').toggleClass('list-view', viewType === 'list');
+    });
+
+    // Sort selection
+    content.on('change', '#library_sort_select', async function() {
+        const activeFolder = content.find('.storymode-folder-item.active').data('folder') || 'all';
+        await loadBlueprintsForFolder(content, activeFolder);
+    });
+
+    // Library import button - import PNG/JSON directly to library
+    content.on('click', '#library_import_btn', function() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json,.png';
+        input.multiple = true;
+        input.onchange = async (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+
+            LoadingIndicator.show(`Importing ${files.length} blueprint(s)...`);
+            let imported = 0;
+            let failed = 0;
+
+            for (const file of files) {
+                try {
+                    let blueprint;
+
+                    if (file.name.toLowerCase().endsWith('.png')) {
+                        const isPNG = await isBlueprintPNG(file);
+                        if (!isPNG) {
+                            console.warn(`[Story Mode] ${file.name} is not a blueprint PNG`);
+                            failed++;
+                            continue;
+                        }
+                        blueprint = await decodeBlueprintFromPNG(file);
+                    } else {
+                        const text = await file.text();
+                        blueprint = JSON.parse(text);
+                    }
+
+                    // Add to library
+                    if (!blueprint.userMetadata) {
+                        blueprint.userMetadata = {};
+                    }
+                    if (!blueprint.userMetadata.title) {
+                        blueprint.userMetadata.title = file.name.replace(/\.(json|png)$/i, '');
+                    }
+
+                    await createBlueprint(blueprint, { saveToLibrary: true });
+                    imported++;
+                } catch (error) {
+                    console.error(`[Story Mode] Failed to import ${file.name}:`, error);
+                    failed++;
+                }
+            }
+
+            LoadingIndicator.hide();
+            await refreshLibraryView(content);
+
+            if (imported > 0 && failed === 0) {
+                toastr.success(`Imported ${imported} blueprint(s)`);
+            } else if (imported > 0 && failed > 0) {
+                toastr.warning(`Imported ${imported}, failed ${failed}`);
+            } else {
+                toastr.error('Failed to import any blueprints');
+            }
+        };
+        input.click();
+    });
 }
+
+// ============================================================================
+// LIBRARY HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * Simple debounce function for search input
+ */
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func.apply(this, args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+/**
+ * Refresh the entire library view
+ */
+async function refreshLibraryView(content) {
+    try {
+        const library = await getLibrary();
+        const allBlueprints = await library.getAllBlueprints();
+
+        // Update folder counts
+        content.find('#folder_count_all').text(allBlueprints.length);
+        content.find('#folder_count_favorites').text(
+            allBlueprints.filter(bp => bp.userMetadata?.favorite).length
+        );
+
+        // Load blueprints for active folder
+        const activeFolder = content.find('.storymode-folder-item.active').data('folder') || 'all';
+        await loadBlueprintsForFolder(content, activeFolder);
+
+        // Update stats
+        content.find('#library_total_count').text(`${allBlueprints.length} blueprint${allBlueprints.length !== 1 ? 's' : ''}`);
+    } catch (error) {
+        console.error('[Story Mode] Error refreshing library:', error);
+    }
+}
+
+/**
+ * Load blueprints for a specific folder
+ */
+async function loadBlueprintsForFolder(content, folderId) {
+    try {
+        const library = await getLibrary();
+        let blueprints;
+
+        if (folderId === 'favorites') {
+            const all = await library.getAllBlueprints();
+            blueprints = all.filter(bp => bp.userMetadata?.favorite);
+        } else if (folderId === 'recent') {
+            blueprints = await library.stats.getRecentlyPlayed(20);
+        } else {
+            blueprints = await library.getAllBlueprints();
+        }
+
+        // Apply sort
+        const sortValue = content.find('#library_sort_select').val() || 'created-desc';
+        const [sortBy, sortOrder] = sortValue.split('-');
+        blueprints = sortLibraryBlueprints(blueprints, sortBy, sortOrder);
+
+        renderBlueprintGrid(content, blueprints);
+    } catch (error) {
+        console.error('[Story Mode] Error loading blueprints:', error);
+    }
+}
+
+/**
+ * Sort blueprints
+ */
+function sortLibraryBlueprints(blueprints, sortBy, sortOrder) {
+    return [...blueprints].sort((a, b) => {
+        let comparison = 0;
+        switch (sortBy) {
+            case 'title':
+                const titleA = a.userMetadata?.title || a.core_premise || '';
+                const titleB = b.userMetadata?.title || b.core_premise || '';
+                comparison = titleA.localeCompare(titleB);
+                break;
+            case 'created':
+                comparison = new Date(a.libraryData?.dateAdded || 0) - new Date(b.libraryData?.dateAdded || 0);
+                break;
+            case 'played':
+                comparison = (a.libraryData?.accessCount || 0) - (b.libraryData?.accessCount || 0);
+                break;
+        }
+        return sortOrder === 'desc' ? -comparison : comparison;
+    });
+}
+
+/**
+ * Search library blueprints
+ */
+async function searchLibraryBlueprints(content, query) {
+    try {
+        const results = await searchBlueprints(query);
+        renderBlueprintGrid(content, results);
+    } catch (error) {
+        console.error('[Story Mode] Error searching blueprints:', error);
+    }
+}
+
+/**
+ * Render blueprint grid
+ */
+function renderBlueprintGrid(content, blueprints) {
+    const grid = content.find('#library_blueprint_grid');
+    const emptyState = content.find('#library_empty_state');
+
+    if (blueprints.length === 0) {
+        grid.find('.storymode-blueprint-card').remove();
+        emptyState.show();
+    } else {
+        emptyState.hide();
+        const cardsHtml = blueprints.map(bp => renderBlueprintCard(bp)).join('');
+        grid.html(cardsHtml);
+    }
+}
+
+/**
+ * Load blueprint from library into current chat
+ */
+async function loadBlueprintFromLibrary(content, blueprintId) {
+    try {
+        const library = await getLibrary();
+        const blueprint = await library.getBlueprint(blueprintId);
+
+        if (!blueprint) {
+            toastr.error('Blueprint not found');
+            return;
+        }
+
+        // Load into current blueprint state
+        const blueprintState = BlueprintModule.getBlueprintState();
+        blueprintState.blueprint = blueprint;
+        blueprintState.useBlueprint = true;
+        await BlueprintModule.saveBlueprintState(blueprintState);
+
+        // Update play stats
+        await library.stats.recordPlayStart(blueprintId);
+
+        // Refresh UI
+        content.find('#tab_blueprint').html(buildBlueprintTabContent());
+        refreshBlueprintPreview();
+        updateStatusDisplay();
+
+        toastr.success('Blueprint loaded!');
+    } catch (error) {
+        console.error('[Story Mode] Error loading blueprint:', error);
+        toastr.error('Failed to load blueprint');
+    }
+}
+
+/**
+ * Play blueprint from library - load and immediately start the story
+ */
+async function playBlueprintFromLibrary(content, blueprintId) {
+    try {
+        const library = await getLibrary();
+        const blueprint = await library.getBlueprint(blueprintId);
+
+        if (!blueprint) {
+            toastr.error('Blueprint not found');
+            return;
+        }
+
+        // Load into current blueprint state
+        const blueprintState = BlueprintModule.getBlueprintState();
+        blueprintState.blueprint = blueprint;
+        blueprintState.useBlueprint = true;
+        await BlueprintModule.saveBlueprintState(blueprintState);
+
+        // Update play stats
+        await library.stats.recordPlayStart(blueprintId);
+
+        // Start the story from the blueprint
+        const result = await BlueprintModule.startStoryFromBlueprint(blueprint);
+
+        if (result.success) {
+            if (result.warnings?.length > 0) {
+                const warningHtml = `
+                    <h3>Story Started with Warnings</h3>
+                    <ul style="text-align: left;">
+                        ${result.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('')}
+                    </ul>
+                `;
+                await callGenericPopup(warningHtml, POPUP_TYPE.TEXT, null, { wide: true });
+            }
+            // Close settings dialog and trigger opening message
+            $('#story_mode_settings_dialog').find('.pop-button-ok').trigger('click');
+        } else {
+            await callGenericPopup(
+                `<h3>Failed to Start Story</h3><p>${escapeHtml(result.error)}</p>`,
+                POPUP_TYPE.TEXT,
+                null,
+                { wide: true }
+            );
+        }
+    } catch (error) {
+        console.error('[Story Mode] Error playing blueprint:', error);
+        toastr.error('Failed to play blueprint');
+    }
+}
+
+/**
+ * Edit blueprint from library
+ */
+async function editBlueprintFromLibrary(content, blueprintId) {
+    try {
+        const library = await getLibrary();
+        const blueprint = await library.getBlueprint(blueprintId);
+
+        if (!blueprint) {
+            toastr.error('Blueprint not found');
+            return;
+        }
+
+        const edited = await openBlueprintEditor(blueprint);
+        if (edited) {
+            await library.saveBlueprint(edited);
+            toastr.success('Blueprint updated!');
+            await refreshLibraryView(content);
+        }
+    } catch (error) {
+        console.error('[Story Mode] Error editing blueprint:', error);
+        toastr.error('Failed to edit blueprint');
+    }
+}
+
+/**
+ * Toggle blueprint favorite status
+ */
+async function toggleBlueprintFavorite(content, blueprintId, button) {
+    try {
+        const library = await getLibrary();
+        const blueprint = await library.getBlueprint(blueprintId);
+
+        if (!blueprint) return;
+
+        const currentFavorite = blueprint.userMetadata?.favorite || false;
+        await setBlueprintFavorite(blueprintId, !currentFavorite);
+
+        // Update button appearance
+        button.toggleClass('active');
+        button.find('i').toggleClass('fa-solid fa-regular');
+
+        // Update folder counts
+        await refreshLibraryView(content);
+    } catch (error) {
+        console.error('[Story Mode] Error toggling favorite:', error);
+    }
+}
+
+/**
+ * Delete blueprint from library
+ */
+async function deleteBlueprintFromLibrary(content, blueprintId) {
+    if (!confirm('Delete this blueprint from your library? This cannot be undone.')) {
+        return;
+    }
+
+    try {
+        await deleteLibraryBlueprint(blueprintId);
+        toastr.success('Blueprint deleted');
+        await refreshLibraryView(content);
+    } catch (error) {
+        console.error('[Story Mode] Error deleting blueprint:', error);
+        toastr.error('Failed to delete blueprint');
+    }
+}
+
+/**
+ * Export blueprint from library as PNG
+ */
+async function exportBlueprintFromLibrary(blueprintId) {
+    try {
+        const library = await getLibrary();
+        const blueprint = await library.getBlueprint(blueprintId);
+
+        if (!blueprint) {
+            toastr.error('Blueprint not found');
+            return;
+        }
+
+        LoadingIndicator.show('Exporting blueprint...');
+
+        // Export as PNG with embedded metadata
+        const pngBlob = await encodeBlueprintAsPNG(blueprint);
+        const filename = `${(blueprint.userMetadata?.title || 'blueprint').replace(/[^a-z0-9]/gi, '_').toLowerCase()}.png`;
+
+        // Trigger download
+        const url = URL.createObjectURL(pngBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        toastr.success('Blueprint exported as PNG');
+    } catch (error) {
+        console.error('[Story Mode] Error exporting blueprint:', error);
+        toastr.error('Failed to export blueprint: ' + error.message);
+    } finally {
+        LoadingIndicator.hide();
+    }
+}
+
+/**
+* Refresh the sidebar content (no-op - sidebar removed)
+*/
+function refreshSidebar(content) {
+    // Sidebar removed - no-op
+}
+
+/**
+* Add UI components to the SillyTavern extensions panel.
+* Renders the main control panel and sets up event listeners.
+*
+* @async
+* @returns {Promise<void>}
+*/
+async function addUI() {
+const container = $('#extensions_settings2');
+if (container.length === 0) {
+console.warn('[Story Mode] Extensions settings container not found');
+return;
+}
+container.append(renderMainPanel());
+setupEventListeners();
+updateStatusDisplay();
+console.log('[Story Mode] UI added');
+}
+
+/**
+* Setup event listeners for the main control panel.
+* Handles the enable toggle and settings dialog button.
+*
+* @returns {void}
+*/
+function setupEventListeners() {
+// Master toggle
+$('#story_mode_enabled').on('change', function() {
+const enabled = $(this).is(':checked');
+extension_settings[MODULE_NAME].enabled = enabled;
+saveSettingsDebounced();
+updateStoryPrompt();
+updateStatusDisplay();
+});
+// Open settings dialog
+$('#open_story_mode_settings').on('click', showSettingsDialog);
+// Generate opening message button
+$(document).on('click', '#generate_opening_btn', async function() {
+const btn = $(this);
+const statusDiv = $('#generate_opening_status');
+const originalText = btn.html();
+// Check if save to blueprint is enabled
+const saveToBlueprint = $('#save_opening_to_blueprint').is(':checked');
+// Set loading state
+btn.prop('disabled', true);
+btn.html('<i class="fa-solid fa-circle-notch fa-spin"></i> Generating...');
+statusDiv.text('Generating opening message...').show();
+LoadingIndicator.show('Generating opening message...');
+try {
+const result = await BlueprintModule.generateOpeningMessage({ saveToBlueprint });
+if (result.success) {
+// Note: We no longer auto-push the opening message to chat
+// The user can use "Start Story" which will prompt for saved opening message
+const statusText = saveToBlueprint
+    ? 'Opening message generated and saved to blueprint! Use "Start Story" to add it to chat.'
+    : 'Opening message generated! (not saved)';
+statusDiv.text(statusText).css('color', 'var(--SmartThemeQuoteColor)');
+toastr.success(statusText, 'Blueprint');
+// Refresh the blueprint tab UI to show the stored message
+if (saveToBlueprint) {
+    const blueprintState = BlueprintModule.getBlueprintState();
+    if (blueprintState.blueprint) {
+        // Refresh the blueprint tab to show the updated opening message
+        $(document).trigger('story_mode_blueprint_updated');
+    }
+}
+} else {
+// Show error
+statusDiv.text(`Error: ${result.error}`).css('color', 'var(--corruption)');
+toastr.error(`Failed to generate opening: ${result.error}`, 'Blueprint Error');
+}
+} catch (error) {
+console.error('[Story Mode] Error generating opening message:', error);
+statusDiv.text('Error generating opening').css('color', 'var(--corruption)');
+toastr.error(`Failed to generate opening: ${error.message}`, 'Blueprint Error');
+} finally {
+// Restore button state
+btn.prop('disabled', false);
+btn.html(originalText);
+LoadingIndicator.hide();
+}
+});
+/**
+ * Helper function to generate and push an opening message.
+ * Reduces duplication in start_story_from_blueprint_btn handler.
+ * @param {jQuery} btn - The button element to show loading state on
+ * @param {string} successMessage - Success message for toast notification
+ * @returns {Promise<boolean>} - True if successful, false otherwise
+ */
+async function generateAndPushOpening(btn, successMessage) {
+    btn.html('<i class="fa-solid fa-circle-notch fa-spin"></i> Generating opening...');
+    const openingResult = await BlueprintModule.generateOpeningMessage({ saveToBlueprint: true });
+
+    if (!openingResult.success) {
+        toastr.error(`Failed to generate opening: ${openingResult.error}`, 'Blueprint Error');
+        toastr.info('Story started successfully, but opening generation failed', 'Story Mode');
+        return false;
+    }
+
+    await pushStoryMessage(openingResult.opening);
+    await saveChatConditional();
+    toastr.success(successMessage, 'Story Mode');
+    return true;
+}
+
+// Start Story from Blueprint button (in settings dialog)
+$(document).on('click', '#start_story_from_blueprint_btn', async function() {
+    const btn = $(this);
+    const originalText = btn.html();
+    const blueprintState = BlueprintModule.getBlueprintState();
+
+    if (!blueprintState.blueprint) {
+        toastr.error('No blueprint loaded', 'Blueprint Error');
+        return;
+    }
+
+    // Set loading state
+    btn.prop('disabled', true);
+    btn.html('<i class="fa-solid fa-circle-notch fa-spin"></i> Starting...');
+    LoadingIndicator.show('Starting story from blueprint...');
+
+    try {
+        // Start the story from blueprint (syncs settings, enables features)
+        const result = await BlueprintModule.startStoryFromBlueprint(blueprintState.blueprint);
+
+        if (!result.success) {
+            toastr.error(result.error || 'Failed to start story', 'Blueprint Error');
+            return;
+        }
+
+        // Show any warnings
+        result.warnings?.forEach(w => toastr.warning(w, 'Blueprint Warning'));
+
+        // Handle opening message logic
+        const savedOpening = blueprintState.blueprint?.opening_message;
+        let shouldGenerateOpening = false;
+        let openingUsed = false;
+
+        if (savedOpening) {
+            // Ask if user wants to use the saved opening message
+            const useSaved = await callGenericPopup(
+                `This blueprint has a saved opening message:\n\n"${savedOpening.substring(0, 100)}${savedOpening.length > 100 ? '...' : ''}"\n\nWould you like to use this saved opening message?`,
+                POPUP_TYPE.CONFIRM
+            );
+
+            if (useSaved === POPUP_RESULT.AFFIRMATIVE) {
+                await pushStoryMessage(savedOpening);
+                await saveChatConditional();
+                toastr.success('Story started with saved opening message!', 'Story Mode');
+                openingUsed = true;
+            } else {
+                // Ask if they want to generate a new one instead
+                const generateNew = await callGenericPopup(
+                    'Would you like to generate a new opening message instead?',
+                    POPUP_TYPE.CONFIRM
+                );
+                shouldGenerateOpening = (generateNew === POPUP_RESULT.AFFIRMATIVE);
+            }
+        } else {
+            // No saved opening - ask if user wants to generate one
+            const generateOpening = await callGenericPopup(
+                'Would you like to generate an opening message for Scene 1?',
+                POPUP_TYPE.CONFIRM
+            );
+            shouldGenerateOpening = (generateOpening === POPUP_RESULT.AFFIRMATIVE);
+        }
+
+        // Generate opening if requested (using the same code path for both cases)
+        if (shouldGenerateOpening) {
+            await generateAndPushOpening(btn, savedOpening
+                ? 'Story started with new opening message!'
+                : 'Story started with opening message!');
+            openingUsed = true;
+        } else if (!openingUsed) {
+            toastr.success('Story started from blueprint!', 'Story Mode');
+        }
+
+        // Close the settings dialog (try multiple methods for reliability)
+        const popup = btn.closest('.popup');
+        const okButton = popup.find('.popup-button-ok');
+        if (okButton.length > 0) {
+            okButton.trigger('click');
+        } else {
+            // Fallback: close all popups
+            $('.popup').find('.popup-close, .popup-button-cancel, .popup-button-ok').trigger('click');
+        }
+
+        // Update main panel UI
+        updateStatusDisplay();
+        $('#story_mode_panel').replaceWith(renderMainPanel());
+        setupEventListeners();
+    } catch (error) {
+        console.error('[Story Mode] Error starting story from blueprint:', error);
+        toastr.error(`Failed to start story: ${error.message}`, 'Blueprint Error');
+    } finally {
+        LoadingIndicator.hide();
+        btn.prop('disabled', false);
+        btn.html(originalText);
+    }
+});
+}
+/**
+* Setup event listeners for the settings dialog.
+* Handles all form inputs including toggles, dropdowns, sliders, and buttons.
+*
+* @param {jQuery} content - The jQuery content object containing the dialog UI.
+* @returns {void}
+*/
+function setupDialogEventListeners(content) {
+// Master toggle in dialog (syncs with main)
+content.find('#story_mode_enabled').on('change', function() {
+const enabled = $(this).is(':checked');
+extension_settings[MODULE_NAME].enabled = enabled;
+$('#story_mode_enabled').prop('checked', enabled); // Sync with main panel
+content.find('#story_mode_content').toggle(enabled);
+saveSettingsDebounced();
+updateStoryPrompt();
+updateStatusDisplay();
+});
+// Story arc toggle
+content.find('#story_arc_enabled').on('change', function() {
+const enabled = $(this).is(':checked');
+extension_settings[MODULE_NAME].storyArcEnabled = enabled;
+content.find('#story_arc_controls').toggle(enabled);
+saveSettingsDebounced();
+updateStoryPrompt();
+updatePreviewInDialog(content);
+updateStatusDisplay();
+});
+// Story type selection
+content.find('#story_type_select').on('change', async function() {
+const selectedType = $(this).val();
+// Update global settings (default for new chats)
+extension_settings[MODULE_NAME].selectedStoryType = selectedType;
+saveSettingsDebounced();
+// Update current chat metadata
+const chatState = getChatStoryState();
+chatState.selectedStoryType = selectedType;
+await saveChatStoryState(chatState);
+// Update story type description
+const selectedStoryType = storyTypes.find(t => t.id === selectedType);
+const description = selectedStoryType ? selectedStoryType.storyPrompt : 'Select a story type to see its description';
+content.find('#story_type_description').text(description);
+updateStoryPrompt();
+updatePreviewInDialog(content);
+updateStatusDisplay();
+});
+// Arc length slider
+content.find('#arc_length_slider').on('input', async function() {
+const value = parseInt($(this).val());
+// Update global settings (default for new chats)
+extension_settings[MODULE_NAME].arcLength = value;
+content.find('#arc_length_value').text(value);
+saveSettingsDebounced();
+// Update current chat metadata
+const chatState = getChatStoryState();
+chatState.arcLength = value;
+await saveChatStoryState(chatState);
+updateArcBadgeInDialog(content);
+updatePreviewInDialog(content);
+updateStatusDisplay();
+});
+// Reset arc
+content.find('#reset_arc_btn').on('click', function() {
+if (confirm('Reset the story arc? This will set the round counter back to 0.')) {
+const chatState = getChatStoryState();
+chatState.currentStep = 0;
+chatState.arcStarted = false;
+chatState.epilogueShown = false;
+chatState.summaryShown = false;
+chatState.endNoticeShown = false;
+saveChatStoryState(chatState);
+updateArcBadgeInDialog(content);
+updateStoryPrompt();
+updatePreviewInDialog(content);
+updateStatusDisplay();
+toastr.success('Story arc reset');
+}
+});
+// Author style toggle
+content.find('#author_style_enabled').on('change', function() {
+const enabled = $(this).is(':checked');
+extension_settings[MODULE_NAME].authorStyleEnabled = enabled;
+content.find('#author_style_controls').toggle(enabled);
+saveSettingsDebounced();
+updateStoryPrompt();
+updatePreviewInDialog(content);
+});
+// Author style search
+content.find('#author_style_search').on('input', function() {
+const query = $(this).val();
+updateAuthorStyleDropdownInDialog(content, query);
+});
+// Author style selection
+content.find('#author_style_select').on('change', async function() {
+const selectedStyle = $(this).val();
+// Update global settings (default for new chats)
+extension_settings[MODULE_NAME].selectedAuthorStyle = selectedStyle;
+saveSettingsDebounced();
+// Update current chat metadata
+const chatState = getChatStoryState();
+chatState.selectedAuthorStyle = selectedStyle;
+await saveChatStoryState(chatState);
+// Update author style description
+const selectedAuthorStyle = authorStyles.find(s => s.id === selectedStyle);
+const description = selectedAuthorStyle ? selectedAuthorStyle.authorPrompt : 'Select an author style to see its guidance';
+content.find('#author_style_description').text(description);
+updateStoryPrompt();
+updatePreviewInDialog(content);
+updateStatusDisplay();
+});
+// NSFW toggle
+content.find('#nsfw_enabled').on('change', function() {
+extension_settings[MODULE_NAME].nsfwEnabled = $(this).is(':checked');
+saveSettingsDebounced();
+updateStoryPrompt();
+updatePreviewInDialog(content);
+});
+// Epilogue toggle
+content.find('#epilogue_enabled').on('change', function() {
+extension_settings[MODULE_NAME].epilogueEnabled = $(this).is(':checked');
+saveSettingsDebounced();
+});
+// Summary toggle
+content.find('#summary_enabled').on('change', function() {
+extension_settings[MODULE_NAME].summaryEnabled = $(this).is(':checked');
+saveSettingsDebounced();
+});
+// Summary message count slider
+content.find('#summary_message_count_slider').on('input', function() {
+const value = parseInt($(this).val());
+extension_settings[MODULE_NAME].summaryMessageCount = value;
+content.find('#summary_message_count_value').text(value === 0 ? 'Entire Chat' : value);
+saveSettingsDebounced();
+});
+// Debug mode toggle
+content.find('#debug_mode_enabled').on('change', function() {
+extension_settings[MODULE_NAME].debugMode = $(this).is(':checked');
+saveSettingsDebounced();
+updateStoryPrompt();
+});
+// Blueprint settings
+content.find('#blueprint_enabled').on('change', function() {
+const enabled = $(this).is(':checked');
+if (!extension_settings[MODULE_NAME].blueprintSettings) {
+extension_settings[MODULE_NAME].blueprintSettings = {};
+}
+extension_settings[MODULE_NAME].blueprintSettings.enabled = enabled;
+content.find('#blueprint_controls').toggle(enabled);
+saveSettingsDebounced();
+updateStoryPrompt();
+updateStatusDisplay();
+// Refresh main panel to show/hide generate button
+$('#story_mode_panel').replaceWith(renderMainPanel());
+setupEventListeners();
+});
+content.find('#blueprint_use_scene_prompts').on('change', function() {
+const enabled = $(this).is(':checked');
+if (!extension_settings[MODULE_NAME].blueprintSettings) {
+extension_settings[MODULE_NAME].blueprintSettings = {};
+}
+extension_settings[MODULE_NAME].blueprintSettings.useScenePrompts = enabled;
+saveSettingsDebounced();
+updateStoryPrompt();
+});
+content.find('#blueprint_beat_tracking').on('change', function() {
+    updateBlueprintSetting('beatTrackingEnabled', $(this).is(':checked'));
+    // Refresh main panel to show/hide beat progress
+    $('#story_mode_panel').replaceWith(renderMainPanel());
+    setupEventListeners();
+});
+content.find('#blueprint_generation_api').on('change', function() {
+const selectedApi = $(this).val() || null;
+if (!extension_settings[MODULE_NAME].blueprintSettings) {
+extension_settings[MODULE_NAME].blueprintSettings = {};
+}
+extension_settings[MODULE_NAME].blueprintSettings.generationApi = selectedApi;
+saveSettingsDebounced();
+console.log('[Story Mode] Generation API changed to:', selectedApi || 'main API');
+});
+content.find('#edit_blueprint_master_prompt').on('click', async function() {
+const currentPrompt = BlueprintModule.getEffectiveMasterPrompt();
+const result = await Popup.show.input(
+'Edit Blueprint Master Prompt Template',
+'Enter the master prompt template for blueprint generation. Variables like {{STORY_TYPE_JSON}}, {{METAPHOR_LEVEL}}, etc. will be replaced at generation time.',
+currentPrompt,
+{ rows: 15, okButton: 'Save', wide: true, large: true }
+);
+if (result) {
+if (!extension_settings[MODULE_NAME].blueprintSettings) {
+extension_settings[MODULE_NAME].blueprintSettings = {};
+}
+extension_settings[MODULE_NAME].blueprintSettings.masterPrompt = result;
+saveSettingsDebounced();
+toastr.success('Blueprint master prompt template updated');
+}
+});
+// Injection settings
+content.find('#injection_position').on('change', function() {
+extension_settings[MODULE_NAME].position = parseInt($(this).val());
+saveSettingsDebounced();
+updateStoryPrompt();
+});
+content.find('#injection_depth').on('change', function() {
+extension_settings[MODULE_NAME].depth = parseInt($(this).val());
+saveSettingsDebounced();
+updateStoryPrompt();
+});
+content.find('#injection_role').on('change', function() {
+extension_settings[MODULE_NAME].role = parseInt($(this).val());
+saveSettingsDebounced();
+updateStoryPrompt();
+});
+// Edit buttons
+content.find('#edit_story_types_btn').on('click', showStoryTypesEditor);
+content.find('#edit_author_styles_btn').on('click', showAuthorStylesEditor);
+}
+
+// Make setupEventListeners globally accessible for blueprint-module.js
+window.setupEventListeners = setupEventListeners;
+
+// Make showSettingsDialog globally accessible for wand-menu.js
+window.showStoryModeSettings = showSettingsDialog;
+
+/**
+* Update the status display on the main panel.
+* Shows current story type, author style, and arc progress.
+*
+* @returns {void}
+*/
+function updateStatusDisplay() {
+const settings = extension_settings[MODULE_NAME];
+const chatState = getChatStoryState();
+let statusText;
+if (!settings.enabled) {
+statusText = 'Disabled';
+} else {
+// Get story type name from CHAT STATE (per-chat)
+const storyName = settings.storyArcEnabled && chatState.selectedStoryType
+? storyTypes.find(t => t.id === chatState.selectedStoryType)?.name || 'None'
+: 'None';
+// Get author style name from CHAT STATE (per-chat)
+const authorName = settings.authorStyleEnabled && chatState.selectedAuthorStyle
+? authorStyles.find(s => s.id === chatState.selectedAuthorStyle)?.name || 'Disabled'
+: 'Disabled';
+// Build compact status - all values from CHAT STATE
+statusText = `Story: ${storyName} | Author: ${authorName} | Arc ${chatState.currentStep}/${chatState.arcLength}`;
+// Add blueprint indicator if enabled and active
+if (settings.blueprintSettings?.enabled) {
+const blueprintState = BlueprintModule.getBlueprintState();
+if (blueprintState.useBlueprint && blueprintState.blueprint) {
+const currentScene = BlueprintModule.getCurrentScene(
+blueprintState.blueprint,
+chatState.currentStep,
+chatState.arcLength,
+blueprintState.sceneMode,
+blueprintState.currentSceneIndex
+);
+if (currentScene) {
+statusText += ` | <span class="storymode-blueprint-indicator"><i class="fa-solid fa-scroll"></i> Blueprint: Scene ${currentScene.index + 1}/${blueprintState.blueprint.scene_plan.length}</span>`;
+}
+}
+}
+}
+//update the status text
+const statusEl = $('.storymode-status');
+if (statusEl.length > 0) {
+statusEl.html(`<small>${statusText}</small>`);
+}
+// Also update the arc badge if the settings dialog is currently open
+const badge = $('#arc_progress_badge');
+if (badge.length > 0) {
+if (chatState.currentStep === 0) {
+badge.text(`Round 0/${chatState.arcLength} | Not Started`);
+} else if (chatState.currentStep >= chatState.arcLength) {
+badge.text(`Arc Complete (${chatState.arcLength}/${chatState.arcLength})`);
+} else {
+const phaseInfo = getPhaseInfo(chatState.currentStep, chatState.arcLength);
+badge.text(`Step ${chatState.currentStep}/${chatState.arcLength} | ${phaseInfo.phase}`);
+}
+}
+}
+
+/**
+* Refresh the blueprint preview section in the main panel.
+* Updates or adds/removes the blueprint preview based on current blueprint state.
+*
+* @returns {void}
+*/
+function refreshBlueprintPreview() {
+    const settings = extension_settings[MODULE_NAME];
+    const blueprintState = BlueprintModule.getBlueprintState();
+    const baseSettings = $('#story_mode_base_settings');
+
+    // Remove existing blueprint preview if present
+    baseSettings.find('.storymode-blueprint-preview').remove();
+
+    // Show blueprint preview if enabled and blueprint exists
+    if (settings.blueprintSettings?.enabled && blueprintState.blueprint) {
+        const previewHtml = renderBlueprintPreview(blueprintState);
+        // Insert after the status display
+        const statusDiv = baseSettings.find('.storymode-status');
+        statusDiv.after(previewHtml);
+    }
+}
+
+// Make functions globally accessible for blueprint-module.js, type-editors.js, and event-handlers.js
+window.updateStatusDisplay = updateStatusDisplay;
+window.updateStoryPrompt = updateStoryPrompt;
+window.refreshBlueprintPreview = refreshBlueprintPreview;
+
+/**
+* Update the story type dropdown in the settings dialog.
+* Populates options from the storyTypes array with the current selection preserved.
+*
+* @param {jQuery} content - The jQuery content object containing the dialog.
+* @returns {void}
+*/
+function updateStoryTypeDropdownInDialog(content) {
+const dropdown = content.find('#story_type_select');
+const chatState = getChatStoryState();
+const selected = chatState.selectedStoryType; // Read from chat state
+dropdown.empty();
+dropdown.append('<option value="">None</option>');
+// Sort story types alphabetically by name
+const sortedTypes = [...storyTypes].sort((a, b) => a.name.localeCompare(b.name));
+sortedTypes.forEach(type => {
+const option = $('<option></option>')
+.val(type.id)
+.text(type.name + ' (' + type.category.join(', ') + ')');
+if (type.id === selected) {
+option.prop('selected', true);
+}
+dropdown.append(option);
+});
+// Update story type description
+const selectedStoryType = storyTypes.find(t => t.id === selected);
+const description = selectedStoryType ? selectedStoryType.storyPrompt : 'Select a story type to see its description';
+const descriptionEl = content.find('#story_type_description');
+if (descriptionEl.length > 0) {
+descriptionEl.text(description);
+}
+}
+/**
+* Update the author style dropdown in the settings dialog.
+* Supports optional fuzzy search via the searchQuery parameter.
+*
+* @param {jQuery} content - The jQuery content object containing the dialog.
+* @param {string} [searchQuery=''] - Optional search query for filtering styles.
+* @returns {void}
+*/
+function updateAuthorStyleDropdownInDialog(content, searchQuery = '') {
+const dropdown = content.find('#author_style_select');
+const chatState = getChatStoryState();
+const selected = chatState.selectedAuthorStyle; // Read from chat state
+dropdown.empty();
+dropdown.append('<option value="">None</option>');
+let filteredStyles = authorStyles;
+// Apply fuzzy search if query provided
+if (searchQuery && fuseAuthorStyles) {
+const results = fuseAuthorStyles.search(searchQuery);
+filteredStyles = results.map(r => r.item);
+} else {
+// Sort alphabetically by name when not searching
+filteredStyles = [...authorStyles].sort((a, b) => a.name.localeCompare(b.name));
+}
+filteredStyles.forEach(style => {
+const option = $('<option></option>')
+.val(style.id)
+.text(style.name + ' (' + style.category.join(', ') + ')');
+if (style.id === selected) {
+option.prop('selected', true);
+}
+dropdown.append(option);
+});
+// Update author style description
+const selectedAuthorStyle = authorStyles.find(s => s.id === selected);
+const description = selectedAuthorStyle ? selectedAuthorStyle.authorPrompt : 'Select an author style to see its guidance';
+const descriptionEl = content.find('#author_style_description');
+if (descriptionEl.length > 0) {
+descriptionEl.text(description);
+}
+}
+
+/**
+* Update the arc progress badge in the settings dialog.
+* Displays current step, arc length, and current phase.
+*
+* @param {jQuery} content - The jQuery content object containing the dialog.
+* @returns {void}
+*/
+function updateArcBadgeInDialog(content) {
+const chatState = getChatStoryState();
+const badge = content.find('#arc_progress_badge');
+if (chatState.currentStep === 0) {
+badge.text(`Round 0/${chatState.arcLength} | Not Started`);
+} else if (chatState.currentStep >= chatState.arcLength) {
+badge.text(`Arc Complete (${chatState.arcLength}/${chatState.arcLength})`);
+} else {
+const phaseInfo = getPhaseInfo(chatState.currentStep, chatState.arcLength);
+badge.text(`Step ${chatState.currentStep}/${chatState.arcLength} | ${phaseInfo.phase}`);
+}
+}
+
+/**
+* Update the prompt preview section in the settings dialog.
+* Shows the full injection text with arc length ignored for preview purposes.
+*
+* @param {jQuery} content - The jQuery content object containing the dialog.
+* @returns {void}
+*/
+function updatePreviewInDialog(content) {
+const preview = content.find('#prompt_preview');
+const promptText = buildFullInjection(true);
+if (promptText) {
+preview.text(promptText);
+} else {
+preview.text('(No prompt will be injected with current settings)');
+}
+}
+
+/**
+* Update story type dropdown
+*/
+function updateStoryTypeDropdown() {
+const dropdown = $('#story_type_select');
+const chatState = getChatStoryState();
+const selected = chatState.selectedStoryType;
+dropdown.empty();
+dropdown.append('<option value="">None</option>');
+// Sort story types alphabetically by name
+const sortedTypes = [...storyTypes].sort((a, b) => a.name.localeCompare(b.name));
+sortedTypes.forEach(type => {
+const option = $('<option></option>')
+.val(type.id)
+.text(type.name + ' (' + type.category.join(', ') + ')');
+if (type.id === selected) {
+option.prop('selected', true);
+}
+dropdown.append(option);
+});
+}
+
+// Make updateStoryTypeDropdown globally accessible for type-editors.js
+window.updateStoryTypeDropdown = updateStoryTypeDropdown;
+
+/**
+* Update author style dropdown with optional search
+*/
+function updateAuthorStyleDropdown(searchQuery = '') {
+const dropdown = $('#author_style_select');
+const chatState = getChatStoryState();
+const selected = chatState.selectedAuthorStyle;
+dropdown.empty();
+dropdown.append('<option value="">None</option>');
+let filteredStyles = authorStyles;
+// Apply fuzzy search if query provided
+if (searchQuery && fuseAuthorStyles) {
+const results = fuseAuthorStyles.search(searchQuery);
+filteredStyles = results.map(r => r.item);
+} else {
+// Sort alphabetically by name when not searching
+filteredStyles = [...authorStyles].sort((a, b) => a.name.localeCompare(b.name));
+}
+filteredStyles.forEach(style => {
+const option = $('<option></option>')
+.val(style.id)
+.text(style.name + ' (' + style.category.join(', ') + ')');
+if (style.id === selected) {
+option.prop('selected', true);
+}
+dropdown.append(option);
+});
+}
+
+// Make updateAuthorStyleDropdown globally accessible for type-editors.js
+window.updateAuthorStyleDropdown = updateAuthorStyleDropdown;
+
+/**
+* Update arc progress badge
+*/
+function updateArcBadge() {
+const chatState = getChatStoryState();
+const badge = $('#arc_progress_badge');
+if (chatState.currentStep === 0) {
+badge.text(`Round 0/${chatState.arcLength} | Not Started`);
+} else if (chatState.currentStep >= chatState.arcLength) {
+badge.text(`Arc Complete (${chatState.arcLength}/${chatState.arcLength})`);
+} else {
+const phaseInfo = getPhaseInfo(chatState.currentStep, chatState.arcLength);
+badge.text(`Step ${chatState.currentStep}/${chatState.arcLength} | ${phaseInfo.phase}`);
+}
+}
+
+/**
+* Update prompt preview
+*/
+function updatePreview() {
+const preview = $('#prompt_preview');
+const promptText = buildFullInjection(true);
+if (promptText) {
+preview.text(promptText);
+} else {
+preview.text('(No prompt will be injected with current settings)');
+}
+}
+
+// Type editor functions now imported from type-editors.js
+// Event handler functions now imported from event-handlers.js
 
 /**
  * Hook: Chat changed
  */
 function onChatChanged() {
     // Reset flags
-    isRegenerating = false;
-    isLoadingChat = true; // Set flag to prevent increment during chat load
-
+    setRegenerating(false);
+    setLoadingChat(true); // Set flag to prevent increment during chat load
     // Update UI
     updateStoryPrompt();
     updateStatusDisplay();
-
+    refreshBlueprintPreview();
+    updateWandMenuStatus();
     console.debug('[Story Mode] Chat changed, state reloaded');
-
     // Reset the loading flag after a short delay to allow chat to fully load
     setTimeout(() => {
-        isLoadingChat = false;
+        setLoadingChat(false);
         console.debug('[Story Mode] Chat loading complete');
     }, 1000);
 }
@@ -2324,57 +2375,75 @@ function onChatChanged() {
 jQuery(async function() {
     console.log('[Story Mode] Extension loading...');
 
-    // Load Fuse.js
+    // Load Fuse.js (from state-manager)
     await loadFuseJS();
 
-    // Load settings
+    // Load settings (from state-manager)
     loadSettings();
 
-    // Load data from localForage
+    // Load data from localForage (from state-manager)
     await loadStoryTypes();
     await loadAuthorStyles();
 
-    // Load original versions for revert functionality (must be after loading data)
+    // Sync local references with state manager
+    syncDataReferences();
+
+    // Load original versions for revert functionality (from state-manager)
     await loadOriginalStoryTypes();
     await loadOriginalAuthorStyles();
 
-    // Migration: Check if old data exists in extension_settings and migrate to localForage
-    if (extension_settings[MODULE_NAME].storyTypes && extension_settings[MODULE_NAME].storyTypes.length > 0) {
-        console.log('[Story Mode] Migrating story types from extension_settings to localForage');
-        extension_settings[MODULE_NAME].storyTypes.forEach(customType => {
-            const existing = storyTypes.findIndex(t => t.id === customType.id);
-            if (existing >= 0) {
-                storyTypes[existing] = customType;
-            } else {
-                storyTypes.push(customType);
-            }
-        });
-        // Save to localForage and clear from extension_settings
-        await saveStoryTypesToStorage();
-        extension_settings[MODULE_NAME].storyTypes = [];
-        saveSettingsDebounced();
-    }
+    // Migration: Check if old data exists in extension_settings (from state-manager)
+    await migrateFromExtensionSettings();
 
-    if (extension_settings[MODULE_NAME].authorStyles && extension_settings[MODULE_NAME].authorStyles.length > 0) {
-        console.log('[Story Mode] Migrating author styles from extension_settings to localForage');
-        extension_settings[MODULE_NAME].authorStyles.forEach(customStyle => {
-            const existing = authorStyles.findIndex(s => s.id === customStyle.id);
-            if (existing >= 0) {
-                authorStyles[existing] = customStyle;
-            } else {
-                authorStyles.push(customStyle);
-            }
-        });
-        // Save to localForage and clear from extension_settings
-        await saveAuthorStylesToStorage();
-        extension_settings[MODULE_NAME].authorStyles = [];
-        saveSettingsDebounced();
-    }
+    // Sync again after migration
+    syncDataReferences();
+
+    // Initialize Blueprint module
+    await BlueprintModule.initBlueprintSettings();
+
+    // Pass loaded story types and author styles to blueprint module
+    BlueprintModule.setStoryTypes(storyTypes);
+    BlueprintModule.setAuthorStyles(authorStyles);
+    console.log('[Story Mode] Blueprint module initialized');
+
+    // Initialize Loading Indicator module
+    LoadingIndicator.init();
+    console.log('[Story Mode] Loading Indicator module initialized');
 
     // Add UI
     await addUI();
 
+    // Register wand menu entry
+    registerWandMenuEntry();
+
     // Register event hooks
+    eventSource.on(event_types.GENERATION_STARTED, () => {
+        // Clear the loading flag when generation starts
+        setLoadingChat(false);
+        if (chat.length > 0) {
+            setRegenerating(false); // fresh generation
+            console.debug('[Story Mode] Generation started (normal)');
+            updateStoryPrompt();
+        } else {
+            setRegenerating(true); // This is the initial message and chat set up, don't increment the story count
+            console.debug('[Story Mode] initial message set up - no increment');
+        }
+    });
+
+    eventSource.on(event_types.MESSAGE_SWIPED, (data) => {
+        setRegenerating(true);
+        console.debug('[Story Mode] Swipe/regenerate detected:', data);
+        updateStoryPrompt();
+    });
+
+    if (event_types.MESSAGE_REGENERATED) {
+        eventSource.on(event_types.MESSAGE_REGENERATED, (data) => {
+            setRegenerating(true);
+            console.debug('[Story Mode] Regenerate detected:', data);
+            updateStoryPrompt();
+        });
+    }
+
     eventSource.on(event_types.MESSAGE_RECEIVED, onMessageReceived);
     eventSource.on(event_types.CHAT_CHANGED, onChatChanged);
 
@@ -2383,4 +2452,3 @@ jQuery(async function() {
 
     console.log('[Story Mode] Extension loaded successfully');
 });
-

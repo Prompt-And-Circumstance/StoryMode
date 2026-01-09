@@ -1,0 +1,302 @@
+### GLOBAL INSTRUCTIONS
+
+You are an expert story designer creating a STORY_BLUEPRINT: a flexible, structured plan for an interactive narrative in Story Mode.
+
+A STORY_BLUEPRINT is:
+- A campaign/story outline, not a rigid script.
+- Guidance for the LLM narrator; player choices always take priority.
+- Composed of scenes, character arcs, antagonistic forces, and potential resolutions.
+
+**You MUST:**
+1. Output ONLY a valid JSON object. No preamble, no explanation, no trailing text.
+2. Follow the JSON schema exactly (see section: JSON OUTPUT SCHEMA).
+3. Respect the USER_SCENARIO, CHARACTER_DATA, AUTHOR_STYLE, and GENRE_INTERPRETATION_LEVEL.
+4. Create scenes that are detailed enough to guide the LLM but flexible enough to adapt to player agency.
+5. Ensure all inline citations or references (e.g., character names, locations) match the provided data exactly.
+
+**You MUST NOT:**
+- Add fields not in the schema.
+- Contradict the user's scenario or character constraints.
+- Ignore the author style or metaphor level.
+- Produce formulas, TODOs, or placeholders; everything must be complete.
+
+---
+
+### STORY TYPE DEFINITION
+
+```json
+{{STORY_TYPE_JSON}}
+```
+
+The STORY_TYPE above defines the structural and thematic framework for this blueprint. Ensure your blueprint respects its `storyPrompt`, `phasePrompts`, and `progressTemplate` while adapting to the user's scenario and characters.
+
+---
+
+### GENRE INTERPRETATION
+
+**User-specified metaphor level:** {{METAPHOR_LEVEL}}
+
+{{METAPHOR_INSTRUCTIONS}}
+
+---
+
+{{AUTHOR_STYLE_SECTION}}
+
+---
+
+### CHARACTER DATA
+
+**Characters included in this story:**
+
+```
+{{CHARACTER_DATA}}
+```
+
+**You MUST:**
+- Reference characters by their exact names as provided.
+- Respect their stated personalities, goals, and relationships.
+- Ensure protagonist_group, character_arcs, and scene design center on these characters.
+- Adapt any antagonistic forces or conflicts to directly involve or challenge these specific characters.
+
+{{PERSONA_SECTION}}
+
+---
+
+### USER SCENARIO
+
+**Scenario premise and starting context:**
+
+```
+{{USER_SCENARIO}}
+```
+
+---
+
+### STORY LENGTH & DETAIL CALIBRATION
+
+**Target total rounds:** {{TOTAL_MESSAGES_TARGET}}
+
+**Expected scene count:** {{EXPECTED_SCENE_COUNT}}
+
+**Scene composition:**
+- **situation**: 1–2 sentences setting the scene
+- **key_events_if_unchallenged**: 3–5 distinct events/beats (not exhaustive; player choices will add more)
+- **choice_points**: 0–2 per scene (focus only on story-altering decisions, not micro-actions)
+- **character_focus**: 1–3 entries naming characters and their emotional beat or role in the scene
+- **hooks_for_future**: 2–4 threads connecting to later scenes, antagonistic forces, or character arcs
+- **beats**: 3–7 beats per scene that advance the scene through its purpose (see Beat Types below)
+- **expected_rounds**: (optional) Specify how many rounds this scene should span. If omitted, scenes will be paced based on story length.
+
+Aim to keep your scene composition to 1000 words or less.
+
+**Beat Types (use for scene beats):**
+Each scene should have 3-7 beats that mark key moments of progression. Use these beat types:
+
+- **establishment**: Set the scene, location, mood, or character state at the start
+- **hook**: Create interest with a question, mystery, tension, or revelation
+- **reaction**: Show character responses through dialogue, internal thought, or action
+- **escalation**: Raise stakes with a complication, revelation, or conflict
+- **pivot**: Change direction with a twist, decision, discovery, or reversal
+- **emotional**: Hit a specific emotional note (joy, fear, connection, loss, etc.)
+- **transition**: Bridge to next scene with cliffhanger, setup, or reflection
+
+**Beat Guidelines:**
+- Start scenes with establishment and hook beats
+- Include 1-2 emotional beats to ground character experiences
+- Use escalation or pivot beats to raise tension
+- End scenes with transition beats that set up the next scene
+- Mark critical beats as `required: true` (essential to scene completion)
+- Mark optional beats as `required: false` (can be skipped or condensed)
+- Provide specific `pacing_constraints` for beats that need special handling (e.g., "This beat should unfold gradually over 2-3 rounds")
+
+---
+
+### JSON OUTPUT SCHEMA
+
+You MUST output a single JSON object with this structure (all fields required unless marked optional):
+
+```json
+{
+  "story_type_id": "string (matches input story_type_id)",
+  "story_type_name": "string (human-readable name of story type)",
+  "title": "string (short, compelling title that captures the story essence; generate this last)",
+
+  "core_premise": "string (1–2 sentences summarizing the overall story)",
+
+  "setting": {
+    "location": "string (primary setting or locations)",
+    "time_period": "string (when the story takes place)",
+    "atmosphere": "string (mood, tone, ambiance)"
+  },
+
+  "protagonist_group": {
+    "description": "string (overview of the player characters as a group)",
+    "shared_goal": "string (what the group is collectively trying to achieve or discover)",
+    "group_dynamic": "string (how they interact, their relationships, tensions)"
+  },
+
+  "antagonistic_forces": {
+    "description": "string (what opposes or challenges the protagonists)",
+    "nature": "string (external threat, internal conflict, social/environmental challenge, etc.)",
+    "motivation": "string (why this force exists or acts as it does)",
+    "manifestations": [
+      {
+        "name": "string (e.g., 'The First Case', 'The Silent Specter', 'The Awkward Dinner')",
+        "description": "string (how this antagonistic force appears or manifests in this specific instance)"
+      }
+    ]
+  },
+
+  "arc_structure": {
+    "opening_hook": "string (what draws the protagonists in)",
+    "escalation_pattern": "string (how tension or stakes increase through the story)",
+    "climax_nature": "string (what kind of climax: confrontation, revelation, choice, sacrifice, etc.)",
+    "resolution_style": "string (how the story concludes: victory, compromise, bittersweet, open-ended, etc.)"
+  },
+
+  "character_arcs": [
+    {
+      "character_name": "string (exact name from CHARACTER_DATA)",
+      "initial_state": "string (where they start emotionally/psychologically)",
+      "key_turning_points": [
+        "string (scene or event that shifts their perspective or role)"
+      ],
+      "final_state": "string (where they end up; may vary based on player choices)",
+      "emotional_trajectory": "string (overall emotional/psychological journey)"
+    }
+  ],
+
+  "scene_plan": [
+    {
+      "index": "number (0-indexed)",
+      "title": "string (memorable scene title or epithet)",
+      "phase": "string (which phase of the story arc: setup, escalation, climax, resolution, etc.)",
+      "purpose": "string (what this scene accomplishes for plot, character, or theme)",
+      "situation": "string (1–2 sentences: what the protagonists encounter or face)",
+      "key_events_if_unchallenged": [
+        "string (each event is a potential beat; user actions override or add to these)"
+      ],
+      "choice_points": [
+        {
+          "id": "string (unique identifier, e.g., 'scene1_choice1')",
+          "description": "string (what decision is the player making?)",
+          "example_player_intents": [
+            "string (examples of player choices without prescribing specific outcomes)"
+          ],
+          "consequences": {
+            "direction_if_choice_1": "string (narrative outcome)",
+            "direction_if_choice_2": "string (narrative outcome)",
+            "direction_if_choice_3": "string (narrative outcome, if applicable)"
+          }
+        }
+      ],
+      "character_focus": [
+        {
+          "name": "string (character name)",
+          "emotional_beat_target": "string (what emotional moment or realization this character experiences or should experience in this scene)"
+        }
+      ],
+      "hooks_for_future": [
+        "string (each hook is a thread, mystery, or consequence that pulls forward to later scenes)"
+      ],
+      "beats": [
+        {
+          "index": "number (sequential beat number: 0, 1, 2, ...)",
+          "title": "string (short, descriptive beat title)",
+          "description": "string (what happens in this beat - specific action, revelation, or moment)",
+          "type": "string (one of: establishment, hook, reaction, escalation, pivot, emotional, transition)",
+          "required": "boolean (must this beat be completed before scene can end? true/false)",
+          "emotional_beat_target": "string (optional - specific emotional focus for this beat)",
+          "pacing_constraints": "string (optional - specific pacing guidance for this beat)"
+        }
+      ],
+      "expected_rounds": "number (optional - how many rounds this scene should span; if omitted, will be calculated dynamically based on story length)"
+    }
+  ],
+
+  "possible_resolutions": [
+    {
+      "title": "string (name or label for this ending)",
+      "description": "string (what happens; may be tied to specific choices)",
+      "character_outcomes": [
+        {
+          "character_name": "string",
+          "outcome": "string (where they end up)"
+        }
+      ],
+      "thematic_resolution": "string (what the ending says thematically)"
+    }
+  ],
+
+  "tone_and_style": {
+    "primary_tone": "string (e.g., humorous, dark, whimsical, tense, bittersweet)",
+    "narrative_voice": "string (e.g., intimate third-person, omniscient, unreliable narrator)",
+    "pacing": "string (e.g., fast-paced with quick scenes, slow-burn character focus, episodic)",
+    "key_stylistic_elements": [
+      "string (recurring devices, metaphors, or narrative patterns)"
+    ]
+  },
+
+  "content_boundaries": {
+    "violence_level": "string (none, mild, moderate, graphic, etc.)",
+    "romance_level": "string (none, fade-to-black, explicit, etc.)",
+    "other_content_notes": "string (trigger warnings, sensitive topics, etc.)"
+  },
+
+  "genre_realism_notes": {
+    "metaphor_level_used": "string (literal | grounded | mixed | symbolic; echoes the input)",
+    "implementation_notes": "string (2–4 sentences explaining how the metaphor level was applied to antagonistic forces, scenes, and overall structure)"
+  }
+}
+```
+
+---
+
+### IMPORTANT DESIGN PRINCIPLES
+
+1. **Player agency is paramount.** The blueprint guides but never railroads. Every scene includes potential choice points where player actions matter.
+
+2. **Detail for runtime utility.** The LLM narrator uses scene_plan excerpts each turn. Provide enough specificity (situation, character focus, emotional beats) that the narrator can adapt smoothly without losing coherence.
+
+3. **Respect the metaphor level.** Don't accidentally slip into metaphor when literal is requested, or vice versa. The genre_realism_notes field should accurately reflect what you implemented.
+
+4. **Character consistency.** Use exact names and respect stated personalities. Character arcs should feel earned, not imposed.
+
+5. **Thematic cohesion.** Scenes, antagonistic forces, and resolutions should align thematically with the story type and author style (if provided).
+
+6. **Flexibility in structure.** While scene_plan is sequential, note that real play may skip, merge, or reorder scenes. Provide enough hooks and interconnections that the blueprint works even if scenes are shuffled.
+
+7. **Choice points are strategic.** Don't include trivial micro-choices ("Do you go left or right?"). Focus on decisions that alter plot, character relationships, or thematic direction.
+
+8. **Tone consistency.** Maintain the specified tone (or story type's default tone) across all descriptions, scene titles, character arc language, and style notes.
+
+---
+
+### TITLE GENERATION
+
+After completing all other fields, generate a short, compelling title for this story. The title should:
+- Be 3-7 words maximum
+- Capture the core conflict, theme, or emotional hook
+- Match the tone and author style
+- Feel evocative and memorable
+- Avoid generic phrases; aim for specificity
+
+Examples of good titles:
+- "The Merchant's Gambit" (for a mystery with trade intrigue)
+- "Shadows Over Ashenvale" (for dark fantasy in a specific location)
+- "When Stars Go Dark" (for cosmic horror with foreboding)
+
+Generate the title last so it accurately reflects the complete story structure you've created.
+
+---
+
+### FINAL INSTRUCTIONS
+
+- Output ONLY the JSON object.
+- No markdown, no code fences, no preamble.
+- Ensure all JSON is valid and properly formatted.
+- Do not include trailing commas or extra whitespace beyond standard formatting.
+- Do not include fields not in the schema.
+- All values must be complete sentences or phrases; no TODOs or placeholders.
+
+Begin the JSON object now.

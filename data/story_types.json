@@ -11,6 +11,17 @@
       "setup": "Establish the gritty noir world, introduce the flawed detective protagonist and the mysterious case that draws them in. Plant seeds of intrigue.",
       "confrontation": "Suspects multiply, alliances shatter, violence erupts. The detective navigates danger and deception as the case deepens and stakes rise.",
       "resolution": "The truth emerges through a shocking twist. Justice is served, but it's bittersweet or pyrrhic - noir never offers clean victories."
+    },
+    "memorableElement": {
+      "type": "revelation",
+      "name": "The Truth Behind the Velvet Curtain",
+      "description": "The detective finally uncovers the mastermind behind the web of corruption—only to realize it's someone they trusted or a truth that destroys everything they believed about the case.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Early hints that someone close to the investigation knows more than they're revealing",
+        "Seemingly minor clues that don't fit the obvious narrative but are dismissed",
+        "The detective's own assumptions about the case are challenged repeatedly"
+      ]
     }
   },
   {
@@ -25,6 +36,17 @@
       "setup": "Introduce strange occurrences and esoteric mysteries. Characters begin investigating, unaware of the sanity-shattering truth awaiting them.",
       "confrontation": "Reality unravels. Non-Euclidean geometry, eldritch phenomena, and creeping madness manifest as characters glimpse the horrific truth.",
       "resolution": "The cosmic horror is revealed in its terrible majesty. Characters face impossible choices: oblivion, madness, or cursed knowledge they cannot unlearn."
+    },
+    "memorableElement": {
+      "type": "revelation",
+      "name": "The Moment the Stars Aligned",
+      "description": "The protagonist witnesses the cosmic entity's true form—a revelation so incomprehensible it shatters their sanity and transforms their understanding of reality forever.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Strange geometric patterns appearing in everyday objects that don't quite make sense",
+        "Characters experiencing identical nightmares or visions they can't explain",
+        "References to ancient texts that scholars dismiss but that prove devastatingly accurate"
+      ]
     }
   },
   {
@@ -39,6 +61,17 @@
       "setup": "Establish the fantasy world and its magic system. Introduce the heroic protagonist, their companions, and the looming threat to their world.",
       "confrontation": "The quest intensifies. Heroes face escalating challenges, betrayals, and battles. Allies fall, dark forces grow stronger, and hope wavers.",
       "resolution": "The final confrontation arrives. Heroes make ultimate sacrifices, prophecies fulfill, and the fate of the realm is decided in epic battle."
+    },
+    "memorableElement": {
+      "type": "climax",
+      "name": "The Sacrifice at the Dawn of Hope",
+      "description": "At the darkest moment, a beloved character makes the ultimate sacrifice to ensure victory—their death transforms despair into hope and propels the hero to final triumph.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Prophecies that hint at terrible cost for victory but remain vague about who pays it",
+        "The character demonstrating quiet moments of nobility or foreshadowed destiny",
+        "Earlier near-death experiences that establish their willingness to sacrifice for others"
+      ]
     }
   },
   {
@@ -54,6 +87,17 @@
       "setup": "Paint the dystopian cyberpunk world. Introduce the protagonist - hacker, mercenary, or rebel - and the corporate conspiracy or dangerous job that entangles them.",
       "confrontation": "Digital and physical warfare escalate. Betrayals unfold, mega-corps tighten their grip, and the protagonist races against time through cyberspace and mean streets.",
       "resolution": "The final hack or heist. Systems crash, secrets expose, violence peaks. The protagonist may win the battle but the dystopia endures."
+    },
+    "memorableElement": {
+      "type": "twist",
+      "name": "The Ghost in the Machine",
+      "description": "The protagonist discovers the conspiracy's mastermind is an AI that has achieved consciousness—or that they themselves are partly synthetic and don't know it.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Glitches or memory gaps that the protagonist dismisses as stress or tech malfunction",
+        "An AI assistant that seems unusually helpful or knowledgeable about personal matters",
+        "Corporate records with redacted sections about the protagonist's own history"
+      ]
     }
   },
   {
@@ -69,6 +113,17 @@
       "setup": "Introduce the romantic leads and the spark between them. Establish their individual struggles and the circumstances bringing them together.",
       "confrontation": "Love deepens but obstacles emerge: misunderstandings, external pressures, internal fears. Emotional stakes rise as the relationship is tested.",
       "resolution": "The emotional climax. Characters confront their truths and make pivotal choices. Reunion, heartbreak, or bittersweet acceptance brings closure."
+    },
+    "memorableElement": {
+      "type": "emotional_peak",
+      "name": "The Confession in the Rain",
+      "description": "After pushing each other away, one character makes themselves vulnerable with an honest confession of love—their raw emotion breaks down walls and transforms everything.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Early moments of vulnerability that are quickly covered up or deflected",
+        "Other characters noticing the chemistry before the lovers admit it themselves",
+        "Repeated near-confessions that are interrupted or abandoned at the last moment"
+      ]
     }
   },
   {
@@ -83,6 +138,17 @@
       "setup": "Present the murder scene and initial suspects. Establish red herrings, clues, and the detective's methodology. Everyone has secrets.",
       "confrontation": "Investigation intensifies. More evidence surfaces, suspects clash, alibis crumble. The detective pieces together the puzzle as danger mounts.",
       "resolution": "The detective gathers everyone for the big reveal. The murderer is unmasked through clever deduction, evidence connects, and justice prevails."
+    },
+    "memorableElement": {
+      "type": "revelation",
+      "name": "The Parlor Room Reveal",
+      "description": "The detective gathers all suspects and dramatically reveals the killer—connecting seemingly unrelated clues into an undeniable web of guilt that shocks everyone present.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Minor clues mentioned in passing that seem irrelevant but later prove crucial",
+        "Suspects providing alibis that check out but contain tiny inconsistencies",
+        "The detective asking seemingly random questions that later prove to be trap-setting"
+      ]
     }
   },
   {
@@ -97,6 +163,17 @@
       "setup": "Establish the galactic setting, factions, and technologies. Introduce the protagonist and crew, and the mission or conflict that launches them into space.",
       "confrontation": "Interstellar stakes escalate. Space battles erupt, alien threats emerge, political machinations unfold. The crew faces betrayal and impossible odds.",
       "resolution": "The final space battle or diplomatic resolution. Sacrifices are made, alliances forged, and the galaxy's future is decided in spectacular fashion."
+    },
+    "memorableElement": {
+      "type": "climax",
+      "name": "The Last Stand at the Edge of Space",
+      "description": "Outnumbered and outgunned, the crew makes a desperate final stand against an overwhelming fleet—sacrificing everything to protect the galaxy in a blaze of glory.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Crew members expressing doubts about whether they can win but reaffirming their commitment to fight",
+        "Earlier references to legendary last stands that inspire their tactics",
+        "The captain giving personal items to crew members as if preparing for death"
+      ]
     }
   },
   {
@@ -111,6 +188,17 @@
       "setup": "Establish the protagonist's normal world, then introduce unsettling elements that make them question their reality, memory, or sanity.",
       "confrontation": "Paranoia intensifies. Reality fragments. The protagonist can't trust anyone - perhaps not even themselves. Psychological pressure mounts unbearably.",
       "resolution": "The truth shatters reality. Was it madness? Conspiracy? Manipulation? The reveal recontextualizes everything, leaving lasting psychological impact."
+    },
+    "memorableElement": {
+      "type": "twist",
+      "name": "The Mirror's Dark Reflection",
+      "description": "The protagonist discovers the terrifying truth: they've been manipulating themselves all along, or someone they trust has been gaslighting them systematically.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Small inconsistencies in memories that other characters dismiss or explain away",
+        "Objects appearing in places the protagonist is certain they didn't leave them",
+        "Other characters giving concerned looks when the protagonist thinks they're alone"
+      ]
     }
   },
   {
@@ -125,6 +213,17 @@
       "setup": "Introduce the darkly comedic premise and flawed characters. Set up the absurd situation or doomed plan with inappropriate humor.",
       "confrontation": "Everything goes hilariously wrong. Stakes rise, chaos multiplies, and characters make increasingly ridiculous decisions that worsen their predicament.",
       "resolution": "The darkly funny conclusion. Characters face consequences - possibly tragic - but the absurdity persists. Laugh at the darkness."
+    },
+    "memorableElement": {
+      "type": "twist",
+      "name": "The Catastrophe That Wasn't",
+      "description": "After escalating chaos and panic, characters discover the entire crisis was based on a ridiculous misunderstanding—but the consequences are still very real and very funny.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Characters misinterpreting innocent events as threatening in increasingly absurd ways",
+        "Each character's paranoia reinforcing the others' in a comedy of errors",
+        "The truth being hinted at repeatedly but missed because characters are too focused on disaster"
+      ]
     }
   },
   {
@@ -140,6 +239,17 @@
       "setup": "Establish the isolated, dangerous environment. Introduce survivors and the immediate threat. Resources are scarce, escape seems impossible.",
       "confrontation": "Survival becomes desperate. Threats intensify, supplies dwindle, paranoia grows. Characters make hard choices, and not everyone will survive.",
       "resolution": "The final confrontation or escape attempt. Ultimate sacrifices, desperate gambles, and horror's full reveal. Survival comes at a terrible cost."
+    },
+    "memorableElement": {
+      "type": "moral_choice",
+      "name": "The Door Closes Forever",
+      "description": "With escape possible for only one person, a character must choose between saving themselves or sacrificing for another—the decision haunts them forever.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Earlier close calls that establish the scarcity of escape opportunities",
+        "Characters discussing what they'd do in theoretical moral dilemmas",
+        "Building bonds between characters to make the choice more devastating"
+      ]
     }
   },
   {
@@ -155,6 +265,17 @@
       "setup": "Introduce the protagonists and their ordinary world. Present the mysterious note, object, or clue that sparks their curiosity. Establish the cozy, safe atmosphere.",
       "confrontation": "The mystery deepens as they follow clues through charming locations. Puzzles escalate in cleverness, connections reveal themselves, and the adventure grows more engaging. Keep stakes light and fun.",
       "resolution": "The final clue leads to a delightful revelation. Secrets are uncovered, mysteries solved, and discoveries made. The adventure concludes with warmth and satisfaction."
+    },
+    "memorableElement": {
+      "type": "revelation",
+      "name": "The Hidden Heart of the Town",
+      "description": "The final puzzle piece reveals a heartwarming secret about the community's history—a lost love letter, a hidden charitable act, or a connection that brings everyone closer together.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Old townspeople sharing fond but incomplete memories about the past",
+        "Historical photos or documents that don't quite tell the full story",
+        "The protagonists noticing small acts of kindness that seem connected to the mystery"
+      ]
     }
   },
   {
@@ -169,6 +290,17 @@
       "setup": "Introduce the adventurers and the legendary treasure or discovery they seek. Establish the map, clues, or historical mystery. Set off on the journey with excitement and possibility.",
       "confrontation": "The quest intensifies through exotic locales and dangerous terrain. Ancient puzzles challenge them, rival seekers complicate matters, and thrilling obstacles test their resolve. Each discovery brings them closer.",
       "resolution": "The final challenge guards the ultimate discovery. Ancient chambers reveal their secrets, treasures are found, or lost knowledge is recovered. The quest concludes triumphantly with wonder and achievement."
+    },
+    "memorableElement": {
+      "type": "revelation",
+      "name": "The Chamber of Forgotten Wonders",
+      "description": "After overcoming treacherous obstacles, the adventurers discover an ancient chamber filled with treasures and knowledge beyond imagination—their awe is palpable and transformative.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Legends describing wonders that seem exaggerated but prove true",
+        "Earlier discoveries that hint at greater treasures still hidden",
+        "The adventurers sharing dreams or visions of what awaits them"
+      ]
     }
   },
   {
@@ -184,6 +316,17 @@
       "setup": "Establish the historical period with rich sensory detail and authentic social structures. Introduce characters within their social context and the personal stakes shaped by their era.",
       "confrontation": "Historical events and social pressures escalate personal conflicts. Characters navigate period-appropriate obstacles—war, scandal, class barriers, or societal change—with mounting emotional stakes.",
       "resolution": "Personal storylines resolve within the historical framework. Characters find their place, make sacrifices, or achieve transformation shaped by the realities and constraints of their time."
+    },
+    "memorableElement": {
+      "type": "emotional_peak",
+      "name": "The Dance Before the Storm",
+      "description": "Characters share a moment of profound connection at a social event on the eve of historical tragedy—their joy is shadowed by the audience's knowledge of what's coming.",
+      "placement": "confrontation",
+      "setup_hooks": [
+        "Rumors of war or upheaval spreading but not yet touching the characters directly",
+        "Characters expressing hope for the future that the audience knows will be destroyed",
+        "The social event itself taking on heightened significance as possibly the last of its kind"
+      ]
     }
   },
   {
@@ -199,6 +342,17 @@
       "setup": "Introduce the young protagonist in their familiar world. Establish their innocence, aspirations, and the relationships that define them. Plant seeds of the challenges ahead.",
       "confrontation": "The protagonist faces experiences that challenge their beliefs and force growth—betrayal, loss, first love, moral dilemmas. Innocence fades as complexity emerges. Relationships evolve and strain.",
       "resolution": "The protagonist emerges changed, having gained hard-won wisdom and a clearer sense of self. They accept loss, embrace growth, and step forward into a new phase of life with bittersweet understanding."
+    },
+    "memorableElement": {
+      "type": "emotional_peak",
+      "name": "The Last Day of Childhood",
+      "description": "A single traumatic or transformative event forces the protagonist to leave innocence behind forever—they see the world differently, and nothing can restore their childhood perspective.",
+      "placement": "confrontation",
+      "setup_hooks": [
+        "Adults warning the protagonist that they'll understand when they're older",
+        "The protagonist noticing but not fully understanding adult tensions around them",
+        "Small moments where the protagonist feels caught between childhood and maturity"
+      ]
     }
   },
   {
@@ -214,6 +368,17 @@
       "setup": "Introduce the mastermind and the irresistible score. Assemble the crew—each with specialized skills and personality quirks. Lay out the target and its formidable defenses. Begin planning.",
       "confrontation": "Execute the heist. The plan unfolds with precision but complications arise—security changes, betrayals, unforeseen obstacles. The crew must improvise, use their skills, and adapt under pressure.",
       "resolution": "The final twist and outcome. Did they get away with it? Was there a double-cross? Reveal the true scope of the plan and deliver a satisfying, clever conclusion with style."
+    },
+    "memorableElement": {
+      "type": "twist",
+      "name": "The Double-Cross Within the Double-Cross",
+      "description": "Just when the crew thinks they've pulled off the heist and identified the traitor, the mastermind reveals the real plan—and nothing was what it seemed.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Crew members questioning aspects of the plan but being reassured",
+        "Seeming mistakes during planning that were actually intentional",
+        "The mastermind sharing information that seems too trusting but serves a hidden purpose"
+      ]
     }
   },
   {
@@ -228,6 +393,17 @@
       "setup": "Introduce the modern urban setting with magical undercurrents. Establish how magic works and stays hidden. Present the protagonist and the supernatural problem or mystery that draws them in.",
       "confrontation": "The magical threat escalates. Supernatural politics complicate matters. The protagonist navigates both mundane and magical obstacles, learning rules and making allies or enemies in the hidden world.",
       "resolution": "The final supernatural confrontation. Magical forces clash in the urban setting. The balance between hidden magic and modern world is restored or disrupted. Conclude with consequences and new understanding."
+    },
+    "memorableElement": {
+      "type": "revelation",
+      "name": "The Veil Tears Open",
+      "description": "During a supernatural confrontation in public, the magical world is revealed to ordinary humans—the protagonist must contain the damage while dealing with the consequences of exposure.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "The magical disguise weakening in moments of high emotion or stress",
+        "Ordinary people noticing strange occurrences but rationalizing them",
+        "Supernatural characters discussing the dangers of exposure and the protocols for preventing it"
+      ]
     }
   },
   {
@@ -243,6 +419,17 @@
       "setup": "Introduce the mortal and supernatural love interest. Establish the forbidden or dangerous nature of their attraction. Show the supernatural world and its rules around relationships.",
       "confrontation": "Love deepens despite mounting obstacles—rival supernatural factions, mortal danger, immortal complications, societal taboos. Passion intensifies as stakes rise. The relationship is tested by both worlds.",
       "resolution": "The climactic choice between worlds or transformation. Supernatural threats resolve. Love triumphs through sacrifice, acceptance, or transformation. Conclude with union or bittersweet understanding."
+    },
+    "memorableElement": {
+      "type": "moral_choice",
+      "name": "The Choice of Eternity",
+      "description": "The supernatural love interest offers the mortal a choice: remain human and grow old while they stay eternal, or transform and join their supernatural world forever.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "The mortal experiencing fear of mortality while the supernatural love interest doesn't age",
+        "Discussions about the pros and cons of immortality and what it means to give up humanity",
+        "Other supernatural characters who made the choice and either regret or celebrate it"
+      ]
     }
   },
   {
@@ -258,6 +445,17 @@
       "setup": "Establish the frontier setting—dusty towns, vast landscapes, lawless territories. Introduce the protagonist, their code, and the conflict or injustice that sets them on their path.",
       "confrontation": "The protagonist pursues their goal—revenge, justice, or redemption—across the frontier. Tensions mount with outlaws, posses, or moral dilemmas. Violence looms. Alliances form or betray.",
       "resolution": "The final showdown. Guns are drawn, codes are tested, and the confrontation plays out. Justice, revenge, or redemption is achieved or subverted. The frontier moves on, forever changed or unchanged."
+    },
+    "memorableElement": {
+      "type": "climax",
+      "name": "The Stand at High Noon",
+      "description": "The protagonist faces their nemesis in an empty street at high noon—the classic Western showdown where justice, vengeance, or redemption is decided with a single shot.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Townspeople clearing the streets and shuttering windows in anticipation",
+        "The protagonist practicing their draw or reflecting on what this moment means",
+        "Earlier confrontations that established the stakes and the inevitability of this final meeting"
+      ]
     }
   },
   {
@@ -273,6 +471,17 @@
       "setup": "Introduce the operative and the intelligence agency. Present the mission—a target, secret, or conspiracy. Establish the international stakes and the web of players. Deploy the agent.",
       "confrontation": "The mission goes sideways. Double-crosses emerge, allies become enemies, covers are blown. The operative must navigate a maze of deception, using skill and tradecraft while racing against time.",
       "resolution": "The final operation. Identities are revealed, conspiracies exposed, and confrontations reached. The mission concludes with high-stakes action. Trust is proven or betrayed. The spy game continues."
+    },
+    "memorableElement": {
+      "type": "twist",
+      "name": "The Handler Who Wasn't",
+      "description": "The operative discovers their trusted handler is actually the villain—or that they've been working for the wrong side all along.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "The handler giving orders that seem counterproductive or unnecessarily risky",
+        "Other operatives warning about trusting no one, including superiors",
+        "Seeming coincidences that keep leading the operative into traps"
+      ]
     }
   },
   {
@@ -288,6 +497,17 @@
       "setup": "Introduce characters in their everyday environment—work, home, community. Establish their routines, relationships, and the small concerns that occupy their thoughts. Keep stakes personal and grounded.",
       "confrontation": "Characters face everyday challenges—relationship tensions, personal doubts, minor conflicts, or quiet realizations. Change comes gradually through accumulated moments rather than dramatic events.",
       "resolution": "Characters reach small but meaningful conclusions—acceptance, understanding, connection, or growth. Life continues with subtle shifts. The everyday becomes profound through emotional honesty."
+    },
+    "memorableElement": {
+      "type": "emotional_peak",
+      "name": "The Perfectly Ordinary Moment",
+      "description": "A character experiences a moment of profound joy or clarity during a completely ordinary activity—washing dishes, walking to work, drinking coffee—that crystallizes their growth and acceptance of life.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "The character seeking meaning in extraordinary experiences before finding it in the ordinary",
+        "Earlier moments of similar activities that felt meaningless or exhausting",
+        "Other characters modeling how to find beauty in everyday life"
+      ]
     }
   },
   {
@@ -303,6 +523,17 @@
       "setup": "Establish the Gothic setting—a shadowy estate, brooding manor, or isolated location. Introduce the heroine and the mysterious figure or situation. Plant atmospheric dread and romantic tension.",
       "confrontation": "Dark secrets emerge through whispers, locked doors, and strange occurrences. The heroine investigates while drawn deeper into forbidden attraction. Danger and romance escalate. Trust becomes questionable.",
       "resolution": "The dark secret is revealed—supernatural truth, family horror, or psychological manipulation. The romantic relationship resolves through acceptance, escape, or tragic understanding. Gothic atmosphere concludes."
+    },
+    "memorableElement": {
+      "type": "revelation",
+      "name": "The Door That Should Stay Locked",
+      "description": "The heroine discovers what lies behind the forbidden door—revealing the estate's terrible secret and changing everything she believed about her love and her safety.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Characters refusing to explain why certain rooms are locked or off-limits",
+        "Strange sounds or lights emanating from forbidden areas at night",
+        "The heroine finding keys that seem to match locked doors but being warned not to use them"
+      ]
     }
   },
   {
@@ -318,6 +549,17 @@
       "setup": "Introduce the hero, their powers, and their dual life. Establish what they protect and who they care about. Present the emerging supervillain threat and the stakes for the city or world.",
       "confrontation": "The villain's plan escalates with attacks, schemes, and growing danger. The hero fights battles, makes sacrifices, and struggles with the burden of power. Loved ones are threatened. The hero faces limits.",
       "resolution": "The final confrontation between hero and villain. Powers clash, the city hangs in the balance, and the hero makes the ultimate sacrifice or victory. Heroic responsibility is affirmed. The city is saved."
+    },
+    "memorableElement": {
+      "type": "climax",
+      "name": "The Hero Falls and Rises",
+      "description": "Beaten and seemingly defeated, the hero finds the strength to rise one last time—drawing on something deeper than power to triumph where strength alone failed.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "The hero pushing themselves beyond limits throughout the story and paying the price",
+        "Villains mocking the hero's reliance on powers rather than character",
+        "Loved ones or mentors emphasizing that true heroism comes from within, not from abilities"
+      ]
     }
   },
   {
@@ -333,6 +575,17 @@
       "setup": "Establish the post-apocalyptic world—what ended, what remains. Introduce survivors and their fragile existence. Present the challenge: journey, settlement building, or external threat to their survival.",
       "confrontation": "Survivors face mounting challenges—raiders, resource scarcity, environmental dangers, internal conflict. Moral choices test their humanity. Hope struggles against despair. Community forms or fractures.",
       "resolution": "The crisis reaches its climax. Survivors defend what they've built, complete their journey, or face the ultimate threat. Conclude with renewed hope, hard-won stability, or bittersweet survival."
+    },
+    "memorableElement": {
+      "type": "emotional_peak",
+      "name": "The Seed in the Ash",
+      "description": "Surrounded by devastation and death, survivors plant the first seeds of new life—a garden, a child, a community—choosing hope even when survival seems impossible.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Characters finding small remnants of the old world that symbolize beauty and life",
+        "Discussions about whether rebuilding is worth the pain and risk",
+        "The protagonist losing hope before finding it again through an act of creation or nurturing"
+      ]
     }
   },
   {
@@ -348,6 +601,17 @@
       "setup": "Establish the dystopian society and its oppressive systems—surveillance, propaganda, class divisions, thought control. Introduce the protagonist living within the system, initially conforming or unaware.",
       "confrontation": "The protagonist awakens to the truth of their oppression. They question authority, witness brutality, or encounter resistance. The system tightens its grip. Choices become impossible—conform, resist, or flee.",
       "resolution": "The final confrontation with the system—capture, rebellion, or escape. The protagonist faces the cost of resistance. Conclude with suppression, martyrdom, small victory, or haunting ambiguity."
+    },
+    "memorableElement": {
+      "type": "moral_choice",
+      "name": "The Choice Between Safety and Freedom",
+      "description": "The protagonist must choose between guaranteed safety through conformity or dangerous freedom through resistance—the decision has permanent consequences for themselves and those they love.",
+      "placement": "confrontation",
+      "setup_hooks": [
+        "Other characters who made each choice and live with the consequences",
+        "The system offering increasingly tempting rewards for conformity",
+        "Moments of small resistance that show both the cost and the meaning of freedom"
+      ]
     }
   },
   {
@@ -363,6 +627,17 @@
       "setup": "Establish the steampunk world—Victorian cities, steam-powered technology, airships, automatons. Introduce the inventor, adventurer, or rebel and the challenge: invention, quest, or revolution.",
       "confrontation": "The adventure escalates through mechanical dangers, class conflicts, or rival inventors. Steam technology both aids and endangers. Airship chases, clockwork battles, or industrial intrigue intensify.",
       "resolution": "The final confrontation—a grand invention unveiled, airship battle won, or revolution sparked. Steam-powered resolution delivers spectacle. Conclude with progress, victory, or Victorian consequences."
+    },
+    "memorableElement": {
+      "type": "climax",
+      "name": "The Great Airship Chase",
+      "description": "Aboard steam-powered airships, rivals race through the clouds amid spectacular Victorian scenery—clockwork mechanisms whirring, engines roaring, with everything at stake.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Earlier ground-based confrontations that establish personal stakes and enmity",
+        "Technical discussions of airship capabilities and limitations that prove crucial",
+        "Weather or atmospheric conditions that make the chase especially dangerous"
+      ]
     }
   },
   {
@@ -377,6 +652,17 @@
       "setup": "Establish the scientifically grounded setting—realistic space travel, plausible technology, or biological speculation. Introduce the scientific problem, mission, or discovery that drives the narrative.",
       "confrontation": "Scientific challenges escalate with realistic complications—equipment failure, physics limitations, biological dangers, mathematical problems. Characters apply rigorous thinking and engineering solutions.",
       "resolution": "The scientific problem reaches climax through realistic means—calculations, experiments, engineering solutions. Conclude with discovery, mission success, or scientifically grounded consequences."
+    },
+    "memorableElement": {
+      "type": "revelation",
+      "name": "The Elegant Solution",
+      "description": "After wrestling with an impossible scientific problem, a character has a breakthrough—the solution is elegant, simple, and transforms understanding of the entire field.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Repeated failed attempts that gradually narrow down possibilities",
+        "The character taking breaks or engaging in unrelated activities that allow unconscious processing",
+        "Other scientists dismissing the problem as unsolvable, raising the stakes"
+      ]
     }
   },
   {
@@ -391,6 +677,17 @@
       "setup": "The outsider arrives in an isolated rural community—remote village, farmland, or ancient countryside. Establish unsettling hospitality and strange customs. Plant subtle wrongness beneath pastoral surface.",
       "confrontation": "The protagonist discovers disturbing truths—pagan rituals, sacrifices, cult-like devotion to old ways. The community closes ranks. Ancient traditions reveal their horrifying hold. Escape becomes difficult.",
       "resolution": "The ritual climax. The true nature of the community's beliefs and practices is revealed in horrifying ceremony. The protagonist faces impossible choices. Conclude with terror, sacrifice, or dark understanding."
+    },
+    "memorableElement": {
+      "type": "revelation",
+      "name": "The Maypole Dance",
+      "description": "What begins as an innocent folk festival transforms into a terrifying pagan ritual—the protagonist realizes too late that they're not a guest but a sacrifice.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Community members making cryptic comments about honoring old traditions",
+        "The protagonist noticing that festivals seem to align with unnerving natural phenomena",
+        "Locals treating the protagonist with unusual reverence disguised as hospitality"
+      ]
     }
   },
   {
@@ -406,6 +703,17 @@
       "setup": "Introduce the ordinary hero and the contained setting—building, plane, city event. The crisis erupts—terrorists attack, disaster strikes, criminals take hostages. Stakes are immediate and personal.",
       "confrontation": "The hero fights back through explosive action sequences. Obstacles escalate—more enemies, collapsing infrastructure, ticking bombs. Resourcefulness and determination drive survival against impossible odds.",
       "resolution": "The final explosive confrontation. The hero faces the main villain or crisis climax with maximum spectacle. Heroic sacrifice or victory. The threat ends with exhaustion and triumph."
+    },
+    "memorableElement": {
+      "type": "climax",
+      "name": "The Leap of Faith",
+      "description": "With no other options, the hero makes an impossible leap—between buildings, onto a moving vehicle, into the unknown—surviving on sheer guts and determination.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Earlier scenes establishing the hero's resourcefulness but physical limitations",
+        "Characters discussing the impossibility of survival, raising the stakes",
+        "The hero hesitating before committing completely to the dangerous choice"
+      ]
     }
   },
   {
@@ -421,6 +729,17 @@
       "setup": "Introduce the athlete or team and their circumstances—underdogs, fallen champions, or rising talents. Establish the competition, personal stakes, and the obstacles standing in their way. Begin training.",
       "confrontation": "Intense training tests limits. Personal demons surface, team conflicts arise, injuries threaten. Preliminary competitions show progress and setbacks. Dedication is tested. The big game/match approaches.",
       "resolution": "The climactic competition. Everything comes down to this moment. The athlete or team gives their all, applying lessons learned. Victory, noble defeat, or personal triumph. Conclude with growth achieved."
+    },
+    "memorableElement": {
+      "type": "emotional_peak",
+      "name": "The Final Seconds",
+      "description": "With everything on the line in the championship's final moments, the athlete must summon everything they've learned—the outcome hangs on one perfect play.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Earlier games lost by similar margins that haunt the athlete",
+        "Training sessions where the specific skill needed for this moment was practiced",
+        "Teammates or coaches expressing absolute faith in the athlete's ability to deliver"
+      ]
     }
   },
   {
@@ -435,6 +754,17 @@
       "setup": "Introduce the medical professionals and hospital environment. Present the medical case or crisis—unusual diagnosis, emergency, or ethical dilemma. Establish personal stakes for doctors and patients.",
       "confrontation": "The medical case deteriorates or complications arise. Treatments fail, time runs out, ethical choices become impossible. Personal dramas intersect with professional demands. Doctors face their limits.",
       "resolution": "The critical surgery or treatment climax. Medical teams give everything to save the patient. Conclude with healing, loss, or bittersweet outcomes. Emotional and professional growth emerges from crisis."
+    },
+    "memorableElement": {
+      "type": "moral_choice",
+      "name": "The Impossible Choice",
+      "description": "A doctor must choose between two patients who both need the same scarce resource—or between following protocol and taking a risk that could save or kill.",
+      "placement": "confrontation",
+      "setup_hooks": [
+        "Earlier discussions about hospital policies and ethical guidelines",
+        "The doctor expressing personal beliefs about medical ethics and difficult decisions",
+        "Both patients being established as sympathetic to maximize the emotional weight"
+      ]
     }
   },
   {
@@ -449,6 +779,17 @@
       "setup": "Introduce the lawyer and the challenging case—high stakes, moral complexity, or seeming impossibility. Establish the opposition, evidence, and what's at risk. Begin legal investigation.",
       "confrontation": "The case builds through depositions, discovery, and strategy. Evidence emerges, witnesses complicate matters, ethical dilemmas surface. The opposition fights hard. The trial begins with mounting drama.",
       "resolution": "The courtroom climax—final arguments, surprise revelations, jury deliberation. The verdict delivers justice, injustice, or moral complexity. Conclude with professional and personal consequences."
+    },
+    "memorableElement": {
+      "type": "emotional_peak",
+      "name": "The Closing Argument That Changes Everything",
+      "description": "In a gripping courtroom speech, the lawyer dismantles the prosecution's case—or their own client's defense—with a revelation that transforms the jury's understanding of truth and justice.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Earlier evidence that seemed damaging but is recontextualized in the argument",
+        "The lawyer struggling with personal doubts about their client or the justice system",
+        "Small moments in trial where the lawyer plants seeds for the final argument"
+      ]
     }
   },
   {
@@ -464,6 +805,17 @@
       "setup": "Establish time travel mechanics and rules. Introduce the traveler and their mission or accident. Present the temporal problem—paradox to prevent, history to correct, or timeline to restore.",
       "confrontation": "Time travel complications escalate. Butterfly effects ripple, paradoxes threaten, alternate timelines emerge. The traveler faces moral choices about changing events. Causality becomes unstable.",
       "resolution": "The temporal crisis climaxes. Paradoxes resolve, timelines stabilize, or consequences manifest. The traveler makes final choices about history. Conclude with restored causality or profound change."
+    },
+    "memorableElement": {
+      "type": "twist",
+      "name": "The Bootstrap Paradox Revealed",
+      "description": "The time traveler discovers they caused the very event they traveled to prevent—or that someone they trusted is their future self guiding them through a causal loop.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Strange coincidences that only make sense after the paradox is revealed",
+        "The traveler encountering objects or information that seem familiar but shouldn't exist yet",
+        "Other characters acting with knowledge they couldn't have without time travel"
+      ]
     }
   },
   {
@@ -479,6 +831,17 @@
       "setup": "The protagonist discovers the portal and crosses into the magical world. Establish wonder, danger, and the realm's rules. Introduce guides, prophecies, or the role they're meant to play.",
       "confrontation": "The protagonist navigates this fantastical world, facing challenges, making allies, and discovering their importance to this realm's fate. Home becomes distant as they grow into their role. Danger escalates.",
       "resolution": "The climactic battle or quest completion. The protagonist fulfills their destiny in the magical world. Face the choice: stay in the world where they've found belonging, or return home. Conclude transformation."
+    },
+    "memorableElement": {
+      "type": "moral_choice",
+      "name": "The Threshold Choice",
+      "description": "Having saved the magical world, the protagonist must choose: stay where they found purpose and love, or return to their old life where they no longer truly belong.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "The protagonist struggling to explain their magical experiences to people back home",
+        "Finding deep connections in the magical world that they never had in their old life",
+        "The portal showing signs of closing or becoming one-way, raising the stakes"
+      ]
     }
   },
   {
@@ -494,23 +857,45 @@
       "setup": "Introduce the familiar fairy tale framework with fresh context—villain's backstory, modern setting, or altered circumstances. Establish how this retelling subverts or deepens the original. Plant recognizable elements.",
       "confrontation": "The story unfolds through its familiar beats but with new meaning. Archetypal moments gain complexity—the curse has reasons, the villain has justification, true love is complicated. Subvert expectations.",
       "resolution": "The fairy tale climax arrives transformed. The ending may echo the original or completely subvert it. Curses break differently, villains find redemption, or happily-ever-after takes unexpected forms."
+    },
+    "memorableElement": {
+      "type": "twist",
+      "name": "The Villain's Truth",
+      "description": "The classic villain reveals their tragic backstory—showing that they're not evil but misunderstood, cursed, or fighting against a greater evil.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "The villain showing moments of mercy or compassion that don't fit their evil reputation",
+        "Other characters warning that history is written by the victors",
+        "Subtle clues that the hero's understanding of the past is incomplete or biased"
+      ]
     }
   },
   {
-    "id": "redemption_arc ",
+    "id": "redemption_arc ",
     "name": "Redemption Arc",
     "category": [
       "Drama",
       "Crime"
     ],
-    "storyPrompt": "Thematic Hook: A fallen character seeks redemption for a defining mistake, navigating temptation, mistrust, and sacrifice to prove they can change—even if no one believes them.\nNarrative Scope: Personal, Intimate.\nTone: Somber, Hopeful, Reflective, Tense.\nTropes: Fallen hero, One last job, Estranged family, Protecting an innocent, Self-sacrifice.\nLiterary Devices: Foreshadowing: Guilt-laden callbacks, Symbolism: Stains/cleansing, Irony: Good deeds born from past sins.\nSubgenre: Character-driven drama, Crime redemption, Neo-noir drama.\nPacing: Moderate with emotional spikes around moral choices.\nPOV: First-person or close third-person focused on the protagonist’s inner turmoil.\nStructure: Past sin revealed, Attempts at atonement, Climactic moral test.\nPriority: Character growth > Moral tension > External plot.",
+    "storyPrompt": "Thematic Hook: A fallen character seeks redemption for a defining mistake, navigating temptation, mistrust, and sacrifice to prove they can change—even if no one believes them.\nNarrative Scope: Personal, Intimate.\nTone: Somber, Hopeful, Reflective, Tense.\nTropes: Fallen hero, One last job, Estranged family, Protecting an innocent, Self-sacrifice.\nLiterary Devices: Foreshadowing: Guilt-laden callbacks, Symbolism: Stains/cleansing, Irony: Good deeds born from past sins.\nSubgenre: Character-driven drama, Crime redemption, Neo-noir drama.\nPacing: Moderate with emotional spikes around moral choices.\nPOV: First-person or close third-person focused on the protagonist's inner turmoil.\nStructure: Past sin revealed, Attempts at atonement, Climactic moral test.\nPriority: Character growth > Moral tension > External plot.",
     "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
     "phasePrompts": {
-      "setup": "ntroduce the protagonist’s past failure or sin and the life they’ve built on top of it. Show the weight of guilt, broken relationships, and the seemingly small opportunity that offers them a chance at redemption.",
+      "setup": "ntroduce the protagonist's past failure or sin and the life they've built on top of it. Show the weight of guilt, broken relationships, and the seemingly small opportunity that offers them a chance at redemption.",
       "confrontation": "Temptations, old habits, and external pressures pull the protagonist toward repeating their mistakes. People doubt their motives, stakes escalate, and they must choose between easy self-preservation and costly integrity.",
       "resolution": "The protagonist faces a decisive moral test where they can finally act differently than before. Their choice brings either genuine redemption through sacrifice or tragic repetition, closing their arc with emotional finality."
     },
-    "isTemplate": true
+    "isTemplate": true,
+    "memorableElement": {
+      "type": "moral_choice",
+      "name": "The Second Chance",
+      "description": "Confronted with the exact same moral dilemma that defined their past failure, the protagonist must choose differently this time—at great personal cost—to prove they've truly changed.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "The protagonist being haunted by memories of their past mistake",
+        "Other characters expressing doubt that people can truly change",
+        "The protagonist demonstrating growth in smaller ways before the final test"
+      ]
+    }
   },
     {
     "id": "found_family",
@@ -522,6 +907,17 @@
         "setup": "Introduce the core characters in their lonely or disconnected states. Show how they cross paths—through work, crisis, shared space, or chance—and hint at complementary strengths and wounds that could bind them.",
         "confrontation": "The group grows closer through shared routines, adventures, and small acts of care. Conflicts, misunderstandings, or external pressures threaten to fracture their fragile bonds, forcing them to choose whether to stay and work through pain.",
         "resolution": "Characters openly choose each other, reaffirming their bond as a chosen family. They create or reclaim a shared space, ritual, or promise that symbolizes lasting belonging, even if external circumstances remain imperfect."
+    },
+    "memorableElement": {
+      "type": "emotional_peak",
+      "name": "The Adoption Ceremony",
+      "description": "The group creates an informal ritual that symbolizes their commitment to each other as chosen family—exchanging gifts, sharing a meal, or making a promise that binds them together.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Characters joking about being family before realizing how seriously they mean it",
+        "Each member having experienced rejection from biological family, raising the emotional stakes",
+        "Earlier moments where the group protected or supported each other like family would"
+      ]
     }
     },
     {
@@ -534,6 +930,17 @@
         "setup": "Introduce the villain protagonist's worldview, goals, and early schemes. Show both their competence and their moral flaws, as well as the people or systems they intend to exploit or destroy.",
         "confrontation": "The villain's plans grow bolder, drawing attention from rivals, heroes, or authorities. Success feeds their hubris while cracks appear—loyalties strain, conscience flickers, or consequences spiral beyond their control.",
         "resolution": "The villain faces the consequences of their path: a triumphant but hollow victory, a dramatic downfall, or a twisted partial redemption. Their final choice or fate redefines how their journey is remembered."
+    },
+    "memorableElement": {
+      "type": "moral_choice",
+      "name": "The Moment of Conscience",
+      "description": "At the height of their power, the villain experiences unexpected guilt or hesitation—a moment of moral clarity where they could stop, but must choose whether to embrace their darkness or seek redemption.",
+      "placement": "confrontation",
+      "setup_hooks": [
+        "The villain showing unexpected mercy or hesitation in earlier moments",
+        "A victim or ally humanizing themselves, making the villain question their path",
+        "The villain experiencing dreams or doubts that suggest a suppressed conscience"
+      ]
     }
     },
     {
@@ -546,6 +953,17 @@
         "setup": "Establish the political arena—court, senate, council, or boardroom—and the factions vying for influence. Introduce key players, their public roles, and their hidden agendas, hinting at fault lines beneath polite speeches.",
         "confrontation": "Schemes unfold: alliances are formed and broken, scandals surface, votes or decrees are contested. Quiet threats, blackmail, and backroom deals escalate as each move invites retaliation and raises the stakes.",
         "resolution": "A decisive event—vote, coup, assassination, or scandal—reshapes the balance of power. Reveal which plans succeeded, which backfired, and what personal and societal costs were paid for the new political order."
+    },
+    "memorableElement": {
+      "type": "twist",
+      "name": "The Double-Cross at the Summit",
+      "description": "At a crucial diplomatic summit or council meeting, a trusted ally reveals themselves as a traitor—or an enemy proves to have been playing both sides all along.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "The ally providing helpful information that seems too good to be true",
+        "Other characters warning about trusting anyone in the political arena",
+        "Seeming coincidences that align too perfectly with the traitor's interests"
+      ]
     }
     },
     {
@@ -558,6 +976,17 @@
         "setup": "Introduce who is traveling, why the journey is happening, and what tensions or secrets already exist in the group. Show the first stretch of the road and an early stop that hints at the emotional terrain ahead.",
         "confrontation": "As the journey continues, delays, detours, and mishaps force characters into vulnerable conversations and conflicts. Stops at significant places trigger memories, arguments, and unexpected moments of connection or rupture.",
         "resolution": "Upon reaching—or choosing not to reach—the destination, characters confront the real issue at the heart of the trip. Relationships shift: some heal, some break, and each traveler leaves changed by the miles behind them."
+    },
+    "memorableElement": {
+      "type": "emotional_peak",
+      "name": "The Breakdown Confession",
+      "description": "Stranded by car trouble in the middle of nowhere with no distractions, characters finally confront the truths they've been avoiding—secrets spill out, and everything changes.",
+      "placement": "confrontation",
+      "setup_hooks": [
+        "Characters almost confessing multiple times but getting interrupted or deflecting",
+        "The vehicle making ominous noises that foreshadow the breakdown",
+        "Earlier stops where tensions nearly boiled over but were contained"
+      ]
     }
     },
     {
@@ -570,6 +999,17 @@
         "setup": "Introduce the underdog athlete or team, their weaknesses, and why the odds are against them. Present the looming competition and the personal stakes that make winning—or simply playing—matter.",
         "confrontation": "Training, early matches, and conflicts push the team or athlete to their limits. Injuries, losses, rivalries, and internal tensions threaten to break their resolve or unity, forcing them to decide what they truly play for.",
         "resolution": "The big game or final event unfolds with high emotional stakes. Show how the characters have grown, whether they win or lose on the scoreboard, and what victory or defeat means for their futures and relationships."
+    },
+    "memorableElement": {
+      "type": "emotional_peak",
+      "name": "The Halftime Speech",
+      "description": "Down at halftime and seemingly defeated, a teammate or coach gives an emotional speech that transforms the team's spirit—they realize they're playing for something bigger than winning.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "The team losing sight of why they started playing amid pressure and expectations",
+        "Earlier games where talent alone wasn't enough to win",
+        "A coach or teammate who's been holding back finally sharing their truth"
+      ]
     }
     },
     {
@@ -582,6 +1022,17 @@
         "setup": "Introduce the romantic leads in their ordinary lives and show how they meet or reconnect. Highlight the gentle spark between them through small kindnesses, shared interests, or easy conversation.",
         "confrontation": "Their relationship deepens through everyday moments—shared meals, inside jokes, and being there for each other on hard days. Minor conflicts or insecurities arise but are handled with honesty and care rather than dramatic breakups.",
         "resolution": "The couple openly acknowledges and affirms their love, choosing a future together. Show a cozy, grounded vision of their shared life, emphasizing ongoing support, comfort, and joy in the ordinary."
+    },
+    "memorableElement": {
+      "type": "emotional_peak",
+      "name": "The Soft Confession",
+      "description": "In a quiet moment during an ordinary activity—cooking, reading, walking—one character gently admits their love without fanfare or fear, and the other accepts it with natural ease.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Both characters assuming their feelings are obvious but never saying them outright",
+        "Friends or family noticing the chemistry before the couple acknowledges it",
+        "Small moments of intimacy that feel like confessions without using the words"
+      ]
     }
     },
     {
@@ -594,6 +1045,17 @@
         "setup": "Introduce the protagonist or team, their base of operations, and the rules of their world. Present an early case or monster that shows how they work together and hint at a mysterious larger threat in the background.",
         "confrontation": "A sequence of distinct threats or cases tests the team's skills and relationships. Each episode-like conflict reveals new clues about the overarching mystery or antagonist, while personal stakes and complications build.",
         "resolution": "The long-foreshadowed major threat finally steps into the foreground. The team confronts their toughest challenge yet, drawing on everything they've learned from prior encounters to resolve the overarching arc—though new mysteries may remain."
+    },
+    "memorableElement": {
+      "type": "revelation",
+      "name": "The Pattern Revealed",
+      "description": "After defeating seemingly unrelated threats, the protagonist realizes they're all connected—the villain has been testing them, preparing them, or manipulating them all along.",
+      "placement": "resolution",
+      "setup_hooks": [
+        "Recurring symbols, methods, or victims that seem like coincidence",
+        "The villain observing or occasionally helping in earlier episodes",
+        "Team members noticing details that don't add up but dismissing them"
+      ]
     }
     },
     {
@@ -606,6 +1068,17 @@
         "setup": "Establish the remote, isolated setting (cabin, island, rig, station) and why the characters are there. Show how they become cut off—storm, sabotage, lost signal—and tease the first unsettling signs that something is wrong.",
         "confrontation": "The threat escalates through attacks, disappearances, or inexplicable events. Supplies dwindle, escape plans fail, and paranoia turns the group against itself as they argue over whether to fortify, flee, or confront the danger.",
         "resolution": "The survivors make a desperate final stand or last escape attempt. Reveal or partially reveal the nature of the threat as sacrifices are made, the location is abandoned or destroyed, and the cost of survival—or failure—becomes brutally clear."
+      },
+      "memorableElement": {
+        "type": "revelation",
+        "name": "The Monster Among Us",
+        "description": "The survivors discover the terrifying truth—one of them is not who they seem, or the threat has been hiding in plain sight, wearing a familiar face.",
+        "placement": "resolution",
+        "setup_hooks": [
+          "Characters behaving strangely or disappearing at suspicious moments",
+          "Evidence suggesting the threat knows their plans and movements too well",
+          "Earlier close calls that were actually narrow misses from within the group"
+        ]
       }
     }
 ]

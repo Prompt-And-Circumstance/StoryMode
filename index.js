@@ -33,7 +33,7 @@ import { Popper } from '/lib.js';
 import * as BlueprintModule from './lib/blueprint-module.js';
 
 // Import Blueprint Editor module
-import { openBlueprintEditor } from './lib/blueprint-editor.js';
+import { openBlueprintEditor, generateCoverFromSD, addCoverToGallery, setCoverImageUrl } from './lib/blueprint-editor.js';
 
 // Import Blueprint Integration module (Library API + PNG Storage)
 import {
@@ -52,6 +52,13 @@ import {
 
 // Import Loading Indicator module
 import * as LoadingIndicator from './lib/loading-indicator.js';
+
+// Import UI Components module (wizard components)
+import {
+    buildWizardProgressHTML,
+    buildWizardPreview,
+    buildPrimaryEndingDisplay,
+} from './lib/ui-components.js';
 
 // Import State Manager module
 import {
@@ -96,9 +103,11 @@ import {
     updateWandMenuStatus,
 } from './lib/wand-menu.js';
 
+// Import UI Component System module (for utilities)
+import { escapeHtml } from './lib/ui-component-system.js';
+
 // Import UI Components module
 import {
-    escapeHtml,
     renderMainPanel,
     renderBlueprintPreview,
     buildSidebarContent,
@@ -193,9 +202,9 @@ console.log('[Story Mode] All modules imported and initialized successfully');
 * @returns {Promise<void>}
 */
 async function showSettingsDialog() {
-const settings = extension_settings[MODULE_NAME];
-const chatState = getChatStoryState();
-const html = `
+    const settings = extension_settings[MODULE_NAME];
+    const chatState = getChatStoryState();
+    const html = `
 <div class="storymode-unified-modal">
 <!-- Modal Heading -->
 <div class="storymode-modal-heading">
@@ -236,100 +245,100 @@ ${buildLibraryTabContent()}
 </div>
 </div>
 `;
-const content = $(html);
+    const content = $(html);
 
-// Tab switching - attached to content BEFORE showing popup
-content.find('.storymode-tab').on('click', function() {
-    const tabName = $(this).data('tab');
-    console.log('[Story Mode] Tab clicked:', tabName);
+    // Tab switching - attached to content BEFORE showing popup
+    content.find('.storymode-tab').on('click', function () {
+        const tabName = $(this).data('tab');
+        console.log('[Story Mode] Tab clicked:', tabName);
 
-    // Update tab buttons
-    content.find('.storymode-tab').removeClass('active');
-    $(this).addClass('active');
+        // Update tab buttons
+        content.find('.storymode-tab').removeClass('active');
+        $(this).addClass('active');
 
-    // Update tab panes - use class manipulation only (CSS handles display)
-    content.find('.storymode-tab-pane').removeClass('active');
-    content.find(`#tab_${tabName}`).addClass('active');
+        // Update tab panes - use class manipulation only (CSS handles display)
+        content.find('.storymode-tab-pane').removeClass('active');
+        content.find(`#tab_${tabName}`).addClass('active');
 
-    console.log('[Story Mode] Tab pane classes after switch:');
-    content.find('.storymode-tab-pane').each(function() {
-        console.log('[Story Mode]', $(this).attr('id'), 'has active:', $(this).hasClass('active'));
+        console.log('[Story Mode] Tab pane classes after switch:');
+        content.find('.storymode-tab-pane').each(function () {
+            console.log('[Story Mode]', $(this).attr('id'), 'has active:', $(this).hasClass('active'));
+        });
     });
-});
 
-// Settings subtab switching
-content.on('click', '.storymode-settings-subtab', function() {
-    const subtabName = $(this).data('subtab');
-    // Update subtab buttons
-    content.find('.storymode-settings-subtab').removeClass('active');
-    $(this).addClass('active');
-    // Update subtab panes
-    content.find('.storymode-settings-subtab-pane').removeClass('active');
-    content.find(`#settings_subtab_${subtabName}`).addClass('active');
-    // Re-populate connection profiles if switching to API Options tab
-    if (subtabName === 'api_options') {
-        populateConnectionProfiles(content);
-    }
-});
-
-// Blueprint subtab switching
-content.on('click', '.storymode-blueprint-subtab', function() {
-    const subtabName = $(this).data('subtab');
-    // Update subtab buttons
-    content.find('.storymode-blueprint-subtab').removeClass('active');
-    $(this).addClass('active');
-
-    // Update content
-    const contentDiv = content.find('#blueprint_subtab_content');
-    if (subtabName === 'generate') {
-        // Show generate form
-        contentDiv.html(buildGenerateBlueprintSubtab());
-    } else {
-        // Show blueprint detail tabs
-        const blueprintState = BlueprintModule.getBlueprintState();
-        const blueprint = blueprintState.blueprint;
-        if (!blueprint) {
-            contentDiv.html('<p class="storymode-form-hint">No blueprint available. Generate one first.</p>');
-            return;
+    // Settings subtab switching
+    content.on('click', '.storymode-settings-subtab', function () {
+        const subtabName = $(this).data('subtab');
+        // Update subtab buttons
+        content.find('.storymode-settings-subtab').removeClass('active');
+        $(this).addClass('active');
+        // Update subtab panes
+        content.find('.storymode-settings-subtab-pane').removeClass('active');
+        content.find(`#settings_subtab_${subtabName}`).addClass('active');
+        // Re-populate connection profiles if switching to API Options tab
+        if (subtabName === 'api_options') {
+            populateConnectionProfiles(content);
         }
-        const chatState = getChatStoryState();
-        const currentScene = BlueprintModule.getCurrentScene(
-            blueprint,
-            chatState.currentStep,
-            chatState.arcLength,
-            blueprintState.sceneMode || 'auto',
-            blueprintState.currentSceneIndex || 0
-        );
-        if (subtabName === 'overview') {
-            contentDiv.html(renderBlueprintOverviewSubtab(blueprint, currentScene));
-        } else if (subtabName === 'scenes') {
-            contentDiv.html(renderBlueprintScenesSubtab(blueprint));
-        } else if (subtabName === 'characters') {
-            contentDiv.html(renderBlueprintCharactersSubtab(blueprint));
-        } else if (subtabName === 'json') {
-            contentDiv.html(renderBlueprintJsonSubtab(blueprint));
+    });
+
+    // Blueprint subtab switching
+    content.on('click', '.storymode-blueprint-subtab', function () {
+        const subtabName = $(this).data('subtab');
+        // Update subtab buttons
+        content.find('.storymode-blueprint-subtab').removeClass('active');
+        $(this).addClass('active');
+
+        // Update content
+        const contentDiv = content.find('#blueprint_subtab_content');
+        if (subtabName === 'generate') {
+            // Show generate form
+            contentDiv.html(buildGenerateBlueprintSubtab());
+        } else {
+            // Show blueprint detail tabs
+            const blueprintState = BlueprintModule.getBlueprintState();
+            const blueprint = blueprintState.blueprint;
+            if (!blueprint) {
+                contentDiv.html('<p class="storymode-form-hint">No blueprint available. Generate one first.</p>');
+                return;
+            }
+            const chatState = getChatStoryState();
+            const currentScene = BlueprintModule.getCurrentScene(
+                blueprint,
+                chatState.currentStep,
+                chatState.arcLength,
+                blueprintState.sceneMode || 'auto',
+                blueprintState.currentSceneIndex || 0
+            );
+            if (subtabName === 'overview') {
+                contentDiv.html(renderBlueprintOverviewSubtab(blueprint, currentScene));
+            } else if (subtabName === 'scenes') {
+                contentDiv.html(renderBlueprintScenesSubtab(blueprint));
+            } else if (subtabName === 'characters') {
+                contentDiv.html(renderBlueprintCharactersSubtab(blueprint));
+            } else if (subtabName === 'json') {
+                contentDiv.html(renderBlueprintJsonSubtab(blueprint));
+            }
         }
-    }
-});
+    });
 
-// Set up all event listeners
-setupUnifiedDialogEventListeners(content);
+    // Set up all event listeners
+    setupUnifiedDialogEventListeners(content);
 
-// Populate connection profiles dropdown
-populateConnectionProfiles(content);
+    // Populate connection profiles dropdown
+    populateConnectionProfiles(content);
 
-// Update prompt preview
-updatePreviewInDialog(content);
+    // Update prompt preview
+    updatePreviewInDialog(content);
 
-// Show popup
-const popup = new Popup(content, POPUP_TYPE.TEXT, 'Story Mode Settings', {
-okButton: 'Close',
-wide: true,
-large: true,
-allowVerticalScrolling: true,
-});
+    // Show popup
+    const popup = new Popup(content, POPUP_TYPE.TEXT, 'Story Mode Settings', {
+        okButton: 'Close',
+        wide: true,
+        large: true,
+        allowVerticalScrolling: true,
+    });
 
-await popup.show();
+    await popup.show();
 }
 /**
 * Populate connection profiles dropdowns in the dialog
@@ -397,635 +406,774 @@ function updateBlueprintSetting(key, value) {
 * @param {jQuery} content - The jQuery content object containing the dialog UI.
 */
 function setupUnifiedDialogEventListeners(content) {
-// Story arc toggle
-content.find('#story_arc_enabled').on('change', function() {
-const enabled = $(this).is(':checked');
-extension_settings[MODULE_NAME].storyArcEnabled = enabled;
-content.find('#story_arc_controls').toggle(enabled);
-saveSettingsDebounced();
-updateStoryPrompt();
-updatePreviewInDialog(content);
-updateStatusDisplay();
-});
-// Story type selection
-content.find('#story_type_select').on('change', async function() {
-const selectedType = $(this).val();
-extension_settings[MODULE_NAME].selectedStoryType = selectedType;
-saveSettingsDebounced();
-const chatState = getChatStoryState();
-chatState.selectedStoryType = selectedType;
-await saveChatStoryState(chatState);
-// Update story type description
-const selectedStoryType = storyTypes.find(t => t.id === selectedType);
-const description = selectedStoryType ? selectedStoryType.storyPrompt : 'Select a story type to see its description';
-content.find('#story_type_description').text(description);
-// One-way sync: Update blueprint dropdown if it exists
-content.find('#blueprint_story_type').val(selectedType);
-updateStoryPrompt();
-updatePreviewInDialog(content);
-updateStatusDisplay();
-refreshSidebar(content);
-});
-// Arc length slider and input
-const updateArcLength = async function(value) {
-const clampedValue = Math.max(5, Math.min(150, parseInt(value)));
-extension_settings[MODULE_NAME].arcLength = clampedValue;
-content.find('#arc_length_slider').val(clampedValue);
-content.find('#arc_length_value').val(clampedValue);
-saveSettingsDebounced();
-const chatState = getChatStoryState();
-chatState.arcLength = clampedValue;
-await saveChatStoryState(chatState);
-updatePreviewInDialog(content);
-updateStatusDisplay();
-};
-content.find('#arc_length_slider').on('input', async function() {
-await updateArcLength($(this).val());
-});
-content.find('#arc_length_value').on('change', async function() {
-await updateArcLength($(this).val());
-});
-// Author style toggle
-content.find('#author_style_enabled').on('change', function() {
-const enabled = $(this).is(':checked');
-extension_settings[MODULE_NAME].authorStyleEnabled = enabled;
-content.find('#author_style_controls').toggle(enabled);
-saveSettingsDebounced();
-updateStoryPrompt();
-updatePreviewInDialog(content);
-});
-// Author style selection
-content.find('#author_style_select').on('change', async function() {
-const selectedStyle = $(this).val();
-extension_settings[MODULE_NAME].selectedAuthorStyle = selectedStyle;
-saveSettingsDebounced();
-const chatState = getChatStoryState();
-chatState.selectedAuthorStyle = selectedStyle;
-await saveChatStoryState(chatState);
-// Update author style description
-const selectedAuthorStyle = authorStyles.find(s => s.id === selectedStyle);
-const description = selectedAuthorStyle ? selectedAuthorStyle.authorPrompt : 'Select an author style to see its guidance';
-content.find('#author_style_description').text(description);
-// One-way sync: Update blueprint dropdown if it exists
-content.find('#blueprint_author_style').val(selectedStyle);
-updateStoryPrompt();
-updatePreviewInDialog(content);
-updateStatusDisplay();
-refreshSidebar(content);
-});
-// NSFW toggle
-content.find('#nsfw_enabled').on('change', function() {
-extension_settings[MODULE_NAME].nsfwEnabled = $(this).is(':checked');
-saveSettingsDebounced();
-updateStoryPrompt();
-updatePreviewInDialog(content);
-});
-// Epilogue toggle
-content.find('#epilogue_enabled').on('change', function() {
-extension_settings[MODULE_NAME].epilogueEnabled = $(this).is(':checked');
-saveSettingsDebounced();
-});
-// Summary toggle
-content.find('#summary_enabled').on('change', function() {
-extension_settings[MODULE_NAME].summaryEnabled = $(this).is(':checked');
-saveSettingsDebounced();
-});
-// Summary message count slider
-content.find('#summary_message_count_slider').on('input', function() {
-const value = parseInt($(this).val());
-extension_settings[MODULE_NAME].summaryMessageCount = value;
-content.find('#summary_message_count_value').text(value === 0 ? 'All' : value);
-saveSettingsDebounced();
-});
-// Debug mode toggle
-content.find('#debug_mode_enabled').on('change', function() {
-extension_settings[MODULE_NAME].debugMode = $(this).is(':checked');
-saveSettingsDebounced();
-updateStoryPrompt();
-});
-// Injection settings
-content.find('#injection_position').on('change', function() {
-extension_settings[MODULE_NAME].position = parseInt($(this).val());
-saveSettingsDebounced();
-updateStoryPrompt();
-});
-content.find('#injection_depth').on('change', function() {
-extension_settings[MODULE_NAME].depth = parseInt($(this).val());
-saveSettingsDebounced();
-updateStoryPrompt();
-});
-content.find('#injection_role').on('change', function() {
-extension_settings[MODULE_NAME].role = parseInt($(this).val());
-saveSettingsDebounced();
-updateStoryPrompt();
-});
-// Edit buttons
-content.find('#edit_story_types_btn').on('click', showStoryTypesEditor);
-content.find('#edit_author_styles_btn').on('click', showAuthorStylesEditor);
-// Reset arc button (sidebar)
-content.find('#sidebar_reset_arc_btn').on('click', async function() {
-if (confirm('Reset the story arc? This will set the round counter back to 0.')) {
-const chatState = getChatStoryState();
-chatState.currentStep = 0;
-chatState.arcStarted = false;
-chatState.epilogueShown = false;
-chatState.summaryShown = false;
-chatState.endNoticeShown = false;
-await saveChatStoryState(chatState);
-updateStoryPrompt();
-updateStatusDisplay();
-toastr.success('Story arc reset');
-// Refresh current step display
-content.find('#current_step_display').text('Not Started');
-}
-});
-// Blueprint settings
-content.find('#blueprint_enabled, #blueprint_enabled_tab').on('change', function() {
-const enabled = $(this).is(':checked');
-if (!extension_settings[MODULE_NAME].blueprintSettings) {
-extension_settings[MODULE_NAME].blueprintSettings = {};
-}
-extension_settings[MODULE_NAME].blueprintSettings.enabled = enabled;
-saveSettingsDebounced();
-updateStoryPrompt();
-updateStatusDisplay();
-populateConnectionProfiles(content);
-setupUnifiedDialogEventListeners(content);
-});
-content.find('#blueprint_use_scene_prompts').on('change', function() {
-const enabled = $(this).is(':checked');
-if (!extension_settings[MODULE_NAME].blueprintSettings) {
-extension_settings[MODULE_NAME].blueprintSettings = {};
-}
-extension_settings[MODULE_NAME].blueprintSettings.useScenePrompts = enabled;
-saveSettingsDebounced();
-updateStoryPrompt();
-});
-content.find('#blueprint_beat_tracking').on('change', function() {
-    updateBlueprintSetting('beatTrackingEnabled', $(this).is(':checked'));
-    // Refresh main panel to show/hide beat progress
-    $('#story_mode_panel').replaceWith(renderMainPanel());
-    setupEventListeners();
-});
-content.find('#blueprint_scene_transition_notify').on('change', function() {
-const value = $(this).val() || 'none';
-if (!extension_settings[MODULE_NAME].blueprintSettings) {
-extension_settings[MODULE_NAME].blueprintSettings = {};
-}
-extension_settings[MODULE_NAME].blueprintSettings.sceneTransitionNotify = value;
-saveSettingsDebounced();
-});
-// Scene Summarization settings
-const summarizationSettings = [
-    { selector: '#blueprint_summarization_enabled', key: 'summarizationEnabled', transform: v => $(v).is(':checked') },
-    { selector: '#blueprint_summarize_after_scenes', key: 'summarizeAfterScenes', transform: v => parseInt($(v).val()) },
-    { selector: '#blueprint_summary_max_tokens', key: 'summaryMaxTokens', transform: v => parseInt($(v).val()) },
-    { selector: '#blueprint_include_summaries', key: 'includeSummariesInPrompt', transform: v => $(v).is(':checked'), updatePrompt: true },
-    { selector: '#blueprint_summary_style', key: 'summaryStyle', transform: v => $(v).val() },
-];
-
-summarizationSettings.forEach(({ selector, key, transform, updatePrompt }) => {
-    content.find(selector).on('change', function() {
-        if (!extension_settings[MODULE_NAME].blueprintSettings) {
-            extension_settings[MODULE_NAME].blueprintSettings = {};
-        }
-        extension_settings[MODULE_NAME].blueprintSettings[key] = transform(this);
+    // Story arc toggle
+    content.find('#story_arc_enabled').on('change', function () {
+        const enabled = $(this).is(':checked');
+        extension_settings[MODULE_NAME].storyArcEnabled = enabled;
+        content.find('#story_arc_controls').toggle(enabled);
         saveSettingsDebounced();
-        if (updatePrompt) {
+        updateStoryPrompt();
+        updatePreviewInDialog(content);
+        updateStatusDisplay();
+    });
+    // Story type selection
+    content.find('#story_type_select').on('change', async function () {
+        const selectedType = $(this).val();
+        extension_settings[MODULE_NAME].selectedStoryType = selectedType;
+        saveSettingsDebounced();
+        const chatState = getChatStoryState();
+        chatState.selectedStoryType = selectedType;
+        await saveChatStoryState(chatState);
+        // Update story type description
+        const selectedStoryType = storyTypes.find(t => t.id === selectedType);
+        const description = selectedStoryType ? selectedStoryType.storyPrompt : 'Select a story type to see its description';
+        content.find('#story_type_description').text(description);
+        // One-way sync: Update blueprint dropdown if it exists
+        content.find('#blueprint_story_type').val(selectedType);
+        updateStoryPrompt();
+        updatePreviewInDialog(content);
+        updateStatusDisplay();
+        refreshSidebar(content);
+    });
+    // Arc length slider and input
+    const updateArcLength = async function (value) {
+        const clampedValue = Math.max(5, Math.min(150, parseInt(value)));
+        extension_settings[MODULE_NAME].arcLength = clampedValue;
+        content.find('#arc_length_slider').val(clampedValue);
+        content.find('#arc_length_value').val(clampedValue);
+        saveSettingsDebounced();
+        const chatState = getChatStoryState();
+        chatState.arcLength = clampedValue;
+        await saveChatStoryState(chatState);
+        updatePreviewInDialog(content);
+        updateStatusDisplay();
+    };
+    content.find('#arc_length_slider').on('input', async function () {
+        await updateArcLength($(this).val());
+    });
+    content.find('#arc_length_value').on('change', async function () {
+        await updateArcLength($(this).val());
+    });
+    // Author style toggle
+    content.find('#author_style_enabled').on('change', function () {
+        const enabled = $(this).is(':checked');
+        extension_settings[MODULE_NAME].authorStyleEnabled = enabled;
+        content.find('#author_style_controls').toggle(enabled);
+        saveSettingsDebounced();
+        updateStoryPrompt();
+        updatePreviewInDialog(content);
+    });
+    // Author style selection
+    content.find('#author_style_select').on('change', async function () {
+        const selectedStyle = $(this).val();
+        extension_settings[MODULE_NAME].selectedAuthorStyle = selectedStyle;
+        saveSettingsDebounced();
+        const chatState = getChatStoryState();
+        chatState.selectedAuthorStyle = selectedStyle;
+        await saveChatStoryState(chatState);
+        // Update author style description
+        const selectedAuthorStyle = authorStyles.find(s => s.id === selectedStyle);
+        const description = selectedAuthorStyle ? selectedAuthorStyle.authorPrompt : 'Select an author style to see its guidance';
+        content.find('#author_style_description').text(description);
+        // One-way sync: Update blueprint dropdown if it exists
+        content.find('#blueprint_author_style').val(selectedStyle);
+        updateStoryPrompt();
+        updatePreviewInDialog(content);
+        updateStatusDisplay();
+        refreshSidebar(content);
+    });
+    // NSFW toggle
+    content.find('#nsfw_enabled').on('change', function () {
+        extension_settings[MODULE_NAME].nsfwEnabled = $(this).is(':checked');
+        saveSettingsDebounced();
+        updateStoryPrompt();
+        updatePreviewInDialog(content);
+    });
+    // Epilogue toggle
+    content.find('#epilogue_enabled').on('change', function () {
+        extension_settings[MODULE_NAME].epilogueEnabled = $(this).is(':checked');
+        saveSettingsDebounced();
+    });
+    // Summary toggle
+    content.find('#summary_enabled').on('change', function () {
+        extension_settings[MODULE_NAME].summaryEnabled = $(this).is(':checked');
+        saveSettingsDebounced();
+    });
+    // Summary message count slider
+    content.find('#summary_message_count_slider').on('input', function () {
+        const value = parseInt($(this).val());
+        extension_settings[MODULE_NAME].summaryMessageCount = value;
+        content.find('#summary_message_count_value').text(value === 0 ? 'All' : value);
+        saveSettingsDebounced();
+    });
+    // Debug mode toggle
+    content.find('#debug_mode_enabled').on('change', function () {
+        extension_settings[MODULE_NAME].debugMode = $(this).is(':checked');
+        saveSettingsDebounced();
+        updateStoryPrompt();
+    });
+    // Injection settings
+    content.find('#injection_position').on('change', function () {
+        extension_settings[MODULE_NAME].position = parseInt($(this).val());
+        saveSettingsDebounced();
+        updateStoryPrompt();
+    });
+    content.find('#injection_depth').on('change', function () {
+        extension_settings[MODULE_NAME].depth = parseInt($(this).val());
+        saveSettingsDebounced();
+        updateStoryPrompt();
+    });
+    content.find('#injection_role').on('change', function () {
+        extension_settings[MODULE_NAME].role = parseInt($(this).val());
+        saveSettingsDebounced();
+        updateStoryPrompt();
+    });
+    // Edit buttons
+    content.find('#edit_story_types_btn').on('click', showStoryTypesEditor);
+    content.find('#edit_author_styles_btn').on('click', showAuthorStylesEditor);
+    // Reset arc button (sidebar)
+    content.find('#sidebar_reset_arc_btn').on('click', async function () {
+        if (confirm('Reset the story arc? This will set the round counter back to 0.')) {
+            const chatState = getChatStoryState();
+            chatState.currentStep = 0;
+            chatState.arcStarted = false;
+            chatState.epilogueShown = false;
+            chatState.summaryShown = false;
+            chatState.endNoticeShown = false;
+            await saveChatStoryState(chatState);
             updateStoryPrompt();
+            updateStatusDisplay();
+            toastr.success('Story arc reset');
+            // Refresh current step display
+            content.find('#current_step_display').text('Not Started');
         }
     });
-});
-// Edit scene summary prompt template button
-content.find('#edit_scene_summary_prompt').on('click', async function() {
-    const currentPrompt = BlueprintModule.getEffectiveSceneSummaryPrompt();
-    const result = await Popup.show.input(
-        'Edit Scene Summary Prompt Template',
-        'Enter the prompt template for scene summarization. Variables like {{CONTEXT}}, {{MESSAGES}}, and {{REQUIREMENTS}} will be replaced at generation time.',
-        currentPrompt,
-        { rows: 15, okButton: 'Save', wide: true, large: true }
-    );
-    if (result) {
+    // Blueprint settings
+    content.find('#blueprint_enabled, #blueprint_enabled_tab').on('change', function () {
+        const enabled = $(this).is(':checked');
         if (!extension_settings[MODULE_NAME].blueprintSettings) {
             extension_settings[MODULE_NAME].blueprintSettings = {};
         }
-        extension_settings[MODULE_NAME].blueprintSettings.sceneSummaryPrompt = result;
+        extension_settings[MODULE_NAME].blueprintSettings.enabled = enabled;
         saveSettingsDebounced();
-        toastr.success('Scene summary prompt template updated');
-    }
-});
-// Cover generation settings
-const coverGenerationSettings = [
-    { selector: '#cover_gen_enabled', key: 'enabled', transform: v => $(v).is(':checked') },
-    { selector: '#cover_auto_generate', key: 'autoGenerate', transform: v => $(v).is(':checked') },
-    { selector: '#cover_add_to_gallery', key: 'addToGallery', transform: v => $(v).is(':checked') },
-    { selector: '#cover_max_gallery', key: 'maxGallerySize', transform: v => parseInt($(v).val()) || 10 },
-    { selector: '#cover_auto_select_latest', key: 'autoSelectLatest', transform: v => $(v).is(':checked') },
-    { selector: '#cover_default_quality', key: 'defaultQuality', transform: v => $(v).val() },
-    { selector: '#cover_default_aspect', key: 'defaultAspectRatio', transform: v => $(v).val() },
-    { selector: '#cover_default_style', key: 'defaultStyle', transform: v => $(v).val() },
-    { selector: '#cover_show_prompt', key: 'showPromptOnGenerate', transform: v => $(v).is(':checked') },
-    { selector: '#cover_confirm_delete', key: 'confirmDeleteCover', transform: v => $(v).is(':checked') },
-    { selector: '#cover_keyboard_nav', key: 'keyboardNavigation', transform: v => $(v).is(':checked') },
-    { selector: '#cover_show_counter', key: 'showGalleryCounter', transform: v => $(v).is(':checked') },
-];
-
-coverGenerationSettings.forEach(({ selector, key, transform }) => {
-    content.find(selector).on('change', function() {
-        const settings = extension_settings[MODULE_NAME];
-        settings.blueprintSettings = settings.blueprintSettings || {};
-        settings.blueprintSettings.coverGeneration = settings.blueprintSettings.coverGeneration || {};
-        settings.blueprintSettings.coverGeneration[key] = transform(this);
+        updateStoryPrompt();
+        updateStatusDisplay();
+        populateConnectionProfiles(content);
+        setupUnifiedDialogEventListeners(content);
+    });
+    content.find('#blueprint_use_scene_prompts').on('change', function () {
+        const enabled = $(this).is(':checked');
+        if (!extension_settings[MODULE_NAME].blueprintSettings) {
+            extension_settings[MODULE_NAME].blueprintSettings = {};
+        }
+        extension_settings[MODULE_NAME].blueprintSettings.useScenePrompts = enabled;
+        saveSettingsDebounced();
+        updateStoryPrompt();
+    });
+    content.find('#blueprint_beat_tracking').on('change', function () {
+        updateBlueprintSetting('beatTrackingEnabled', $(this).is(':checked'));
+        // Refresh main panel to show/hide beat progress
+        $('#story_mode_panel').replaceWith(renderMainPanel());
+        setupEventListeners();
+    });
+    content.find('#blueprint_scene_transition_notify').on('change', function () {
+        const value = $(this).val() || 'none';
+        if (!extension_settings[MODULE_NAME].blueprintSettings) {
+            extension_settings[MODULE_NAME].blueprintSettings = {};
+        }
+        extension_settings[MODULE_NAME].blueprintSettings.sceneTransitionNotify = value;
         saveSettingsDebounced();
     });
-});
-content.find('#blueprint_generation_api').on('change', function() {
-const selectedApi = $(this).val() || null;
-extension_settings[MODULE_NAME].blueprintSettings = extension_settings[MODULE_NAME].blueprintSettings || {};
-extension_settings[MODULE_NAME].blueprintSettings.generationApi = selectedApi;
-saveSettingsDebounced();
-console.log('[Story Mode] Settings Dialog: Generation API changed to:', selectedApi || 'main API');
-console.log('[Story Mode] Settings Dialog: Full blueprintSettings.generationApi:', extension_settings[MODULE_NAME].blueprintSettings.generationApi);
-});
-// Opening message API dropdown
-content.find('#opening_message_api').on('change', function() {
-const selectedApi = $(this).val() || null;
-extension_settings[MODULE_NAME].blueprintSettings = extension_settings[MODULE_NAME].blueprintSettings || {};
-extension_settings[MODULE_NAME].blueprintSettings.openingMessageApi = selectedApi;
-saveSettingsDebounced();
-});
-// Epilogue API dropdown
-content.find('#epilogue_api').on('change', function() {
-const selectedApi = $(this).val() || null;
-extension_settings[MODULE_NAME].epilogueApi = selectedApi;
-saveSettingsDebounced();
-});
-// Summary API dropdown
-content.find('#summary_api').on('change', function() {
-const selectedApi = $(this).val() || null;
-extension_settings[MODULE_NAME].summaryApi = selectedApi;
-saveSettingsDebounced();
-});
-// Loading Indicator settings
-content.find('#loading_indicator_enabled').on('change', function() {
-const enabled = $(this).is(':checked');
-LoadingIndicator.updateSettings({ enabled });
-});
-content.find('#loading_indicator_position').on('change', function() {
-const position = $(this).val();
-LoadingIndicator.updateSettings({ position });
-});
-content.find('#loading_indicator_animation').on('change', function() {
-const animationStyle = $(this).val();
-LoadingIndicator.updateSettings({ animationStyle });
-});
-content.find('#loading_indicator_gif_url').on('change', function() {
-const customGifUrl = $(this).val() || null;
-LoadingIndicator.updateSettings({ customGifUrl });
-});
-content.find('#loading_indicator_phrases').on('change', function() {
-const phrasesText = $(this).val();
-const phrases = phrasesText.split('\n').map(p => p.trim()).filter(p => p.length > 0);
-LoadingIndicator.updateSettings({ phrases });
-});
-content.find('#loading_indicator_preview').on('click', function() {
-// Start animated preview
-LoadingIndicator.startPreview();
-});
-// Reset Arc button (Story Arc subtab)
-content.find('#reset_arc_btn').on('click', async function() {
-if (confirm('Reset the story arc? This will set the round counter back to 0 and clear arc completion flags.')) {
-const chatState = getChatStoryState();
-chatState.currentStep = 0;
-chatState.arcStarted = false;
-chatState.epilogueShown = false;
-chatState.summaryShown = false;
-chatState.endNoticeShown = false;
-await saveChatStoryState(chatState);
-updateStoryPrompt();
-updateStatusDisplay();
-toastr.success('Story arc reset');
-// Refresh current step display in the Story Arc subtab
-content.find('#current_step_display').text('Step 0 / ' + chatState.arcLength);
-}
-});
-// Generate blueprint button (Generate Blueprint subtab)
-content.on('click', '#blueprint_generate_btn', async function() {
-const btn = $(this);
-const originalText = btn.html();
-// Set loading state
-btn.prop('disabled', true);
-btn.html('<i class="fa-solid fa-circle-notch fa-spin"></i> Generating...');
-LoadingIndicator.show('Generating story blueprint...');
-try {
-// Gather form data
-const selectedCharacterIds = [];
-content.find('input[name="blueprint_character"]:checked').each(function() {
-const charId = $(this).val();
-if (charId) {
-selectedCharacterIds.push(charId);
-}
-});
-console.log('[Story Mode] Selected character IDs:', selectedCharacterIds);
-const selectedPersonas = [];
-content.find('input[name="blueprint_persona"]:checked').each(function() {
-const personaId = $(this).val();
-const personaName = $(this).data('name');
-if (personaId) {
-selectedPersonas.push({
-id: personaId,
-name: personaName || personaId
-});
-}
-});
-console.log('[Story Mode] Selected personas:', selectedPersonas);
-const scenario = content.find('#blueprint_scenario').val() || '';
-const metaphorLevel = content.find('#blueprint_metaphor_level').val() || 'mixed';
-const storyLength = content.find('#blueprint_story_length').val() || 'medium';
-const customRounds = content.find('#blueprint_custom_rounds').val();
-const customMasterPrompt = content.find('#blueprint_master_prompt').val() || null;
-// Get story type and author style from new dropdowns
-const storyTypeId = content.find('#blueprint_story_type').val() || '';
-const authorStyleId = content.find('#blueprint_author_style').val() || '';
-// Use custom rounds if provided and valid, otherwise use the selected story length
-const finalStoryLength = customRounds && parseInt(customRounds) > 0 ? parseInt(customRounds) : parseInt(storyLength);
-// Build character data from context
-const context = getContext();
-const characterData = [];
-if (context.groupId) {
-// Group chat: get all characters from the group
-const group = context.groups?.find(g => g.id === context.groupId);
-if (group && group.members) {
-group.members.forEach(memberFilename => {
-// Find the character in the characters array by matching filename
-const charIndex = (context.characters || []).findIndex(c =>
-c.filename === memberFilename ||
-c.avatar === memberFilename ||
-(typeof c === 'string' && c === memberFilename)
-);
-if (charIndex !== -1 && selectedCharacterIds.includes(charIndex.toString())) {
-const char = context.characters[charIndex];
-if (char) {
-characterData.push({
-name: char.name,
-description: char.description,
-personality: char.personality,
-scenario: char.scenario,
-greeting: char.greeting
-});
-}
-}
-});
-}
-} else {
-// Single chat: get the main character
-if (selectedCharacterIds.includes(context.characterId?.toString())) {
-const char = context.characters?.[parseInt(context.characterId, 10)];
-if (char) {
-characterData.push({
-name: char.name,
-description: char.description,
-personality: char.personality,
-scenario: char.scenario,
-greeting: char.greeting
-});
-}
-}
-}
-// Build request config object
-const config = {
-    storyTypeId,
-    authorStyleId: authorStyleId || undefined,
-    characterData,
-    personaData: selectedPersonas,
-    scenario,
-    messageTarget: finalStoryLength,
-    metaphorLevel: metaphorLevel,
-    customMasterPrompt: customMasterPrompt
-};
-console.log('[Story Mode] Blueprint config:', {
-    storyTypeId: config.storyTypeId,
-    authorStyleId: config.authorStyleId,
-    characterDataCount: config.characterData.length,
-    personaDataCount: config.personaData.length,
-    messageTarget: config.messageTarget
-});
-// Call buildBlueprintRequest to get the proper request structure
-const request = BlueprintModule.buildBlueprintRequest(config);
-// Call BlueprintModule.generateBlueprint() with properly structured request
-const result = await BlueprintModule.generateBlueprint(request, storyTypes, authorStyles);
-if (result.success) {
-    // Sync blueprint settings to chat state with confirmation dialog
-    const syncResult = await BlueprintModule.syncBlueprintSettings(result.blueprint, true);
+    // Scene Summarization settings
+    const summarizationSettings = [
+        { selector: '#blueprint_summarization_enabled', key: 'summarizationEnabled', transform: v => $(v).is(':checked') },
+        { selector: '#blueprint_summarize_after_scenes', key: 'summarizeAfterScenes', transform: v => parseInt($(v).val()) },
+        { selector: '#blueprint_summary_max_tokens', key: 'summaryMaxTokens', transform: v => parseInt($(v).val()) },
+        { selector: '#blueprint_include_summaries', key: 'includeSummariesInPrompt', transform: v => $(v).is(':checked'), updatePrompt: true },
+        { selector: '#blueprint_summary_style', key: 'summaryStyle', transform: v => $(v).val() },
+    ];
 
-    // Check if user cancelled the sync
-    if (!syncResult.confirmed) {
-        console.log('[Story Mode] User cancelled blueprint sync, blueprint not saved');
-        toastr.warning('Blueprint generated but not saved. Settings sync was cancelled.');
-        content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
-        return;
-    }
+    summarizationSettings.forEach(({ selector, key, transform, updatePrompt }) => {
+        content.find(selector).on('change', function () {
+            if (!extension_settings[MODULE_NAME].blueprintSettings) {
+                extension_settings[MODULE_NAME].blueprintSettings = {};
+            }
+            extension_settings[MODULE_NAME].blueprintSettings[key] = transform(this);
+            saveSettingsDebounced();
+            if (updatePrompt) {
+                updateStoryPrompt();
+            }
+        });
+    });
+    // Edit scene summary prompt template button
+    content.find('#edit_scene_summary_prompt').on('click', async function () {
+        const currentPrompt = BlueprintModule.getEffectiveSceneSummaryPrompt();
+        const result = await Popup.show.input(
+            'Edit Scene Summary Prompt Template',
+            'Enter the prompt template for scene summarization. Variables like {{CONTEXT}}, {{MESSAGES}}, and {{REQUIREMENTS}} will be replaced at generation time.',
+            currentPrompt,
+            { rows: 15, okButton: 'Save', wide: true, large: true }
+        );
+        if (result) {
+            if (!extension_settings[MODULE_NAME].blueprintSettings) {
+                extension_settings[MODULE_NAME].blueprintSettings = {};
+            }
+            extension_settings[MODULE_NAME].blueprintSettings.sceneSummaryPrompt = result;
+            saveSettingsDebounced();
+            toastr.success('Scene summary prompt template updated');
+        }
+    });
+    // Cover generation settings
+    const coverGenerationSettings = [
+        { selector: '#cover_gen_enabled', key: 'enabled', transform: v => $(v).is(':checked') },
+        { selector: '#cover_auto_generate', key: 'autoGenerate', transform: v => $(v).is(':checked') },
+        { selector: '#cover_add_to_gallery', key: 'addToGallery', transform: v => $(v).is(':checked') },
+        { selector: '#cover_max_gallery', key: 'maxGallerySize', transform: v => parseInt($(v).val()) || 10 },
+        { selector: '#cover_auto_select_latest', key: 'autoSelectLatest', transform: v => $(v).is(':checked') },
+        { selector: '#cover_default_quality', key: 'defaultQuality', transform: v => $(v).val() },
+        { selector: '#cover_default_aspect', key: 'defaultAspectRatio', transform: v => $(v).val() },
+        { selector: '#cover_default_style', key: 'defaultStyle', transform: v => $(v).val() },
+        { selector: '#cover_show_prompt', key: 'showPromptOnGenerate', transform: v => $(v).is(':checked') },
+        { selector: '#cover_confirm_delete', key: 'confirmDeleteCover', transform: v => $(v).is(':checked') },
+        { selector: '#cover_keyboard_nav', key: 'keyboardNavigation', transform: v => $(v).is(':checked') },
+        { selector: '#cover_show_counter', key: 'showGalleryCounter', transform: v => $(v).is(':checked') },
+    ];
 
-    // Save the blueprint to blueprint state
-    console.log('[Story Mode] Saving blueprint to blueprint state...');
-    const blueprintState = BlueprintModule.getBlueprintState();
-    blueprintState.blueprint = result.blueprint;
-    blueprintState.useBlueprint = true;
-    blueprintState.currentSceneIndex = 0;
-    blueprintState.sceneMode = 'auto';
-    await BlueprintModule.saveBlueprintState(blueprintState);
-    console.log('[Story Mode] Blueprint saved to blueprint state');
+    coverGenerationSettings.forEach(({ selector, key, transform }) => {
+        content.find(selector).on('change', function () {
+            const settings = extension_settings[MODULE_NAME];
+            settings.blueprintSettings = settings.blueprintSettings || {};
+            settings.blueprintSettings.coverGeneration = settings.blueprintSettings.coverGeneration || {};
+            settings.blueprintSettings.coverGeneration[key] = transform(this);
+            saveSettingsDebounced();
+        });
+    });
+    content.find('#blueprint_generation_api').on('change', function () {
+        const selectedApi = $(this).val() || null;
+        extension_settings[MODULE_NAME].blueprintSettings = extension_settings[MODULE_NAME].blueprintSettings || {};
+        extension_settings[MODULE_NAME].blueprintSettings.generationApi = selectedApi;
+        saveSettingsDebounced();
+        console.log('[Story Mode] Settings Dialog: Generation API changed to:', selectedApi || 'main API');
+        console.log('[Story Mode] Settings Dialog: Full blueprintSettings.generationApi:', extension_settings[MODULE_NAME].blueprintSettings.generationApi);
+    });
+    // Opening message API dropdown
+    content.find('#opening_message_api').on('change', function () {
+        const selectedApi = $(this).val() || null;
+        extension_settings[MODULE_NAME].blueprintSettings = extension_settings[MODULE_NAME].blueprintSettings || {};
+        extension_settings[MODULE_NAME].blueprintSettings.openingMessageApi = selectedApi;
+        saveSettingsDebounced();
+    });
+    // Epilogue API dropdown
+    content.find('#epilogue_api').on('change', function () {
+        const selectedApi = $(this).val() || null;
+        extension_settings[MODULE_NAME].epilogueApi = selectedApi;
+        saveSettingsDebounced();
+    });
+    // Summary API dropdown
+    content.find('#summary_api').on('change', function () {
+        const selectedApi = $(this).val() || null;
+        extension_settings[MODULE_NAME].summaryApi = selectedApi;
+        saveSettingsDebounced();
+    });
+    // Loading Indicator settings
+    content.find('#loading_indicator_enabled').on('change', function () {
+        const enabled = $(this).is(':checked');
+        LoadingIndicator.updateSettings({ enabled });
+    });
+    content.find('#loading_indicator_position').on('change', function () {
+        const position = $(this).val();
+        LoadingIndicator.updateSettings({ position });
+    });
+    content.find('#loading_indicator_animation').on('change', function () {
+        const animationStyle = $(this).val();
+        LoadingIndicator.updateSettings({ animationStyle });
+    });
+    content.find('#loading_indicator_gif_url').on('change', function () {
+        const customGifUrl = $(this).val() || null;
+        LoadingIndicator.updateSettings({ customGifUrl });
+    });
+    content.find('#loading_indicator_phrases').on('change', function () {
+        const phrasesText = $(this).val();
+        const phrases = phrasesText.split('\n').map(p => p.trim()).filter(p => p.length > 0);
+        LoadingIndicator.updateSettings({ phrases });
+    });
+    content.find('#loading_indicator_preview').on('click', function () {
+        // Start animated preview
+        LoadingIndicator.startPreview();
+    });
+    // Reset Arc button (Story Arc subtab)
+    content.find('#reset_arc_btn').on('click', async function () {
+        if (confirm('Reset the story arc? This will set the round counter back to 0 and clear arc completion flags.')) {
+            const chatState = getChatStoryState();
+            chatState.currentStep = 0;
+            chatState.arcStarted = false;
+            chatState.epilogueShown = false;
+            chatState.summaryShown = false;
+            chatState.endNoticeShown = false;
+            await saveChatStoryState(chatState);
+            updateStoryPrompt();
+            updateStatusDisplay();
+            toastr.success('Story arc reset');
+            // Refresh current step display in the Story Arc subtab
+            content.find('#current_step_display').text('Step 0 / ' + chatState.arcLength);
+        }
+    });
+    // Generate blueprint button (Generate Blueprint subtab)
+    content.on('click', '#blueprint_generate_btn', async function () {
+        const btn = $(this);
+        const originalText = btn.html();
 
-    toastr.success('Blueprint generated and settings synced');
-    content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
-    refreshSidebar(content);
-    updateStatusDisplay();
-} else {
-    // Extract error message from either string or array
-    const errorMessage = result.error || result.errors?.join(', ') || 'Unknown error';
-    toastr.error(`Failed to generate blueprint: ${errorMessage}`);
+        // Check if wizard mode is enabled (default true, unless "Legacy Mode" checked)
+        const wizardDisabled = content.find('#storymode_wizard_disabled').is(':checked');
+        const wizardEnabled = !wizardDisabled;
 
-    if (result.isLikelyTruncated) {
-        console.warn('[Story Mode] Blueprint response was truncated. Consider increasing the token limit.');
-    }
-}
-} catch (error) {
-console.error('[Story Mode] Error generating blueprint:', error);
-toastr.error(`Failed to generate blueprint: ${error.message}`);
-} finally {
-// Restore button state
-LoadingIndicator.hide();
-btn.prop('disabled', false);
-btn.html(originalText);
-}
-});
-// Load blueprint button (Generate Blueprint subtab)
-content.on('click', '#blueprint_import_btn', function() {
-const input = document.createElement('input');
-input.type = 'file';
-input.accept = '.json';
-input.onchange = async (e) => {
-const file = e.target.files[0];
-if (file) {
-try {
-const reader = new FileReader();
-reader.onload = async (event) => {
-try {
-const blueprint = JSON.parse(event.target.result);
-// Validate blueprint
-const validation = BlueprintModule.validateBlueprint(blueprint);
-if (!validation.valid) {
-toastr.error('Invalid blueprint: ' + validation.errors.join(', '));
-return;
-}
-const blueprintState = BlueprintModule.getBlueprintState();
-blueprintState.blueprint = blueprint;
-blueprintState.useBlueprint = true;
-blueprintState.currentSceneIndex = 0;
-blueprintState.sceneMode = 'auto';
-await BlueprintModule.saveBlueprintState(blueprintState);
-// Sync blueprint settings to chat state with confirmation dialog
-await BlueprintModule.syncBlueprintSettings(blueprint, true);
-toastr.success('Blueprint loaded and settings synced');
-// Switch to Overview tab
-content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
-// Refresh sidebar
-refreshSidebar(content);
-updateStatusDisplay();
-} catch (parseError) {
-console.error('[Story Mode] Error parsing blueprint JSON:', parseError);
-toastr.error('Invalid blueprint JSON');
-}
-};
-reader.readAsText(file);
-} catch (error) {
-console.error('[Story Mode] Error reading blueprint file:', error);
-toastr.error('Failed to read file');
-}
-}
-};
-input.click();
-});
-// Generate opening message button (Blueprint Overview subtab)
-content.on('click', '#generate_opening_message_btn', async function() {
-const btn = $(this);
-btn.prop('disabled', true);
-LoadingIndicator.show('Crafting opening message...');
-try {
-const result = await BlueprintModule.generateOpeningMessage();
-if (result.success) {
-// Create and add the system message directly
-await pushStoryMessage(result.opening);
-await saveChatConditional();
-toastr.success('Opening message generated and added to chat');
-} else {
-toastr.error(`Failed to generate opening: ${result.error || 'Unknown error'}`);
-btn.prop('disabled', false);
-}
-} catch (error) {
-console.error('[Story Mode] Error generating opening message:', error);
-toastr.error(`Failed to generate opening: ${error.message}`);
-btn.prop('disabled', false);
-} finally {
-LoadingIndicator.hide();
-btn.prop('disabled', false);
-}
-});
-// Import blueprint button - supports both JSON and PNG
-content.find('#import_blueprint_btn').on('click', function() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json,.png';
-    input.onchange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+        // If wizard mode is enabled, launch the wizard modal
+        if (wizardEnabled) {
+            await launchWizardModal(content);
+            return;
+        }
 
-        LoadingIndicator.show('Importing blueprint...');
-
+        // Set loading state
+        btn.prop('disabled', true);
+        btn.html('<i class="fa-solid fa-circle-notch fa-spin"></i> Generating...');
+        LoadingIndicator.show('Generating story blueprint...');
         try {
-            let blueprint;
+            // Gather form data
+            const selectedCharacterIds = [];
+            content.find('input[name="blueprint_character"]:checked').each(function () {
+                const charId = $(this).val();
+                if (charId) {
+                    selectedCharacterIds.push(charId);
+                }
+            });
+            console.log('[Story Mode] Selected character IDs:', selectedCharacterIds);
+            const selectedPersonas = [];
+            content.find('input[name="blueprint_persona"]:checked').each(function () {
+                const personaId = $(this).val();
+                const personaName = $(this).data('name');
+                if (personaId) {
+                    selectedPersonas.push({
+                        id: personaId,
+                        name: personaName || personaId
+                    });
+                }
+            });
+            console.log('[Story Mode] Selected personas:', selectedPersonas);
+            const scenario = content.find('#blueprint_scenario').val() || '';
+            const metaphorLevel = content.find('#blueprint_metaphor_level').val() || 'mixed';
+            const storyLength = content.find('#blueprint_story_length').val() || 'medium';
+            const customRounds = content.find('#blueprint_custom_rounds').val();
+            const customMasterPrompt = content.find('#blueprint_master_prompt').val() || null;
+            // Get story type and author style from new dropdowns
+            const storyTypeId = content.find('#blueprint_story_type').val() || '';
+            const authorStyleId = content.find('#blueprint_author_style').val() || '';
+            // Use custom rounds if provided and valid, otherwise use the selected story length
+            const finalStoryLength = customRounds && parseInt(customRounds) > 0 ? parseInt(customRounds) : parseInt(storyLength);
+            // Build character data from context
+            const context = getContext();
+            const characterData = [];
+            if (context.groupId) {
+                // Group chat: get all characters from the group
+                const group = context.groups?.find(g => g.id === context.groupId);
+                if (group && group.members) {
+                    group.members.forEach(memberFilename => {
+                        // Find the character in the characters array by matching filename
+                        const charIndex = (context.characters || []).findIndex(c =>
+                            c.filename === memberFilename ||
+                            c.avatar === memberFilename ||
+                            (typeof c === 'string' && c === memberFilename)
+                        );
+                        if (charIndex !== -1 && selectedCharacterIds.includes(charIndex.toString())) {
+                            const char = context.characters[charIndex];
+                            if (char) {
+                                characterData.push({
+                                    name: char.name,
+                                    description: char.description,
+                                    personality: char.personality,
+                                    scenario: char.scenario,
+                                    greeting: char.greeting
+                                });
+                            }
+                        }
+                    });
+                }
+            } else {
+                // Single chat: get the main character
+                if (selectedCharacterIds.includes(context.characterId?.toString())) {
+                    const char = context.characters?.[parseInt(context.characterId, 10)];
+                    if (char) {
+                        characterData.push({
+                            name: char.name,
+                            description: char.description,
+                            personality: char.personality,
+                            scenario: char.scenario,
+                            greeting: char.greeting
+                        });
+                    }
+                }
+            }
+            // Build request config object
+            const config = {
+                storyTypeId,
+                authorStyleId: authorStyleId || undefined,
+                characterData,
+                personaData: selectedPersonas,
+                scenario,
+                messageTarget: finalStoryLength,
+                metaphorLevel: metaphorLevel,
+                customMasterPrompt: customMasterPrompt
+            };
+            console.log('[Story Mode] Blueprint config:', {
+                storyTypeId: config.storyTypeId,
+                authorStyleId: config.authorStyleId,
+                characterDataCount: config.characterData.length,
+                personaDataCount: config.personaData.length,
+                messageTarget: config.messageTarget
+            });
+            // Call buildBlueprintRequest to get the proper request structure
+            const request = BlueprintModule.buildBlueprintRequest(config);
 
-            // Check if it's a PNG file
-            if (file.name.toLowerCase().endsWith('.png')) {
-                // Verify it's a blueprint PNG
-                const isPNG = await isBlueprintPNG(file);
-                if (!isPNG) {
-                    toastr.error('This PNG does not contain blueprint data');
+            // Call BlueprintModule.generateBlueprint() with properly structured request
+            // (standard single-pass mode - wizard mode returns early and launches its own modal)
+            const result = await BlueprintModule.generateBlueprint(request, storyTypes, authorStyles);
+
+            if (result.success) {
+                // Sync blueprint settings to chat state with confirmation dialog
+                const syncResult = await BlueprintModule.syncBlueprintSettings(result.blueprint, true);
+
+                // Check if user cancelled the sync
+                if (!syncResult.confirmed) {
+                    console.log('[Story Mode] User cancelled blueprint sync, blueprint not saved');
+                    toastr.warning('Blueprint generated but not saved. Settings sync was cancelled.');
+                    content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
                     return;
                 }
-                blueprint = await decodeBlueprintFromPNG(file);
-                console.log('[Story Mode] Decoded blueprint from PNG:', blueprint);
+
+                // Save the blueprint to blueprint state
+                console.log('[Story Mode] Saving blueprint to blueprint state...');
+                const blueprintState = BlueprintModule.getBlueprintState();
+                blueprintState.blueprint = result.blueprint;
+                blueprintState.useBlueprint = true;
+                blueprintState.currentSceneIndex = 0;
+                blueprintState.sceneMode = 'auto';
+                await BlueprintModule.saveBlueprintState(blueprintState);
+                console.log('[Story Mode] Blueprint saved to blueprint state');
+
+                // Auto-generate cover if enabled
+                const coverGenSettings = extension_settings[MODULE_NAME]?.blueprintSettings?.coverGeneration;
+                if (!coverGenSettings?.autoGenerate) {
+                    toastr.success('Blueprint generated and settings synced');
+                    return;
+                }
+
+                console.log('[Story Mode] Auto-generating cover for new blueprint...');
+                LoadingIndicator.show('Generating cover image...');
+
+                try {
+                    const coverResult = await generateCoverFromSD(result.blueprint);
+
+                    if (!coverResult.success) {
+                        console.warn('[Story Mode] Auto cover generation failed:', coverResult.error);
+                        toastr.warning(
+                            `Blueprint saved! Cover generation failed: ${coverResult.error}. You can try again in the Blueprint Editor.`,
+                            'Cover Skipped',
+                            { timeOut: 8000 }
+                        );
+                        return;
+                    }
+
+                    // Add to gallery if enabled (default: true)
+                    if (coverGenSettings?.addToGallery !== false) {
+                        await addCoverToGallery(result.blueprint, coverResult.imageUrl, result.blueprint.metadata?.coverPrompt);
+                    }
+
+                    // Set cover URLs using helper
+                    setCoverImageUrl(result.blueprint, coverResult.imageUrl);
+
+                    // Update and re-save blueprint state
+                    blueprintState.blueprint = result.blueprint;
+                    await BlueprintModule.saveBlueprintState(blueprintState);
+
+                    console.log('[Story Mode] Auto-generated cover saved:', coverResult.imageUrl);
+                    toastr.success(
+                        "Cover auto-generated! Don't like it? Generate more in the Blueprint Editor (Cover tab).",
+                        'Blueprint Ready',
+                        { timeOut: 6000 }
+                    );
+                } catch (error) {
+                    console.warn('[Story Mode] Auto cover generation error:', error);
+                    toastr.warning(
+                        'Blueprint saved! Cover generation encountered an error. You can generate a cover in the Blueprint Editor.',
+                        'Cover Skipped',
+                        { timeOut: 6000 }
+                    );
+                } finally {
+                    LoadingIndicator.hide();
+                }
+
+                content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
+                refreshSidebar(content);
+                updateStatusDisplay();
             } else {
-                // Parse as JSON
-                const text = await file.text();
-                blueprint = JSON.parse(text);
+                // Hide wizard containers on error
+                if (wizardEnabled) {
+                    content.find('#storymode-wizard-progress-container').hide();
+                    content.find('#storymode-wizard-preview-container').hide();
+                    content.find('#storymode-resolution-selection-container').hide();
+                }
+
+                // Extract error message from either string or array
+                const errorMessage = result.error || result.errors?.join(', ') || 'Unknown error';
+                toastr.error(`Failed to generate blueprint: ${errorMessage}`);
+
+                if (result.isLikelyTruncated) {
+                    console.warn('[Story Mode] Blueprint response was truncated. Consider increasing the token limit.');
+                }
             }
-
-            // Validate blueprint
-            const validation = BlueprintModule.validateBlueprint(blueprint);
-            if (!validation.valid) {
-                toastr.error('Invalid blueprint: ' + validation.errors.join(', '));
-                return;
-            }
-
-            // Load into state
-            const blueprintState = BlueprintModule.getBlueprintState();
-            blueprintState.blueprint = blueprint;
-            blueprintState.useBlueprint = true;
-            blueprintState.currentSceneIndex = 0;
-            blueprintState.sceneMode = 'auto';
-            await BlueprintModule.saveBlueprintState(blueprintState);
-
-            // Sync blueprint settings to chat state with confirmation dialog
-            await BlueprintModule.syncBlueprintSettings(blueprint, true);
-
-            // Refresh tabs
-            content.find('#tab_blueprint').html(buildBlueprintTabContent());
-            refreshSidebar(content);
-            updateStatusDisplay();
-            refreshBlueprintPreview();
-
-            toastr.success(`Blueprint imported from ${file.name.endsWith('.png') ? 'PNG' : 'JSON'}`);
         } catch (error) {
-            console.error('[Story Mode] Import error:', error);
-            toastr.error('Failed to import: ' + error.message);
+            console.error('[Story Mode] Error generating blueprint:', error);
+            toastr.error(`Failed to generate blueprint: ${error.message}`);
+
+            // Hide wizard containers on error
+            if (wizardEnabled) {
+                content.find('#storymode-wizard-progress-container').hide();
+                content.find('#storymode-wizard-preview-container').hide();
+                content.find('#storymode-resolution-selection-container').hide();
+            }
+        } finally {
+            // Restore button state
+            LoadingIndicator.hide();
+            btn.prop('disabled', false);
+            btn.html(originalText);
+        }
+    });
+    // Load blueprint button (Generate Blueprint subtab)
+    content.on('click', '#blueprint_import_btn', function () {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                try {
+                    const reader = new FileReader();
+                    reader.onload = async (event) => {
+                        try {
+                            const blueprint = JSON.parse(event.target.result);
+                            // Validate blueprint
+                            const validation = BlueprintModule.validateBlueprint(blueprint);
+                            if (!validation.valid) {
+                                toastr.error('Invalid blueprint: ' + validation.errors.join(', '));
+                                return;
+                            }
+                            const blueprintState = BlueprintModule.getBlueprintState();
+                            blueprintState.blueprint = blueprint;
+                            blueprintState.useBlueprint = true;
+                            blueprintState.currentSceneIndex = 0;
+                            blueprintState.sceneMode = 'auto';
+                            await BlueprintModule.saveBlueprintState(blueprintState);
+                            // Sync blueprint settings to chat state with confirmation dialog
+                            await BlueprintModule.syncBlueprintSettings(blueprint, true);
+                            toastr.success('Blueprint loaded and settings synced');
+                            // Switch to Overview tab
+                            content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
+                            // Refresh sidebar
+                            refreshSidebar(content);
+                            updateStatusDisplay();
+                        } catch (parseError) {
+                            console.error('[Story Mode] Error parsing blueprint JSON:', parseError);
+                            toastr.error('Invalid blueprint JSON');
+                        }
+                    };
+                    reader.readAsText(file);
+                } catch (error) {
+                    console.error('[Story Mode] Error reading blueprint file:', error);
+                    toastr.error('Failed to read file');
+                }
+            }
+        };
+        input.click();
+    });
+    // Wizard mode toggle change handler - save setting
+    content.on('change', '#storymode_wizard_disabled', function () {
+        const wizardDisabled = $(this).is(':checked');
+        const wizardEnabled = !wizardDisabled;
+        console.log('[Story Mode] Wizard mode toggled:', wizardEnabled);
+
+        // Save to extension settings
+        extension_settings[MODULE_NAME].blueprintSettings = extension_settings[MODULE_NAME].blueprintSettings || {};
+        extension_settings[MODULE_NAME].blueprintSettings.wizardMode = {
+            enabled: wizardEnabled
+        };
+
+        // Save settings
+        saveSettingsDebounced();
+
+        // Show toast notification
+        toastr.info(wizardEnabled
+            ? 'Wizard mode enabled - blueprint generation will open in a dedicated modal window'
+            : 'Wizard mode disabled - blueprint generation will use standard single-pass mode'
+        );
+    });
+    // Cancel blueprint generation button (stops the wizard modal)
+    content.on('click', '#blueprint_cancel_generation_btn', function () {
+        const wizardPopup = window.storyModeWizardPopup;
+        if (wizardPopup && !wizardPopup.dlg.hasAttribute('closing')) {
+            // Trigger the cancel in the wizard modal
+            const popupElement = wizardPopup.content;
+            const statusElement = popupElement?.querySelector('#storymode-wizard-status');
+            if (statusElement) {
+                statusElement.innerHTML = '<span style="color: var(--corruption-red);">Generation cancelled from settings panel.</span>';
+            }
+
+            // Set cancellation flag so the async generation loop stops
+            wizardPopup.isCancelled = true;
+
+            // Close the wizard popup
+            wizardPopup.complete(POPUP_RESULT.CANCELLED);
+
+            // Explicitly restore button states in the settings panel immediately
+            content.find('#blueprint_cancel_generation_btn').hide();
+            content.find('#blueprint_generate_btn').show();
+
+            // Clear the global reference
+            window.storyModeWizardPopup = null;
+            toastr.info('Blueprint generation cancelled');
+        }
+    });
+    // Resolution selection handler - when user clicks on a resolution
+    content.on('click', '.storymode-resolution-item', function (e) {
+        // Only handle if not clicking the radio button directly (let that work normally)
+        if ($(e.target).is('input[type="radio"]')) return;
+
+        // Find the radio button within the clicked item and select it
+        const radio = $(this).find('input[type="radio"]');
+        radio.prop('checked', true);
+
+        // Update visual selection
+        $('.storymode-resolution-item').removeClass('selected');
+        $(this).addClass('selected');
+    });
+    // Generate opening message button (Blueprint Overview subtab)
+    content.on('click', '#generate_opening_message_btn', async function () {
+        const btn = $(this);
+        btn.prop('disabled', true);
+        LoadingIndicator.show('Crafting opening message...');
+        try {
+            const result = await BlueprintModule.generateOpeningMessage();
+            if (result.success) {
+                // Create and add the system message directly
+                await pushStoryMessage(result.opening);
+                await saveChatConditional();
+                toastr.success('Opening message generated and added to chat');
+            } else {
+                toastr.error(`Failed to generate opening: ${result.error || 'Unknown error'}`);
+                btn.prop('disabled', false);
+            }
+        } catch (error) {
+            console.error('[Story Mode] Error generating opening message:', error);
+            toastr.error(`Failed to generate opening: ${error.message}`);
+            btn.prop('disabled', false);
         } finally {
             LoadingIndicator.hide();
+            btn.prop('disabled', false);
         }
-    };
-    input.click();
-});
+    });
+    // Import blueprint button - supports both JSON and PNG
+    content.find('#import_blueprint_btn').on('click', function () {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json,.png';
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
 
-// Export blueprint button
-content.on('click', '#blueprint_export_btn', async function() {
-    const blueprintState = BlueprintModule.getBlueprintState();
-    if (!blueprintState.blueprint) {
-        toastr.error('No blueprint to export');
-        return;
-    }
+            LoadingIndicator.show('Importing blueprint...');
 
-    const btn = $(this);
-    const originalText = btn.html();
-    btn.prop('disabled', true);
-    btn.html('<i class="fa-solid fa-spinner fa-spin"></i> Exporting...');
-    LoadingIndicator.show('Exporting blueprint as JSON...');
+            try {
+                let blueprint;
 
-    try {
-        // Use the simple JSON export function from blueprint-module.js
-        BlueprintModule.exportBlueprint(blueprintState.blueprint);
-        toastr.success('Blueprint exported successfully');
-    } catch (error) {
-        console.error('[Story Mode] Error exporting blueprint:', error);
-        toastr.error('Failed to export: ' + error.message);
-    } finally {
-        LoadingIndicator.hide();
-        btn.prop('disabled', false);
-        btn.html(originalText);
-    }
-});
+                // Check if it's a PNG file
+                if (file.name.toLowerCase().endsWith('.png')) {
+                    // Verify it's a blueprint PNG
+                    const isPNG = await isBlueprintPNG(file);
+                    if (!isPNG) {
+                        toastr.error('This PNG does not contain blueprint data');
+                        return;
+                    }
+                    blueprint = await decodeBlueprintFromPNG(file);
+                    console.log('[Story Mode] Decoded blueprint from PNG:', blueprint);
+                } else {
+                    // Parse as JSON
+                    const text = await file.text();
+                    blueprint = JSON.parse(text);
+                }
+
+                // Validate blueprint
+                const validation = BlueprintModule.validateBlueprint(blueprint);
+                if (!validation.valid) {
+                    toastr.error('Invalid blueprint: ' + validation.errors.join(', '));
+                    return;
+                }
+
+                // Load into state
+                const blueprintState = BlueprintModule.getBlueprintState();
+                blueprintState.blueprint = blueprint;
+                blueprintState.useBlueprint = true;
+                blueprintState.currentSceneIndex = 0;
+                blueprintState.sceneMode = 'auto';
+                await BlueprintModule.saveBlueprintState(blueprintState);
+
+                // Sync blueprint settings to chat state with confirmation dialog
+                await BlueprintModule.syncBlueprintSettings(blueprint, true);
+
+                // Refresh tabs
+                content.find('#tab_blueprint').html(buildBlueprintTabContent());
+                refreshSidebar(content);
+                updateStatusDisplay();
+                refreshBlueprintPreview();
+
+                toastr.success(`Blueprint imported from ${file.name.endsWith('.png') ? 'PNG' : 'JSON'}`);
+            } catch (error) {
+                console.error('[Story Mode] Import error:', error);
+                toastr.error('Failed to import: ' + error.message);
+            } finally {
+                LoadingIndicator.hide();
+            }
+        };
+        input.click();
+    });
+
+    // Export blueprint button
+    content.on('click', '#blueprint_export_btn', async function () {
+        const blueprintState = BlueprintModule.getBlueprintState();
+        if (!blueprintState.blueprint) {
+            toastr.error('No blueprint to export');
+            return;
+        }
+
+        const btn = $(this);
+        const originalText = btn.html();
+        btn.prop('disabled', true);
+        btn.html('<i class="fa-solid fa-spinner fa-spin"></i> Exporting...');
+        LoadingIndicator.show('Exporting blueprint as JSON...');
+
+        try {
+            // Use the simple JSON export function from blueprint-module.js
+            BlueprintModule.exportBlueprint(blueprintState.blueprint);
+            toastr.success('Blueprint exported successfully');
+        } catch (error) {
+            console.error('[Story Mode] Error exporting blueprint:', error);
+            toastr.error('Failed to export: ' + error.message);
+        } finally {
+            LoadingIndicator.hide();
+            btn.prop('disabled', false);
+            btn.html(originalText);
+        }
+    });
 
     // Edit blueprint button
-    content.on('click', '#blueprint_edit_btn', async function() {
+    content.on('click', '#blueprint_edit_btn', async function () {
         const blueprintState = BlueprintModule.getBlueprintState();
         if (!blueprintState.blueprint) {
             toastr.error('No blueprint to edit');
@@ -1062,22 +1210,22 @@ content.on('click', '#blueprint_export_btn', async function() {
     });
 
     // Clear blueprint button
-    content.on('click', '#blueprint_clear_btn', async function() {
-    if (!confirm('Clear the current blueprint? This cannot be undone.')) return;
-    const blueprintState = BlueprintModule.getBlueprintState();
-    blueprintState.blueprint = null;
-    blueprintState.useBlueprint = false;
-    blueprintState.currentSceneIndex = 0;
-    await BlueprintModule.saveBlueprintState(blueprintState);
-    // Refresh tabs
-    content.find('#tab_blueprint').html(buildBlueprintTabContent());
-    refreshSidebar(content);
-    updateStatusDisplay();
-    toastr.success('Blueprint cleared');
+    content.on('click', '#blueprint_clear_btn', async function () {
+        if (!confirm('Clear the current blueprint? This cannot be undone.')) return;
+        const blueprintState = BlueprintModule.getBlueprintState();
+        blueprintState.blueprint = null;
+        blueprintState.useBlueprint = false;
+        blueprintState.currentSceneIndex = 0;
+        await BlueprintModule.saveBlueprintState(blueprintState);
+        // Refresh tabs
+        content.find('#tab_blueprint').html(buildBlueprintTabContent());
+        refreshSidebar(content);
+        updateStatusDisplay();
+        toastr.success('Blueprint cleared');
     });
 
     // Scene slider - click on scene marker to jump to that scene
-    content.on('click', '.storymode-scene-marker', async function() {
+    content.on('click', '.storymode-scene-marker', async function () {
         const sceneIndex = parseInt($(this).data('scene'));
         const startRound = parseInt($(this).data('round'));
 
@@ -1111,7 +1259,7 @@ content.on('click', '#blueprint_export_btn', async function() {
     });
 
     // Scene slider - click on round tick to jump to that round
-    content.on('click', '.storymode-round-ticks .tick', async function() {
+    content.on('click', '.storymode-round-ticks .tick', async function () {
         const round = parseInt($(this).data('round'));
 
         // Check if we're switching from auto to manual mode
@@ -1148,12 +1296,12 @@ content.on('click', '#blueprint_export_btn', async function() {
     // ========================================================================
 
     // Initialize library when Library tab is clicked
-    content.on('click', '.storymode-tab[data-tab="library"]', async function() {
+    content.on('click', '.storymode-tab[data-tab="library"]', async function () {
         await refreshLibraryView(content);
     });
 
     // Folder selection
-    content.on('click', '.storymode-folder-item', async function() {
+    content.on('click', '.storymode-folder-item', async function () {
         const folderId = $(this).data('folder');
         content.find('.storymode-folder-item').removeClass('active');
         $(this).addClass('active');
@@ -1161,7 +1309,7 @@ content.on('click', '#blueprint_export_btn', async function() {
     });
 
     // Search input
-    content.on('input', '#library_search_input', debounce(async function() {
+    content.on('input', '#library_search_input', debounce(async function () {
         const query = $(this).val().trim();
         if (query.length >= 2) {
             await searchLibraryBlueprints(content, query);
@@ -1172,7 +1320,7 @@ content.on('click', '#blueprint_export_btn', async function() {
     }, 300));
 
     // Save current blueprint to library
-    content.on('click', '#library_save_current_btn, #library_empty_save_btn', async function() {
+    content.on('click', '#library_save_current_btn, #library_empty_save_btn', async function () {
         const blueprintState = BlueprintModule.getBlueprintState();
         if (!blueprintState.blueprint) {
             toastr.error('No blueprint to save. Generate one first in the Blueprint tab.');
@@ -1203,7 +1351,7 @@ content.on('click', '#blueprint_export_btn', async function() {
     });
 
     // Blueprint card actions
-    content.on('click', '.storymode-blueprint-card [data-action]', async function(e) {
+    content.on('click', '.storymode-blueprint-card [data-action]', async function (e) {
         e.stopPropagation();
         const action = $(this).data('action');
         const card = $(this).closest('.storymode-blueprint-card');
@@ -1232,7 +1380,7 @@ content.on('click', '#blueprint_export_btn', async function() {
     });
 
     // Blueprint cover image click - opens editor
-    content.on('click', '.storymode-blueprint-card .storymode-card-cover', async function(e) {
+    content.on('click', '.storymode-blueprint-card .storymode-card-cover', async function (e) {
         // Don't trigger if clicking the favorite button
         if ($(e.target).closest('.storymode-card-favorite').length > 0) {
             return;
@@ -1243,7 +1391,7 @@ content.on('click', '#blueprint_export_btn', async function() {
     });
 
     // View toggle (grid/list)
-    content.on('click', '#library_view_grid, #library_view_list', function() {
+    content.on('click', '#library_view_grid, #library_view_list', function () {
         const viewType = $(this).attr('id') === 'library_view_grid' ? 'grid' : 'list';
         content.find('.storymode-view-toggle .menu_button').removeClass('active');
         $(this).addClass('active');
@@ -1251,13 +1399,13 @@ content.on('click', '#blueprint_export_btn', async function() {
     });
 
     // Sort selection
-    content.on('change', '#library_sort_select', async function() {
+    content.on('change', '#library_sort_select', async function () {
         const activeFolder = content.find('.storymode-folder-item.active').data('folder') || 'all';
         await loadBlueprintsForFolder(content, activeFolder);
     });
 
     // Library import button - import PNG/JSON directly to library
-    content.on('click', '#library_import_btn', function() {
+    content.on('click', '#library_import_btn', function () {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.json,.png';
@@ -1647,15 +1795,15 @@ function refreshSidebar(content) {
 * @returns {Promise<void>}
 */
 async function addUI() {
-const container = $('#extensions_settings2');
-if (container.length === 0) {
-console.warn('[Story Mode] Extensions settings container not found');
-return;
-}
-container.append(renderMainPanel());
-setupEventListeners();
-updateStatusDisplay();
-console.log('[Story Mode] UI added');
+    const container = $('#extensions_settings2');
+    if (container.length === 0) {
+        console.warn('[Story Mode] Extensions settings container not found');
+        return;
+    }
+    container.append(renderMainPanel());
+    setupEventListeners();
+    updateStatusDisplay();
+    console.log('[Story Mode] UI added');
 }
 
 /**
@@ -1665,180 +1813,180 @@ console.log('[Story Mode] UI added');
 * @returns {void}
 */
 function setupEventListeners() {
-// Master toggle
-$('#story_mode_enabled').on('change', function() {
-const enabled = $(this).is(':checked');
-extension_settings[MODULE_NAME].enabled = enabled;
-saveSettingsDebounced();
-updateStoryPrompt();
-updateStatusDisplay();
-});
-// Open settings dialog
-$('#open_story_mode_settings').on('click', showSettingsDialog);
-// Generate opening message button
-$(document).on('click', '#generate_opening_btn', async function() {
-const btn = $(this);
-const statusDiv = $('#generate_opening_status');
-const originalText = btn.html();
-// Check if save to blueprint is enabled
-const saveToBlueprint = $('#save_opening_to_blueprint').is(':checked');
-// Set loading state
-btn.prop('disabled', true);
-btn.html('<i class="fa-solid fa-circle-notch fa-spin"></i> Generating...');
-statusDiv.text('Generating opening message...').show();
-LoadingIndicator.show('Generating opening message...');
-try {
-const result = await BlueprintModule.generateOpeningMessage({ saveToBlueprint });
-if (result.success) {
-// Note: We no longer auto-push the opening message to chat
-// The user can use "Start Story" which will prompt for saved opening message
-const statusText = saveToBlueprint
-    ? 'Opening message generated and saved to blueprint! Use "Start Story" to add it to chat.'
-    : 'Opening message generated! (not saved)';
-statusDiv.text(statusText).css('color', 'var(--SmartThemeQuoteColor)');
-toastr.success(statusText, 'Blueprint');
-// Refresh the blueprint tab UI to show the stored message
-if (saveToBlueprint) {
-    const blueprintState = BlueprintModule.getBlueprintState();
-    if (blueprintState.blueprint) {
-        // Refresh the blueprint tab to show the updated opening message
-        $(document).trigger('story_mode_blueprint_updated');
-    }
-}
-} else {
-// Show error
-statusDiv.text(`Error: ${result.error}`).css('color', 'var(--corruption)');
-toastr.error(`Failed to generate opening: ${result.error}`, 'Blueprint Error');
-}
-} catch (error) {
-console.error('[Story Mode] Error generating opening message:', error);
-statusDiv.text('Error generating opening').css('color', 'var(--corruption)');
-toastr.error(`Failed to generate opening: ${error.message}`, 'Blueprint Error');
-} finally {
-// Restore button state
-btn.prop('disabled', false);
-btn.html(originalText);
-LoadingIndicator.hide();
-}
-});
-/**
- * Helper function to generate and push an opening message.
- * Reduces duplication in start_story_from_blueprint_btn handler.
- * @param {jQuery} btn - The button element to show loading state on
- * @param {string} successMessage - Success message for toast notification
- * @returns {Promise<boolean>} - True if successful, false otherwise
- */
-async function generateAndPushOpening(btn, successMessage) {
-    btn.html('<i class="fa-solid fa-circle-notch fa-spin"></i> Generating opening...');
-    const openingResult = await BlueprintModule.generateOpeningMessage({ saveToBlueprint: true });
+    // Master toggle
+    $('#story_mode_enabled').on('change', function () {
+        const enabled = $(this).is(':checked');
+        extension_settings[MODULE_NAME].enabled = enabled;
+        saveSettingsDebounced();
+        updateStoryPrompt();
+        updateStatusDisplay();
+    });
+    // Open settings dialog
+    $('#open_story_mode_settings').on('click', showSettingsDialog);
+    // Generate opening message button
+    $(document).on('click', '#generate_opening_btn', async function () {
+        const btn = $(this);
+        const statusDiv = $('#generate_opening_status');
+        const originalText = btn.html();
+        // Check if save to blueprint is enabled
+        const saveToBlueprint = $('#save_opening_to_blueprint').is(':checked');
+        // Set loading state
+        btn.prop('disabled', true);
+        btn.html('<i class="fa-solid fa-circle-notch fa-spin"></i> Generating...');
+        statusDiv.text('Generating opening message...').show();
+        LoadingIndicator.show('Generating opening message...');
+        try {
+            const result = await BlueprintModule.generateOpeningMessage({ saveToBlueprint });
+            if (result.success) {
+                // Note: We no longer auto-push the opening message to chat
+                // The user can use "Start Story" which will prompt for saved opening message
+                const statusText = saveToBlueprint
+                    ? 'Opening message generated and saved to blueprint! Use "Start Story" to add it to chat.'
+                    : 'Opening message generated! (not saved)';
+                statusDiv.text(statusText).css('color', 'var(--SmartThemeQuoteColor)');
+                toastr.success(statusText, 'Blueprint');
+                // Refresh the blueprint tab UI to show the stored message
+                if (saveToBlueprint) {
+                    const blueprintState = BlueprintModule.getBlueprintState();
+                    if (blueprintState.blueprint) {
+                        // Refresh the blueprint tab to show the updated opening message
+                        $(document).trigger('story_mode_blueprint_updated');
+                    }
+                }
+            } else {
+                // Show error
+                statusDiv.text(`Error: ${result.error}`).css('color', 'var(--corruption)');
+                toastr.error(`Failed to generate opening: ${result.error}`, 'Blueprint Error');
+            }
+        } catch (error) {
+            console.error('[Story Mode] Error generating opening message:', error);
+            statusDiv.text('Error generating opening').css('color', 'var(--corruption)');
+            toastr.error(`Failed to generate opening: ${error.message}`, 'Blueprint Error');
+        } finally {
+            // Restore button state
+            btn.prop('disabled', false);
+            btn.html(originalText);
+            LoadingIndicator.hide();
+        }
+    });
+    /**
+     * Helper function to generate and push an opening message.
+     * Reduces duplication in start_story_from_blueprint_btn handler.
+     * @param {jQuery} btn - The button element to show loading state on
+     * @param {string} successMessage - Success message for toast notification
+     * @returns {Promise<boolean>} - True if successful, false otherwise
+     */
+    async function generateAndPushOpening(btn, successMessage) {
+        btn.html('<i class="fa-solid fa-circle-notch fa-spin"></i> Generating opening...');
+        const openingResult = await BlueprintModule.generateOpeningMessage({ saveToBlueprint: true });
 
-    if (!openingResult.success) {
-        toastr.error(`Failed to generate opening: ${openingResult.error}`, 'Blueprint Error');
-        toastr.info('Story started successfully, but opening generation failed', 'Story Mode');
-        return false;
-    }
+        if (!openingResult.success) {
+            toastr.error(`Failed to generate opening: ${openingResult.error}`, 'Blueprint Error');
+            toastr.info('Story started successfully, but opening generation failed', 'Story Mode');
+            return false;
+        }
 
-    await pushStoryMessage(openingResult.opening);
-    await saveChatConditional();
-    toastr.success(successMessage, 'Story Mode');
-    return true;
-}
-
-// Start Story from Blueprint button (in settings dialog)
-$(document).on('click', '#start_story_from_blueprint_btn', async function() {
-    const btn = $(this);
-    const originalText = btn.html();
-    const blueprintState = BlueprintModule.getBlueprintState();
-
-    if (!blueprintState.blueprint) {
-        toastr.error('No blueprint loaded', 'Blueprint Error');
-        return;
+        await pushStoryMessage(openingResult.opening);
+        await saveChatConditional();
+        toastr.success(successMessage, 'Story Mode');
+        return true;
     }
 
-    // Set loading state
-    btn.prop('disabled', true);
-    btn.html('<i class="fa-solid fa-circle-notch fa-spin"></i> Starting...');
-    LoadingIndicator.show('Starting story from blueprint...');
+    // Start Story from Blueprint button (in settings dialog)
+    $(document).on('click', '#start_story_from_blueprint_btn', async function () {
+        const btn = $(this);
+        const originalText = btn.html();
+        const blueprintState = BlueprintModule.getBlueprintState();
 
-    try {
-        // Start the story from blueprint (syncs settings, enables features)
-        const result = await BlueprintModule.startStoryFromBlueprint(blueprintState.blueprint);
-
-        if (!result.success) {
-            toastr.error(result.error || 'Failed to start story', 'Blueprint Error');
+        if (!blueprintState.blueprint) {
+            toastr.error('No blueprint loaded', 'Blueprint Error');
             return;
         }
 
-        // Show any warnings
-        result.warnings?.forEach(w => toastr.warning(w, 'Blueprint Warning'));
+        // Set loading state
+        btn.prop('disabled', true);
+        btn.html('<i class="fa-solid fa-circle-notch fa-spin"></i> Starting...');
+        LoadingIndicator.show('Starting story from blueprint...');
 
-        // Handle opening message logic
-        const savedOpening = blueprintState.blueprint?.opening_message;
-        let shouldGenerateOpening = false;
-        let openingUsed = false;
+        try {
+            // Start the story from blueprint (syncs settings, enables features)
+            const result = await BlueprintModule.startStoryFromBlueprint(blueprintState.blueprint);
 
-        if (savedOpening) {
-            // Ask if user wants to use the saved opening message
-            const useSaved = await callGenericPopup(
-                `This blueprint has a saved opening message:\n\n"${savedOpening.substring(0, 100)}${savedOpening.length > 100 ? '...' : ''}"\n\nWould you like to use this saved opening message?`,
-                POPUP_TYPE.CONFIRM
-            );
+            if (!result.success) {
+                toastr.error(result.error || 'Failed to start story', 'Blueprint Error');
+                return;
+            }
 
-            if (useSaved === POPUP_RESULT.AFFIRMATIVE) {
-                await pushStoryMessage(savedOpening);
-                await saveChatConditional();
-                toastr.success('Story started with saved opening message!', 'Story Mode');
-                openingUsed = true;
-            } else {
-                // Ask if they want to generate a new one instead
-                const generateNew = await callGenericPopup(
-                    'Would you like to generate a new opening message instead?',
+            // Show any warnings
+            result.warnings?.forEach(w => toastr.warning(w, 'Blueprint Warning'));
+
+            // Handle opening message logic
+            const savedOpening = blueprintState.blueprint?.opening_message;
+            let shouldGenerateOpening = false;
+            let openingUsed = false;
+
+            if (savedOpening) {
+                // Ask if user wants to use the saved opening message
+                const useSaved = await callGenericPopup(
+                    `This blueprint has a saved opening message:\n\n"${savedOpening.substring(0, 100)}${savedOpening.length > 100 ? '...' : ''}"\n\nWould you like to use this saved opening message?`,
                     POPUP_TYPE.CONFIRM
                 );
-                shouldGenerateOpening = (generateNew === POPUP_RESULT.AFFIRMATIVE);
+
+                if (useSaved === POPUP_RESULT.AFFIRMATIVE) {
+                    await pushStoryMessage(savedOpening);
+                    await saveChatConditional();
+                    toastr.success('Story started with saved opening message!', 'Story Mode');
+                    openingUsed = true;
+                } else {
+                    // Ask if they want to generate a new one instead
+                    const generateNew = await callGenericPopup(
+                        'Would you like to generate a new opening message instead?',
+                        POPUP_TYPE.CONFIRM
+                    );
+                    shouldGenerateOpening = (generateNew === POPUP_RESULT.AFFIRMATIVE);
+                }
+            } else {
+                // No saved opening - ask if user wants to generate one
+                const generateOpening = await callGenericPopup(
+                    'Would you like to generate an opening message for Scene 1?',
+                    POPUP_TYPE.CONFIRM
+                );
+                shouldGenerateOpening = (generateOpening === POPUP_RESULT.AFFIRMATIVE);
             }
-        } else {
-            // No saved opening - ask if user wants to generate one
-            const generateOpening = await callGenericPopup(
-                'Would you like to generate an opening message for Scene 1?',
-                POPUP_TYPE.CONFIRM
-            );
-            shouldGenerateOpening = (generateOpening === POPUP_RESULT.AFFIRMATIVE);
-        }
 
-        // Generate opening if requested (using the same code path for both cases)
-        if (shouldGenerateOpening) {
-            await generateAndPushOpening(btn, savedOpening
-                ? 'Story started with new opening message!'
-                : 'Story started with opening message!');
-            openingUsed = true;
-        } else if (!openingUsed) {
-            toastr.success('Story started from blueprint!', 'Story Mode');
-        }
+            // Generate opening if requested (using the same code path for both cases)
+            if (shouldGenerateOpening) {
+                await generateAndPushOpening(btn, savedOpening
+                    ? 'Story started with new opening message!'
+                    : 'Story started with opening message!');
+                openingUsed = true;
+            } else if (!openingUsed) {
+                toastr.success('Story started from blueprint!', 'Story Mode');
+            }
 
-        // Close the settings dialog (try multiple methods for reliability)
-        const popup = btn.closest('.popup');
-        const okButton = popup.find('.popup-button-ok');
-        if (okButton.length > 0) {
-            okButton.trigger('click');
-        } else {
-            // Fallback: close all popups
-            $('.popup').find('.popup-close, .popup-button-cancel, .popup-button-ok').trigger('click');
-        }
+            // Close the settings dialog (try multiple methods for reliability)
+            const popup = btn.closest('.popup');
+            const okButton = popup.find('.popup-button-ok');
+            if (okButton.length > 0) {
+                okButton.trigger('click');
+            } else {
+                // Fallback: close all popups
+                $('.popup').find('.popup-close, .popup-button-cancel, .popup-button-ok').trigger('click');
+            }
 
-        // Update main panel UI
-        updateStatusDisplay();
-        $('#story_mode_panel').replaceWith(renderMainPanel());
-        setupEventListeners();
-    } catch (error) {
-        console.error('[Story Mode] Error starting story from blueprint:', error);
-        toastr.error(`Failed to start story: ${error.message}`, 'Blueprint Error');
-    } finally {
-        LoadingIndicator.hide();
-        btn.prop('disabled', false);
-        btn.html(originalText);
-    }
-});
+            // Update main panel UI
+            updateStatusDisplay();
+            $('#story_mode_panel').replaceWith(renderMainPanel());
+            setupEventListeners();
+        } catch (error) {
+            console.error('[Story Mode] Error starting story from blueprint:', error);
+            toastr.error(`Failed to start story: ${error.message}`, 'Blueprint Error');
+        } finally {
+            LoadingIndicator.hide();
+            btn.prop('disabled', false);
+            btn.html(originalText);
+        }
+    });
 }
 /**
 * Setup event listeners for the settings dialog.
@@ -1848,213 +1996,213 @@ $(document).on('click', '#start_story_from_blueprint_btn', async function() {
 * @returns {void}
 */
 function setupDialogEventListeners(content) {
-// Master toggle in dialog (syncs with main)
-content.find('#story_mode_enabled').on('change', function() {
-const enabled = $(this).is(':checked');
-extension_settings[MODULE_NAME].enabled = enabled;
-$('#story_mode_enabled').prop('checked', enabled); // Sync with main panel
-content.find('#story_mode_content').toggle(enabled);
-saveSettingsDebounced();
-updateStoryPrompt();
-updateStatusDisplay();
-});
-// Story arc toggle
-content.find('#story_arc_enabled').on('change', function() {
-const enabled = $(this).is(':checked');
-extension_settings[MODULE_NAME].storyArcEnabled = enabled;
-content.find('#story_arc_controls').toggle(enabled);
-saveSettingsDebounced();
-updateStoryPrompt();
-updatePreviewInDialog(content);
-updateStatusDisplay();
-});
-// Story type selection
-content.find('#story_type_select').on('change', async function() {
-const selectedType = $(this).val();
-// Update global settings (default for new chats)
-extension_settings[MODULE_NAME].selectedStoryType = selectedType;
-saveSettingsDebounced();
-// Update current chat metadata
-const chatState = getChatStoryState();
-chatState.selectedStoryType = selectedType;
-await saveChatStoryState(chatState);
-// Update story type description
-const selectedStoryType = storyTypes.find(t => t.id === selectedType);
-const description = selectedStoryType ? selectedStoryType.storyPrompt : 'Select a story type to see its description';
-content.find('#story_type_description').text(description);
-updateStoryPrompt();
-updatePreviewInDialog(content);
-updateStatusDisplay();
-});
-// Arc length slider
-content.find('#arc_length_slider').on('input', async function() {
-const value = parseInt($(this).val());
-// Update global settings (default for new chats)
-extension_settings[MODULE_NAME].arcLength = value;
-content.find('#arc_length_value').text(value);
-saveSettingsDebounced();
-// Update current chat metadata
-const chatState = getChatStoryState();
-chatState.arcLength = value;
-await saveChatStoryState(chatState);
-updateArcBadgeInDialog(content);
-updatePreviewInDialog(content);
-updateStatusDisplay();
-});
-// Reset arc
-content.find('#reset_arc_btn').on('click', function() {
-if (confirm('Reset the story arc? This will set the round counter back to 0.')) {
-const chatState = getChatStoryState();
-chatState.currentStep = 0;
-chatState.arcStarted = false;
-chatState.epilogueShown = false;
-chatState.summaryShown = false;
-chatState.endNoticeShown = false;
-saveChatStoryState(chatState);
-updateArcBadgeInDialog(content);
-updateStoryPrompt();
-updatePreviewInDialog(content);
-updateStatusDisplay();
-toastr.success('Story arc reset');
-}
-});
-// Author style toggle
-content.find('#author_style_enabled').on('change', function() {
-const enabled = $(this).is(':checked');
-extension_settings[MODULE_NAME].authorStyleEnabled = enabled;
-content.find('#author_style_controls').toggle(enabled);
-saveSettingsDebounced();
-updateStoryPrompt();
-updatePreviewInDialog(content);
-});
-// Author style search
-content.find('#author_style_search').on('input', function() {
-const query = $(this).val();
-updateAuthorStyleDropdownInDialog(content, query);
-});
-// Author style selection
-content.find('#author_style_select').on('change', async function() {
-const selectedStyle = $(this).val();
-// Update global settings (default for new chats)
-extension_settings[MODULE_NAME].selectedAuthorStyle = selectedStyle;
-saveSettingsDebounced();
-// Update current chat metadata
-const chatState = getChatStoryState();
-chatState.selectedAuthorStyle = selectedStyle;
-await saveChatStoryState(chatState);
-// Update author style description
-const selectedAuthorStyle = authorStyles.find(s => s.id === selectedStyle);
-const description = selectedAuthorStyle ? selectedAuthorStyle.authorPrompt : 'Select an author style to see its guidance';
-content.find('#author_style_description').text(description);
-updateStoryPrompt();
-updatePreviewInDialog(content);
-updateStatusDisplay();
-});
-// NSFW toggle
-content.find('#nsfw_enabled').on('change', function() {
-extension_settings[MODULE_NAME].nsfwEnabled = $(this).is(':checked');
-saveSettingsDebounced();
-updateStoryPrompt();
-updatePreviewInDialog(content);
-});
-// Epilogue toggle
-content.find('#epilogue_enabled').on('change', function() {
-extension_settings[MODULE_NAME].epilogueEnabled = $(this).is(':checked');
-saveSettingsDebounced();
-});
-// Summary toggle
-content.find('#summary_enabled').on('change', function() {
-extension_settings[MODULE_NAME].summaryEnabled = $(this).is(':checked');
-saveSettingsDebounced();
-});
-// Summary message count slider
-content.find('#summary_message_count_slider').on('input', function() {
-const value = parseInt($(this).val());
-extension_settings[MODULE_NAME].summaryMessageCount = value;
-content.find('#summary_message_count_value').text(value === 0 ? 'Entire Chat' : value);
-saveSettingsDebounced();
-});
-// Debug mode toggle
-content.find('#debug_mode_enabled').on('change', function() {
-extension_settings[MODULE_NAME].debugMode = $(this).is(':checked');
-saveSettingsDebounced();
-updateStoryPrompt();
-});
-// Blueprint settings
-content.find('#blueprint_enabled').on('change', function() {
-const enabled = $(this).is(':checked');
-if (!extension_settings[MODULE_NAME].blueprintSettings) {
-extension_settings[MODULE_NAME].blueprintSettings = {};
-}
-extension_settings[MODULE_NAME].blueprintSettings.enabled = enabled;
-content.find('#blueprint_controls').toggle(enabled);
-saveSettingsDebounced();
-updateStoryPrompt();
-updateStatusDisplay();
-// Refresh main panel to show/hide generate button
-$('#story_mode_panel').replaceWith(renderMainPanel());
-setupEventListeners();
-});
-content.find('#blueprint_use_scene_prompts').on('change', function() {
-const enabled = $(this).is(':checked');
-if (!extension_settings[MODULE_NAME].blueprintSettings) {
-extension_settings[MODULE_NAME].blueprintSettings = {};
-}
-extension_settings[MODULE_NAME].blueprintSettings.useScenePrompts = enabled;
-saveSettingsDebounced();
-updateStoryPrompt();
-});
-content.find('#blueprint_beat_tracking').on('change', function() {
-    updateBlueprintSetting('beatTrackingEnabled', $(this).is(':checked'));
-    // Refresh main panel to show/hide beat progress
-    $('#story_mode_panel').replaceWith(renderMainPanel());
-    setupEventListeners();
-});
-content.find('#blueprint_generation_api').on('change', function() {
-const selectedApi = $(this).val() || null;
-if (!extension_settings[MODULE_NAME].blueprintSettings) {
-extension_settings[MODULE_NAME].blueprintSettings = {};
-}
-extension_settings[MODULE_NAME].blueprintSettings.generationApi = selectedApi;
-saveSettingsDebounced();
-console.log('[Story Mode] Generation API changed to:', selectedApi || 'main API');
-});
-content.find('#edit_blueprint_master_prompt').on('click', async function() {
-const currentPrompt = BlueprintModule.getEffectiveMasterPrompt();
-const result = await Popup.show.input(
-'Edit Blueprint Master Prompt Template',
-'Enter the master prompt template for blueprint generation. Variables like {{STORY_TYPE_JSON}}, {{METAPHOR_LEVEL}}, etc. will be replaced at generation time.',
-currentPrompt,
-{ rows: 15, okButton: 'Save', wide: true, large: true }
-);
-if (result) {
-if (!extension_settings[MODULE_NAME].blueprintSettings) {
-extension_settings[MODULE_NAME].blueprintSettings = {};
-}
-extension_settings[MODULE_NAME].blueprintSettings.masterPrompt = result;
-saveSettingsDebounced();
-toastr.success('Blueprint master prompt template updated');
-}
-});
-// Injection settings
-content.find('#injection_position').on('change', function() {
-extension_settings[MODULE_NAME].position = parseInt($(this).val());
-saveSettingsDebounced();
-updateStoryPrompt();
-});
-content.find('#injection_depth').on('change', function() {
-extension_settings[MODULE_NAME].depth = parseInt($(this).val());
-saveSettingsDebounced();
-updateStoryPrompt();
-});
-content.find('#injection_role').on('change', function() {
-extension_settings[MODULE_NAME].role = parseInt($(this).val());
-saveSettingsDebounced();
-updateStoryPrompt();
-});
-// Edit buttons
-content.find('#edit_story_types_btn').on('click', showStoryTypesEditor);
-content.find('#edit_author_styles_btn').on('click', showAuthorStylesEditor);
+    // Master toggle in dialog (syncs with main)
+    content.find('#story_mode_enabled').on('change', function () {
+        const enabled = $(this).is(':checked');
+        extension_settings[MODULE_NAME].enabled = enabled;
+        $('#story_mode_enabled').prop('checked', enabled); // Sync with main panel
+        content.find('#story_mode_content').toggle(enabled);
+        saveSettingsDebounced();
+        updateStoryPrompt();
+        updateStatusDisplay();
+    });
+    // Story arc toggle
+    content.find('#story_arc_enabled').on('change', function () {
+        const enabled = $(this).is(':checked');
+        extension_settings[MODULE_NAME].storyArcEnabled = enabled;
+        content.find('#story_arc_controls').toggle(enabled);
+        saveSettingsDebounced();
+        updateStoryPrompt();
+        updatePreviewInDialog(content);
+        updateStatusDisplay();
+    });
+    // Story type selection
+    content.find('#story_type_select').on('change', async function () {
+        const selectedType = $(this).val();
+        // Update global settings (default for new chats)
+        extension_settings[MODULE_NAME].selectedStoryType = selectedType;
+        saveSettingsDebounced();
+        // Update current chat metadata
+        const chatState = getChatStoryState();
+        chatState.selectedStoryType = selectedType;
+        await saveChatStoryState(chatState);
+        // Update story type description
+        const selectedStoryType = storyTypes.find(t => t.id === selectedType);
+        const description = selectedStoryType ? selectedStoryType.storyPrompt : 'Select a story type to see its description';
+        content.find('#story_type_description').text(description);
+        updateStoryPrompt();
+        updatePreviewInDialog(content);
+        updateStatusDisplay();
+    });
+    // Arc length slider
+    content.find('#arc_length_slider').on('input', async function () {
+        const value = parseInt($(this).val());
+        // Update global settings (default for new chats)
+        extension_settings[MODULE_NAME].arcLength = value;
+        content.find('#arc_length_value').text(value);
+        saveSettingsDebounced();
+        // Update current chat metadata
+        const chatState = getChatStoryState();
+        chatState.arcLength = value;
+        await saveChatStoryState(chatState);
+        updateArcBadgeInDialog(content);
+        updatePreviewInDialog(content);
+        updateStatusDisplay();
+    });
+    // Reset arc
+    content.find('#reset_arc_btn').on('click', function () {
+        if (confirm('Reset the story arc? This will set the round counter back to 0.')) {
+            const chatState = getChatStoryState();
+            chatState.currentStep = 0;
+            chatState.arcStarted = false;
+            chatState.epilogueShown = false;
+            chatState.summaryShown = false;
+            chatState.endNoticeShown = false;
+            saveChatStoryState(chatState);
+            updateArcBadgeInDialog(content);
+            updateStoryPrompt();
+            updatePreviewInDialog(content);
+            updateStatusDisplay();
+            toastr.success('Story arc reset');
+        }
+    });
+    // Author style toggle
+    content.find('#author_style_enabled').on('change', function () {
+        const enabled = $(this).is(':checked');
+        extension_settings[MODULE_NAME].authorStyleEnabled = enabled;
+        content.find('#author_style_controls').toggle(enabled);
+        saveSettingsDebounced();
+        updateStoryPrompt();
+        updatePreviewInDialog(content);
+    });
+    // Author style search
+    content.find('#author_style_search').on('input', function () {
+        const query = $(this).val();
+        updateAuthorStyleDropdownInDialog(content, query);
+    });
+    // Author style selection
+    content.find('#author_style_select').on('change', async function () {
+        const selectedStyle = $(this).val();
+        // Update global settings (default for new chats)
+        extension_settings[MODULE_NAME].selectedAuthorStyle = selectedStyle;
+        saveSettingsDebounced();
+        // Update current chat metadata
+        const chatState = getChatStoryState();
+        chatState.selectedAuthorStyle = selectedStyle;
+        await saveChatStoryState(chatState);
+        // Update author style description
+        const selectedAuthorStyle = authorStyles.find(s => s.id === selectedStyle);
+        const description = selectedAuthorStyle ? selectedAuthorStyle.authorPrompt : 'Select an author style to see its guidance';
+        content.find('#author_style_description').text(description);
+        updateStoryPrompt();
+        updatePreviewInDialog(content);
+        updateStatusDisplay();
+    });
+    // NSFW toggle
+    content.find('#nsfw_enabled').on('change', function () {
+        extension_settings[MODULE_NAME].nsfwEnabled = $(this).is(':checked');
+        saveSettingsDebounced();
+        updateStoryPrompt();
+        updatePreviewInDialog(content);
+    });
+    // Epilogue toggle
+    content.find('#epilogue_enabled').on('change', function () {
+        extension_settings[MODULE_NAME].epilogueEnabled = $(this).is(':checked');
+        saveSettingsDebounced();
+    });
+    // Summary toggle
+    content.find('#summary_enabled').on('change', function () {
+        extension_settings[MODULE_NAME].summaryEnabled = $(this).is(':checked');
+        saveSettingsDebounced();
+    });
+    // Summary message count slider
+    content.find('#summary_message_count_slider').on('input', function () {
+        const value = parseInt($(this).val());
+        extension_settings[MODULE_NAME].summaryMessageCount = value;
+        content.find('#summary_message_count_value').text(value === 0 ? 'Entire Chat' : value);
+        saveSettingsDebounced();
+    });
+    // Debug mode toggle
+    content.find('#debug_mode_enabled').on('change', function () {
+        extension_settings[MODULE_NAME].debugMode = $(this).is(':checked');
+        saveSettingsDebounced();
+        updateStoryPrompt();
+    });
+    // Blueprint settings
+    content.find('#blueprint_enabled').on('change', function () {
+        const enabled = $(this).is(':checked');
+        if (!extension_settings[MODULE_NAME].blueprintSettings) {
+            extension_settings[MODULE_NAME].blueprintSettings = {};
+        }
+        extension_settings[MODULE_NAME].blueprintSettings.enabled = enabled;
+        content.find('#blueprint_controls').toggle(enabled);
+        saveSettingsDebounced();
+        updateStoryPrompt();
+        updateStatusDisplay();
+        // Refresh main panel to show/hide generate button
+        $('#story_mode_panel').replaceWith(renderMainPanel());
+        setupEventListeners();
+    });
+    content.find('#blueprint_use_scene_prompts').on('change', function () {
+        const enabled = $(this).is(':checked');
+        if (!extension_settings[MODULE_NAME].blueprintSettings) {
+            extension_settings[MODULE_NAME].blueprintSettings = {};
+        }
+        extension_settings[MODULE_NAME].blueprintSettings.useScenePrompts = enabled;
+        saveSettingsDebounced();
+        updateStoryPrompt();
+    });
+    content.find('#blueprint_beat_tracking').on('change', function () {
+        updateBlueprintSetting('beatTrackingEnabled', $(this).is(':checked'));
+        // Refresh main panel to show/hide beat progress
+        $('#story_mode_panel').replaceWith(renderMainPanel());
+        setupEventListeners();
+    });
+    content.find('#blueprint_generation_api').on('change', function () {
+        const selectedApi = $(this).val() || null;
+        if (!extension_settings[MODULE_NAME].blueprintSettings) {
+            extension_settings[MODULE_NAME].blueprintSettings = {};
+        }
+        extension_settings[MODULE_NAME].blueprintSettings.generationApi = selectedApi;
+        saveSettingsDebounced();
+        console.log('[Story Mode] Generation API changed to:', selectedApi || 'main API');
+    });
+    content.find('#edit_blueprint_master_prompt').on('click', async function () {
+        const currentPrompt = BlueprintModule.getEffectiveMasterPrompt();
+        const result = await Popup.show.input(
+            'Edit Blueprint Master Prompt Template',
+            'Enter the master prompt template for blueprint generation. Variables like {{STORY_TYPE_JSON}}, {{METAPHOR_LEVEL}}, etc. will be replaced at generation time.',
+            currentPrompt,
+            { rows: 15, okButton: 'Save', wide: true, large: true }
+        );
+        if (result) {
+            if (!extension_settings[MODULE_NAME].blueprintSettings) {
+                extension_settings[MODULE_NAME].blueprintSettings = {};
+            }
+            extension_settings[MODULE_NAME].blueprintSettings.masterPrompt = result;
+            saveSettingsDebounced();
+            toastr.success('Blueprint master prompt template updated');
+        }
+    });
+    // Injection settings
+    content.find('#injection_position').on('change', function () {
+        extension_settings[MODULE_NAME].position = parseInt($(this).val());
+        saveSettingsDebounced();
+        updateStoryPrompt();
+    });
+    content.find('#injection_depth').on('change', function () {
+        extension_settings[MODULE_NAME].depth = parseInt($(this).val());
+        saveSettingsDebounced();
+        updateStoryPrompt();
+    });
+    content.find('#injection_role').on('change', function () {
+        extension_settings[MODULE_NAME].role = parseInt($(this).val());
+        saveSettingsDebounced();
+        updateStoryPrompt();
+    });
+    // Edit buttons
+    content.find('#edit_story_types_btn').on('click', showStoryTypesEditor);
+    content.find('#edit_author_styles_btn').on('click', showAuthorStylesEditor);
 }
 
 // Make setupEventListeners globally accessible for blueprint-module.js
@@ -2070,56 +2218,56 @@ window.showStoryModeSettings = showSettingsDialog;
 * @returns {void}
 */
 function updateStatusDisplay() {
-const settings = extension_settings[MODULE_NAME];
-const chatState = getChatStoryState();
-let statusText;
-if (!settings.enabled) {
-statusText = 'Disabled';
-} else {
-// Get story type name from CHAT STATE (per-chat)
-const storyName = settings.storyArcEnabled && chatState.selectedStoryType
-? storyTypes.find(t => t.id === chatState.selectedStoryType)?.name || 'None'
-: 'None';
-// Get author style name from CHAT STATE (per-chat)
-const authorName = settings.authorStyleEnabled && chatState.selectedAuthorStyle
-? authorStyles.find(s => s.id === chatState.selectedAuthorStyle)?.name || 'Disabled'
-: 'Disabled';
-// Build compact status - all values from CHAT STATE
-statusText = `Story: ${storyName} | Author: ${authorName} | Arc ${chatState.currentStep}/${chatState.arcLength}`;
-// Add blueprint indicator if enabled and active
-if (settings.blueprintSettings?.enabled) {
-const blueprintState = BlueprintModule.getBlueprintState();
-if (blueprintState.useBlueprint && blueprintState.blueprint) {
-const currentScene = BlueprintModule.getCurrentScene(
-blueprintState.blueprint,
-chatState.currentStep,
-chatState.arcLength,
-blueprintState.sceneMode,
-blueprintState.currentSceneIndex
-);
-if (currentScene) {
-statusText += ` | <span class="storymode-blueprint-indicator"><i class="fa-solid fa-scroll"></i> Blueprint: Scene ${currentScene.index + 1}/${blueprintState.blueprint.scene_plan.length}</span>`;
-}
-}
-}
-}
-//update the status text
-const statusEl = $('.storymode-status');
-if (statusEl.length > 0) {
-statusEl.html(`<small>${statusText}</small>`);
-}
-// Also update the arc badge if the settings dialog is currently open
-const badge = $('#arc_progress_badge');
-if (badge.length > 0) {
-if (chatState.currentStep === 0) {
-badge.text(`Round 0/${chatState.arcLength} | Not Started`);
-} else if (chatState.currentStep >= chatState.arcLength) {
-badge.text(`Arc Complete (${chatState.arcLength}/${chatState.arcLength})`);
-} else {
-const phaseInfo = getPhaseInfo(chatState.currentStep, chatState.arcLength);
-badge.text(`Step ${chatState.currentStep}/${chatState.arcLength} | ${phaseInfo.phase}`);
-}
-}
+    const settings = extension_settings[MODULE_NAME];
+    const chatState = getChatStoryState();
+    let statusText;
+    if (!settings.enabled) {
+        statusText = 'Disabled';
+    } else {
+        // Get story type name from CHAT STATE (per-chat)
+        const storyName = settings.storyArcEnabled && chatState.selectedStoryType
+            ? storyTypes.find(t => t.id === chatState.selectedStoryType)?.name || 'None'
+            : 'None';
+        // Get author style name from CHAT STATE (per-chat)
+        const authorName = settings.authorStyleEnabled && chatState.selectedAuthorStyle
+            ? authorStyles.find(s => s.id === chatState.selectedAuthorStyle)?.name || 'Disabled'
+            : 'Disabled';
+        // Build compact status - all values from CHAT STATE
+        statusText = `Story: ${storyName} | Author: ${authorName} | Arc ${chatState.currentStep}/${chatState.arcLength}`;
+        // Add blueprint indicator if enabled and active
+        if (settings.blueprintSettings?.enabled) {
+            const blueprintState = BlueprintModule.getBlueprintState();
+            if (blueprintState.useBlueprint && blueprintState.blueprint) {
+                const currentScene = BlueprintModule.getCurrentScene(
+                    blueprintState.blueprint,
+                    chatState.currentStep,
+                    chatState.arcLength,
+                    blueprintState.sceneMode,
+                    blueprintState.currentSceneIndex
+                );
+                if (currentScene) {
+                    statusText += ` | <span class="storymode-blueprint-indicator"><i class="fa-solid fa-scroll"></i> Blueprint: Scene ${currentScene.index + 1}/${blueprintState.blueprint.scene_plan.length}</span>`;
+                }
+            }
+        }
+    }
+    //update the status text
+    const statusEl = $('.storymode-status');
+    if (statusEl.length > 0) {
+        statusEl.html(`<small>${statusText}</small>`);
+    }
+    // Also update the arc badge if the settings dialog is currently open
+    const badge = $('#arc_progress_badge');
+    if (badge.length > 0) {
+        if (chatState.currentStep === 0) {
+            badge.text(`Round 0/${chatState.arcLength} | Not Started`);
+        } else if (chatState.currentStep >= chatState.arcLength) {
+            badge.text(`Arc Complete (${chatState.arcLength}/${chatState.arcLength})`);
+        } else {
+            const phaseInfo = getPhaseInfo(chatState.currentStep, chatState.arcLength);
+            badge.text(`Step ${chatState.currentStep}/${chatState.arcLength} | ${phaseInfo.phase}`);
+        }
+    }
 }
 
 /**
@@ -2158,29 +2306,29 @@ window.refreshBlueprintPreview = refreshBlueprintPreview;
 * @returns {void}
 */
 function updateStoryTypeDropdownInDialog(content) {
-const dropdown = content.find('#story_type_select');
-const chatState = getChatStoryState();
-const selected = chatState.selectedStoryType; // Read from chat state
-dropdown.empty();
-dropdown.append('<option value="">None</option>');
-// Sort story types alphabetically by name
-const sortedTypes = [...storyTypes].sort((a, b) => a.name.localeCompare(b.name));
-sortedTypes.forEach(type => {
-const option = $('<option></option>')
-.val(type.id)
-.text(type.name + ' (' + type.category.join(', ') + ')');
-if (type.id === selected) {
-option.prop('selected', true);
-}
-dropdown.append(option);
-});
-// Update story type description
-const selectedStoryType = storyTypes.find(t => t.id === selected);
-const description = selectedStoryType ? selectedStoryType.storyPrompt : 'Select a story type to see its description';
-const descriptionEl = content.find('#story_type_description');
-if (descriptionEl.length > 0) {
-descriptionEl.text(description);
-}
+    const dropdown = content.find('#story_type_select');
+    const chatState = getChatStoryState();
+    const selected = chatState.selectedStoryType; // Read from chat state
+    dropdown.empty();
+    dropdown.append('<option value="">None</option>');
+    // Sort story types alphabetically by name
+    const sortedTypes = [...storyTypes].sort((a, b) => a.name.localeCompare(b.name));
+    sortedTypes.forEach(type => {
+        const option = $('<option></option>')
+            .val(type.id)
+            .text(type.name + ' (' + type.category.join(', ') + ')');
+        if (type.id === selected) {
+            option.prop('selected', true);
+        }
+        dropdown.append(option);
+    });
+    // Update story type description
+    const selectedStoryType = storyTypes.find(t => t.id === selected);
+    const description = selectedStoryType ? selectedStoryType.storyPrompt : 'Select a story type to see its description';
+    const descriptionEl = content.find('#story_type_description');
+    if (descriptionEl.length > 0) {
+        descriptionEl.text(description);
+    }
 }
 /**
 * Update the author style dropdown in the settings dialog.
@@ -2191,36 +2339,36 @@ descriptionEl.text(description);
 * @returns {void}
 */
 function updateAuthorStyleDropdownInDialog(content, searchQuery = '') {
-const dropdown = content.find('#author_style_select');
-const chatState = getChatStoryState();
-const selected = chatState.selectedAuthorStyle; // Read from chat state
-dropdown.empty();
-dropdown.append('<option value="">None</option>');
-let filteredStyles = authorStyles;
-// Apply fuzzy search if query provided
-if (searchQuery && fuseAuthorStyles) {
-const results = fuseAuthorStyles.search(searchQuery);
-filteredStyles = results.map(r => r.item);
-} else {
-// Sort alphabetically by name when not searching
-filteredStyles = [...authorStyles].sort((a, b) => a.name.localeCompare(b.name));
-}
-filteredStyles.forEach(style => {
-const option = $('<option></option>')
-.val(style.id)
-.text(style.name + ' (' + style.category.join(', ') + ')');
-if (style.id === selected) {
-option.prop('selected', true);
-}
-dropdown.append(option);
-});
-// Update author style description
-const selectedAuthorStyle = authorStyles.find(s => s.id === selected);
-const description = selectedAuthorStyle ? selectedAuthorStyle.authorPrompt : 'Select an author style to see its guidance';
-const descriptionEl = content.find('#author_style_description');
-if (descriptionEl.length > 0) {
-descriptionEl.text(description);
-}
+    const dropdown = content.find('#author_style_select');
+    const chatState = getChatStoryState();
+    const selected = chatState.selectedAuthorStyle; // Read from chat state
+    dropdown.empty();
+    dropdown.append('<option value="">None</option>');
+    let filteredStyles = authorStyles;
+    // Apply fuzzy search if query provided
+    if (searchQuery && fuseAuthorStyles) {
+        const results = fuseAuthorStyles.search(searchQuery);
+        filteredStyles = results.map(r => r.item);
+    } else {
+        // Sort alphabetically by name when not searching
+        filteredStyles = [...authorStyles].sort((a, b) => a.name.localeCompare(b.name));
+    }
+    filteredStyles.forEach(style => {
+        const option = $('<option></option>')
+            .val(style.id)
+            .text(style.name + ' (' + style.category.join(', ') + ')');
+        if (style.id === selected) {
+            option.prop('selected', true);
+        }
+        dropdown.append(option);
+    });
+    // Update author style description
+    const selectedAuthorStyle = authorStyles.find(s => s.id === selected);
+    const description = selectedAuthorStyle ? selectedAuthorStyle.authorPrompt : 'Select an author style to see its guidance';
+    const descriptionEl = content.find('#author_style_description');
+    if (descriptionEl.length > 0) {
+        descriptionEl.text(description);
+    }
 }
 
 /**
@@ -2231,16 +2379,16 @@ descriptionEl.text(description);
 * @returns {void}
 */
 function updateArcBadgeInDialog(content) {
-const chatState = getChatStoryState();
-const badge = content.find('#arc_progress_badge');
-if (chatState.currentStep === 0) {
-badge.text(`Round 0/${chatState.arcLength} | Not Started`);
-} else if (chatState.currentStep >= chatState.arcLength) {
-badge.text(`Arc Complete (${chatState.arcLength}/${chatState.arcLength})`);
-} else {
-const phaseInfo = getPhaseInfo(chatState.currentStep, chatState.arcLength);
-badge.text(`Step ${chatState.currentStep}/${chatState.arcLength} | ${phaseInfo.phase}`);
-}
+    const chatState = getChatStoryState();
+    const badge = content.find('#arc_progress_badge');
+    if (chatState.currentStep === 0) {
+        badge.text(`Round 0/${chatState.arcLength} | Not Started`);
+    } else if (chatState.currentStep >= chatState.arcLength) {
+        badge.text(`Arc Complete (${chatState.arcLength}/${chatState.arcLength})`);
+    } else {
+        const phaseInfo = getPhaseInfo(chatState.currentStep, chatState.arcLength);
+        badge.text(`Step ${chatState.currentStep}/${chatState.arcLength} | ${phaseInfo.phase}`);
+    }
 }
 
 /**
@@ -2251,35 +2399,35 @@ badge.text(`Step ${chatState.currentStep}/${chatState.arcLength} | ${phaseInfo.p
 * @returns {void}
 */
 function updatePreviewInDialog(content) {
-const preview = content.find('#prompt_preview');
-const promptText = buildFullInjection(true);
-if (promptText) {
-preview.text(promptText);
-} else {
-preview.text('(No prompt will be injected with current settings)');
-}
+    const preview = content.find('#prompt_preview');
+    const promptText = buildFullInjection(true);
+    if (promptText) {
+        preview.text(promptText);
+    } else {
+        preview.text('(No prompt will be injected with current settings)');
+    }
 }
 
 /**
 * Update story type dropdown
 */
 function updateStoryTypeDropdown() {
-const dropdown = $('#story_type_select');
-const chatState = getChatStoryState();
-const selected = chatState.selectedStoryType;
-dropdown.empty();
-dropdown.append('<option value="">None</option>');
-// Sort story types alphabetically by name
-const sortedTypes = [...storyTypes].sort((a, b) => a.name.localeCompare(b.name));
-sortedTypes.forEach(type => {
-const option = $('<option></option>')
-.val(type.id)
-.text(type.name + ' (' + type.category.join(', ') + ')');
-if (type.id === selected) {
-option.prop('selected', true);
-}
-dropdown.append(option);
-});
+    const dropdown = $('#story_type_select');
+    const chatState = getChatStoryState();
+    const selected = chatState.selectedStoryType;
+    dropdown.empty();
+    dropdown.append('<option value="">None</option>');
+    // Sort story types alphabetically by name
+    const sortedTypes = [...storyTypes].sort((a, b) => a.name.localeCompare(b.name));
+    sortedTypes.forEach(type => {
+        const option = $('<option></option>')
+            .val(type.id)
+            .text(type.name + ' (' + type.category.join(', ') + ')');
+        if (type.id === selected) {
+            option.prop('selected', true);
+        }
+        dropdown.append(option);
+    });
 }
 
 // Make updateStoryTypeDropdown globally accessible for type-editors.js
@@ -2289,29 +2437,29 @@ window.updateStoryTypeDropdown = updateStoryTypeDropdown;
 * Update author style dropdown with optional search
 */
 function updateAuthorStyleDropdown(searchQuery = '') {
-const dropdown = $('#author_style_select');
-const chatState = getChatStoryState();
-const selected = chatState.selectedAuthorStyle;
-dropdown.empty();
-dropdown.append('<option value="">None</option>');
-let filteredStyles = authorStyles;
-// Apply fuzzy search if query provided
-if (searchQuery && fuseAuthorStyles) {
-const results = fuseAuthorStyles.search(searchQuery);
-filteredStyles = results.map(r => r.item);
-} else {
-// Sort alphabetically by name when not searching
-filteredStyles = [...authorStyles].sort((a, b) => a.name.localeCompare(b.name));
-}
-filteredStyles.forEach(style => {
-const option = $('<option></option>')
-.val(style.id)
-.text(style.name + ' (' + style.category.join(', ') + ')');
-if (style.id === selected) {
-option.prop('selected', true);
-}
-dropdown.append(option);
-});
+    const dropdown = $('#author_style_select');
+    const chatState = getChatStoryState();
+    const selected = chatState.selectedAuthorStyle;
+    dropdown.empty();
+    dropdown.append('<option value="">None</option>');
+    let filteredStyles = authorStyles;
+    // Apply fuzzy search if query provided
+    if (searchQuery && fuseAuthorStyles) {
+        const results = fuseAuthorStyles.search(searchQuery);
+        filteredStyles = results.map(r => r.item);
+    } else {
+        // Sort alphabetically by name when not searching
+        filteredStyles = [...authorStyles].sort((a, b) => a.name.localeCompare(b.name));
+    }
+    filteredStyles.forEach(style => {
+        const option = $('<option></option>')
+            .val(style.id)
+            .text(style.name + ' (' + style.category.join(', ') + ')');
+        if (style.id === selected) {
+            option.prop('selected', true);
+        }
+        dropdown.append(option);
+    });
 }
 
 // Make updateAuthorStyleDropdown globally accessible for type-editors.js
@@ -2321,29 +2469,29 @@ window.updateAuthorStyleDropdown = updateAuthorStyleDropdown;
 * Update arc progress badge
 */
 function updateArcBadge() {
-const chatState = getChatStoryState();
-const badge = $('#arc_progress_badge');
-if (chatState.currentStep === 0) {
-badge.text(`Round 0/${chatState.arcLength} | Not Started`);
-} else if (chatState.currentStep >= chatState.arcLength) {
-badge.text(`Arc Complete (${chatState.arcLength}/${chatState.arcLength})`);
-} else {
-const phaseInfo = getPhaseInfo(chatState.currentStep, chatState.arcLength);
-badge.text(`Step ${chatState.currentStep}/${chatState.arcLength} | ${phaseInfo.phase}`);
-}
+    const chatState = getChatStoryState();
+    const badge = $('#arc_progress_badge');
+    if (chatState.currentStep === 0) {
+        badge.text(`Round 0/${chatState.arcLength} | Not Started`);
+    } else if (chatState.currentStep >= chatState.arcLength) {
+        badge.text(`Arc Complete (${chatState.arcLength}/${chatState.arcLength})`);
+    } else {
+        const phaseInfo = getPhaseInfo(chatState.currentStep, chatState.arcLength);
+        badge.text(`Step ${chatState.currentStep}/${chatState.arcLength} | ${phaseInfo.phase}`);
+    }
 }
 
 /**
 * Update prompt preview
 */
 function updatePreview() {
-const preview = $('#prompt_preview');
-const promptText = buildFullInjection(true);
-if (promptText) {
-preview.text(promptText);
-} else {
-preview.text('(No prompt will be injected with current settings)');
-}
+    const preview = $('#prompt_preview');
+    const promptText = buildFullInjection(true);
+    if (promptText) {
+        preview.text(promptText);
+    } else {
+        preview.text('(No prompt will be injected with current settings)');
+    }
 }
 
 // Type editor functions now imported from type-editors.js
@@ -2372,7 +2520,7 @@ function onChatChanged() {
 /**
  * Initialize extension
  */
-jQuery(async function() {
+jQuery(async function () {
     console.log('[Story Mode] Extension loading...');
 
     // Load Fuse.js (from state-manager)
@@ -2447,8 +2595,707 @@ jQuery(async function() {
     eventSource.on(event_types.MESSAGE_RECEIVED, onMessageReceived);
     eventSource.on(event_types.CHAT_CHANGED, onChatChanged);
 
+    // ============================================================================
+    // WIZARD MODE EVENT HANDLERS
+    // ============================================================================
+
+    /**
+     * Handle phase updates during wizard mode blueprint generation
+     * Updates the wizard UI with progress and partial blueprint data
+     */
+    eventSource.on('STORY_MODE_PHASE_UPDATE', (data) => {
+        console.log('[Story Mode] Phase update received:', data);
+        const { phase, progress, blueprint } = data;
+
+        // Update wizard progress indicator
+        updateWizardProgress(phase);
+
+        // Update wizard preview panel
+        updateWizardPreview(blueprint, phase);
+    });
+
     // Initial prompt injection
     updateStoryPrompt();
 
     console.log('[Story Mode] Extension loaded successfully');
 });
+
+// ============================================================================
+// WIZARD UI UPDATE FUNCTIONS
+// ============================================================================
+
+/**
+ * Gather form data for blueprint generation
+ * @param {jQuery} content - The settings dialog content element
+ * @returns {Object} Config object for generation
+ */
+function getWizardFormData(content) {
+    const selectedCharacterIds = [];
+    content.find('input[name="blueprint_character"]:checked').each(function () {
+        const charId = $(this).val();
+        if (charId) selectedCharacterIds.push(charId);
+    });
+
+    const selectedPersonas = [];
+    content.find('input[name="blueprint_persona"]:checked').each(function () {
+        const personaId = $(this).val();
+        const personaName = $(this).data('name');
+        if (personaId) {
+            selectedPersonas.push({
+                id: personaId,
+                name: personaName || personaId
+            });
+        }
+    });
+
+    const scenario = content.find('#blueprint_scenario').val() || '';
+    const metaphorLevel = content.find('#blueprint_metaphor_level').val() || 'mixed';
+    const storyLength = content.find('#blueprint_story_length').val() || 'medium';
+    const customRounds = content.find('#blueprint_custom_rounds').val();
+    const customMasterPrompt = content.find('#blueprint_master_prompt').val() || null;
+    const storyTypeId = content.find('#blueprint_story_type').val() || '';
+    const authorStyleId = content.find('#blueprint_author_style').val() || '';
+    const finalStoryLength = customRounds && parseInt(customRounds) > 0 ? parseInt(customRounds) : parseInt(storyLength);
+
+    // Build character data from context
+    const context = getContext();
+    const characterData = [];
+
+    // Helper to add char if valid
+    const addCharIfSelected = (char) => {
+        if (char) {
+            characterData.push({
+                name: char.name,
+                description: char.description,
+                personality: char.personality,
+                scenario: char.scenario,
+                greeting: char.greeting
+            });
+        }
+    };
+
+    if (context.groupId) {
+        const group = context.groups?.find(g => g.id === context.groupId);
+        if (group && group.members) {
+            group.members.forEach(memberFilename => {
+                const charIndex = (context.characters || []).findIndex(c =>
+                    c.filename === memberFilename ||
+                    c.avatar === memberFilename ||
+                    (typeof c === 'string' && c === memberFilename)
+                );
+                if (charIndex !== -1 && selectedCharacterIds.includes(charIndex.toString())) {
+                    addCharIfSelected(context.characters[charIndex]);
+                }
+            });
+        }
+    } else {
+        if (selectedCharacterIds.includes(context.characterId?.toString())) {
+            addCharIfSelected(context.characters?.[parseInt(context.characterId, 10)]);
+        }
+    }
+
+    return {
+        storyTypeId,
+        authorStyleId: authorStyleId || undefined,
+        characterData,
+        personaData: selectedPersonas,
+        scenario,
+        messageTarget: finalStoryLength,
+        metaphorLevel: metaphorLevel,
+        customMasterPrompt: customMasterPrompt
+    };
+}
+
+/**
+ * Create the HTML structure for the wizard modal
+ * @returns {string} HTML string
+ */
+function createWizardModalHtml() {
+    return `
+        <div class="storymode-wizard-modal">
+            <div class="storymode-wizard-header" style="text-align: center; margin-bottom: 20px;">
+                <h2 style="margin: 0 0 10px 0;"><i class="fa-solid fa-wand-magic-sparkles"></i> Blueprint Generation Wizard</h2>
+                <p id="storymode-wizard-status" style="margin: 0; font-size: 1.1rem; color: var(--gray70);">Initializing...</p>
+            </div>
+            <div id="storymode-wizard-progress-container"></div>
+            <div id="storymode-wizard-preview-container"></div>
+            <div id="storymode-resolution-selection-container" style="display: none;"></div>
+            <div id="storymode-wizard-actions" style="text-align: center; margin-top: 20px;">
+                <button id="storymode-wizard-cancel-btn" class="menu_button storymode-btn storymode-btn-secondary" style="margin-right: 10px;">
+                    <i class="fa-solid fa-times"></i> Cancel
+                </button>
+                <button id="storymode-wizard-retry-btn" class="menu_button storymode-btn storymode-btn-warning" style="display: none; margin-right: 10px;">
+                    <i class="fa-solid fa-rotate-right"></i> Retry Phase
+                </button>
+                <button id="storymode-wizard-finish-btn" class="menu_button storymode-btn storymode-btn-primary" style="display: none;">
+                    <i class="fa-solid fa-check"></i> Save Blueprint
+                </button>
+            </div>
+            <div id="storymode-wizard-error-details" style="display: none; margin-top: 20px; padding: 15px; background: var(--black10a); border-radius: 8px; border-left: 4px solid var(--corruption-red);">
+                <h4 style="margin: 0 0 10px 0; color: var(--corruption-red);"><i class="fa-solid fa-exclamation-triangle"></i> Error Details</h4>
+                <p id="storymode-wizard-error-message" style="margin: 0;"></p>
+                <p id="storymode-wizard-error-phase" style="margin: 5px 0 0 0; font-size: 0.9rem; color: var(--gray70);"></p>
+                <button id="storymode-wizard-show-response-btn" class="menu_button storymode-btn storymode-btn-secondary" style="display: none; margin-top: 10px; font-size: 0.8rem;">
+                    <i class="fa-solid fa-code"></i> Show Full Response
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Validate blueprint for required fields
+ * @param {Object} blueprint - The generated blueprint
+ * @returns {Array<string>} List of validation error messages
+ */
+function validateBlueprint(blueprint) {
+    const errors = [];
+    if (!blueprint.core_premise) errors.push('Missing core premise');
+    if (!blueprint.setting) errors.push('Missing setting information');
+    if (!blueprint.antagonistic_forces) errors.push('Missing antagonistic forces');
+    if (!blueprint.arc_structure) errors.push('Missing arc structure');
+    if (!blueprint.scene_plan || blueprint.scene_plan.length === 0) errors.push('No scenes generated');
+    return errors;
+}
+
+/**
+ * Attempt to auto-generate cover image for the blueprint
+ * @param {Object} blueprint - The blueprint object
+ * @param {HTMLElement} statusElement - Status text element
+ * @param {HTMLElement} previewContainer - Preview container element
+ */
+async function attemptAutoCoverGeneration(blueprint, statusElement, previewContainer) {
+    const coverGenSettings = extension_settings[MODULE_NAME]?.blueprintSettings?.coverGeneration;
+    if (!coverGenSettings?.autoGenerate) return;
+
+    if (statusElement) {
+        statusElement.innerHTML = '<span style="color: #3b82f6;"><i class="fa-solid fa-paintbrush fa-spin"></i> Generating cover image...</span>';
+    }
+
+    // Sync LLM-generated cover prompt if available
+    if (blueprint.cover_prompt && (!blueprint.metadata || !blueprint.metadata.coverPrompt)) {
+        blueprint.metadata = blueprint.metadata || {};
+        blueprint.metadata.coverPrompt = {
+            positive: blueprint.cover_prompt,
+            negative: 'text, watermark, signature, blurry, low quality, distorted, ugly, bad anatomy, extra limbs, cropped, worst quality, low resolution',
+            style: 'digital art',
+            technical: { aspect_ratio: '2:3' }
+        };
+    }
+
+    try {
+        const coverResult = await generateCoverFromSD(blueprint);
+        if (coverResult.success && coverResult.imageUrl) {
+            await addCoverToGallery(blueprint, coverResult.imageUrl, blueprint.metadata.coverPrompt);
+            setCoverImageUrl(blueprint, coverResult.imageUrl);
+
+            // Update wizard preview if it exists
+            if (previewContainer) {
+                previewContainer.innerHTML = buildWizardPreview(blueprint, 5);
+            }
+
+            if (statusElement) {
+                statusElement.innerHTML = '<span style="color: #10b981;">✓ Blueprint and cover generated successfully!</span>';
+            }
+        } else {
+            toastr.warning('Blueprint generated, but cover generation failed: ' + (coverResult.error || 'Unknown error'));
+            if (statusElement) {
+                statusElement.innerHTML = '<span style="color: #f59e0b;">⚠ Blueprint generated, but cover generation failed.</span>';
+            }
+        }
+    } catch (coverError) {
+        console.error('[Story Mode] Cover generation error in wizard:', coverError);
+        toastr.warning('Blueprint generated, but cover generation encountered an error.');
+    }
+}
+
+/**
+ * Launch the wizard modal for phased blueprint generation
+ * This creates a dedicated modal window for the wizard UI instead of embedding it in the settings dialog
+ * @param {jQuery} content - The settings dialog content element
+ */
+async function launchWizardModal(content) {
+    // Show cancel button, hide generate button
+    content.find('#blueprint_generate_btn').hide();
+    content.find('#blueprint_cancel_generation_btn').show();
+
+    // Gather form data and create wizard modal
+    const config = getWizardFormData(content);
+    const wizardHtml = createWizardModalHtml();
+
+    // Create wizard modal
+    const wizardPopup = new Popup(wizardHtml, POPUP_TYPE.TEXT, 'Blueprint Wizard', {
+        okButton: false,
+        cancelButton: false,
+        wide: true,
+        allowVerticalScrolling: true,
+    });
+
+    // Show the popup (fire and forget - don't await, we'll close it manually later)
+    wizardPopup.show();
+
+    // Store the popup reference for later use
+    window.storyModeWizardPopup = wizardPopup;
+
+    // Get reference to the popup content element
+    const popupElement = wizardPopup.content;
+
+    // Initialize with Phase 1 as current (generation starts immediately)
+    const progressContainer = popupElement.querySelector('#storymode-wizard-progress-container');
+    const previewContainer = popupElement.querySelector('#storymode-wizard-preview-container');
+    const statusElement = popupElement.querySelector('#storymode-wizard-status');
+
+    if (progressContainer) {
+        progressContainer.innerHTML = buildWizardProgressHTML(1); // Start with Phase 1 as current
+    }
+    if (previewContainer) {
+        previewContainer.innerHTML = buildWizardPreview({}, 0);
+    }
+    if (statusElement) {
+        statusElement.textContent = 'Generating Foundation... (Phase 1/5)';
+    }
+
+    // Store for tracking generation state
+    wizardPopup.isCancelled = false;
+    let failedAtPhase = null;
+    let partialBlueprintForRetry = null;
+    let requestForRetry = null;
+    let lastRawResponse = null;
+    let phaseTokensUsed = {}; // Track token limits used per phase
+    const MAX_PHASE_TOKENS = 65536; // Maximum safe token limit
+
+    // Phase name lookup (shared across functions)
+    const phaseNames = ['', 'Foundation', 'Characters', 'Scenes', 'Resolutions', 'Validation'];
+
+    // Helper: Show error state in wizard
+    const showWizardError = (errorResult) => {
+        const phase = errorResult.phase || failedAtPhase;
+        const message = errorResult.error || errorResult.message || 'Unknown error';
+        const statusElement = popupElement.querySelector('#storymode-wizard-status');
+        const errorDetailsContainer = popupElement.querySelector('#storymode-wizard-error-details');
+        const errorMsg = popupElement.querySelector('#storymode-wizard-error-message');
+        const errorPhaseText = popupElement.querySelector('#storymode-wizard-error-phase');
+        const retryBtn = popupElement.querySelector('#storymode-wizard-retry-btn');
+        const showResponseBtn = popupElement.querySelector('#storymode-wizard-show-response-btn');
+
+        // Store token usage from error result
+        if (errorResult.phaseTokensUsed) {
+            phaseTokensUsed[phase] = errorResult.phaseTokensUsed;
+        }
+
+        const tokenInfo = phaseTokensUsed[phase] ? ` (used ${phaseTokensUsed[phase]} tokens)` : '';
+
+        if (statusElement) {
+            statusElement.innerHTML = `<span style="color: var(--corruption-red);">✗ ${errorResult.phase ? 'Retry failed' : 'Generation failed'} at Phase ${phase}${tokenInfo}.</span>`;
+        }
+        if (errorDetailsContainer) {
+            errorDetailsContainer.style.display = 'block';
+            if (errorMsg) errorMsg.textContent = message;
+            if (errorPhaseText) {
+                errorPhaseText.textContent = `Error occurred during ${phaseNames[phase]}. Check the console for details.`;
+            }
+            if (showResponseBtn && (errorResult.rawResponse || lastRawResponse)) {
+                showResponseBtn.style.display = 'inline-block';
+                if (errorResult.rawResponse) lastRawResponse = errorResult.rawResponse;
+            }
+        }
+        if (retryBtn) {
+            retryBtn.style.display = 'inline-block';
+        }
+    };
+
+    // Set up cancel button handler immediately
+    const cancelBtn = popupElement.querySelector('#storymode-wizard-cancel-btn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function () {
+            if (!wizardPopup.isCancelled && confirm('Are you sure you want to cancel blueprint generation?')) {
+                wizardPopup.isCancelled = true;
+                const statusElement = popupElement.querySelector('#storymode-wizard-status');
+                if (statusElement) {
+                    statusElement.innerHTML = '<span style="color: var(--corruption-red);">Generation cancelled by user.</span>';
+                }
+                wizardPopup.complete(POPUP_RESULT.CANCELLED);
+            }
+        });
+    }
+
+    // Set up retry button handler
+    const retryBtn = popupElement.querySelector('#storymode-wizard-retry-btn');
+    if (retryBtn) {
+        retryBtn.addEventListener('click', async function () {
+            if (!failedAtPhase || !requestForRetry) {
+                console.error('[Story Mode] Cannot retry: missing phase or request data');
+                return;
+            }
+
+            // Hide error UI
+            popupElement.querySelector('#storymode-wizard-error-details').style.display = 'none';
+            retryBtn.style.display = 'none';
+
+            // Calculate token overrides for Phase 2
+            let tokenOverrides = {};
+            if (failedAtPhase === 2) {
+                const currentTokens = phaseTokensUsed[2] || 8192; // Default to 8192 if not tracked
+                const newTokens = Math.min(currentTokens * 2, MAX_PHASE_TOKENS);
+                tokenOverrides[2] = newTokens;
+
+                console.log(`[Story Mode] Doubling Phase 2 tokens: ${currentTokens} -> ${newTokens}`);
+
+                // Show notification to user
+                if (newTokens >= MAX_PHASE_TOKENS) {
+                    toastr.warning(`Phase 2 token limit at maximum (${MAX_PHASE_TOKENS})`);
+                } else {
+                    toastr.info(`Retrying Phase 2 with ${newTokens} tokens (doubled from ${currentTokens})`);
+                }
+            }
+
+            // Update status
+            const statusElement = popupElement.querySelector('#storymode-wizard-status');
+            const tokenInfo = tokenOverrides[failedAtPhase] ? ` with ${tokenOverrides[failedAtPhase]} tokens` : '';
+            if (statusElement) {
+                statusElement.innerHTML = `<span style="color: #f59e0b;">Retrying ${phaseNames[failedAtPhase]} phase... (Phase ${failedAtPhase}/5)${tokenInfo}</span>`;
+            }
+
+            // Reset error state
+            const retryPhase = failedAtPhase;
+            failedAtPhase = null;
+
+            try {
+                const retryResult = await BlueprintModule.generateBlueprint(
+                    requestForRetry,
+                    storyTypes,
+                    authorStyles,
+                    {
+                        phased: true,
+                        startPhase: retryPhase,
+                        partialBlueprint: partialBlueprintForRetry,
+                        phaseTokenOverrides: tokenOverrides
+                    }
+                );
+
+                if (wizardPopup.isCancelled || !retryResult.success) {
+                    if (!retryResult.success) {
+                        failedAtPhase = retryPhase;
+                        showWizardError(retryResult);
+                    }
+                    return;
+                }
+
+                // Success - update UI
+                const blueprint = retryResult.blueprint;
+                popupElement.querySelector('#storymode-wizard-progress-container').innerHTML = buildWizardProgressHTML(6);
+                popupElement.querySelector('#storymode-wizard-preview-container').innerHTML = buildWizardPreview(blueprint, 5);
+                if (statusElement) {
+                    statusElement.innerHTML = '<span style="color: #10b981;">✓ Blueprint generation complete! Review your blueprint below.</span>';
+                }
+                popupElement.querySelector('#storymode-wizard-cancel-btn').style.display = 'none';
+                popupElement.querySelector('#storymode-wizard-finish-btn').style.display = 'inline-block';
+                popupElement.blueprintResult = retryResult;
+            } catch (retryError) {
+                console.error('[Story Mode] Retry error:', retryError);
+                failedAtPhase = retryPhase;
+                showWizardError({ error: retryError.message, phase: retryPhase });
+            }
+        });
+    }
+
+    // Set up show response button handler
+    const showResponseBtn = popupElement.querySelector('#storymode-wizard-show-response-btn');
+    if (showResponseBtn) {
+        showResponseBtn.addEventListener('click', function () {
+            if (lastRawResponse) {
+                const responseHtml = `<textarea style="width: 100%; min-height: 400px; font-family: monospace; font-size: 0.85rem; padding: 10px; color: var(--black);" readonly>${escapeHtml(lastRawResponse)}</textarea>`;
+                new Popup(responseHtml, POPUP_TYPE.TEXT, 'LLM Raw Response', {
+                    okButton: true,
+                    cancelButton: false,
+                    wide: true,
+                }).show();
+            }
+        });
+    }
+
+    try {
+        // Call buildBlueprintRequest to get the proper request structure
+        const request = BlueprintModule.buildBlueprintRequest(config);
+
+        // Call BlueprintModule.generateBlueprint() with phased mode
+        const result = await BlueprintModule.generateBlueprint(request, storyTypes, authorStyles, { phased: true });
+
+        // Check if user cancelled
+        if (wizardPopup.isCancelled) {
+            return;
+        }
+
+        if (result.success) {
+            const blueprint = result.blueprint;
+            const validationErrors = validateBlueprint(blueprint);
+
+            // Update to show completion or validation errors
+            const progressContainer = popupElement.querySelector('#storymode-wizard-progress-container');
+            const previewContainer = popupElement.querySelector('#storymode-wizard-preview-container');
+            const statusElement = popupElement.querySelector('#storymode-wizard-status');
+            const actionsContainer = popupElement.querySelector('#storymode-wizard-actions');
+            const resolutionContainer = popupElement.querySelector('#storymode-resolution-selection-container');
+            const errorDetailsContainer = popupElement.querySelector('#storymode-wizard-error-details');
+            const finishBtn = popupElement.querySelector('#storymode-wizard-finish-btn');
+            const cancelBtn = popupElement.querySelector('#storymode-wizard-cancel-btn');
+
+            if (validationErrors.length > 0) {
+                // Show validation errors
+                if (progressContainer) progressContainer.innerHTML = buildWizardProgressHTML(6);
+                if (statusElement) statusElement.innerHTML = '<span style="color: #f59e0b;">⚠ Blueprint generation incomplete - some required fields are missing.</span>';
+
+                if (errorDetailsContainer) {
+                    errorDetailsContainer.style.display = 'block';
+                    const errorMsg = popupElement.querySelector('#storymode-wizard-error-message');
+                    const errorPhase = popupElement.querySelector('#storymode-wizard-error-phase');
+                    if (errorMsg) errorMsg.textContent = 'The generated blueprint is missing: ' + validationErrors.join(', ');
+                    if (errorPhase) errorPhase.textContent = 'The LLM may have returned incomplete data. Try regenerating.';
+                }
+                if (actionsContainer) actionsContainer.style.display = 'block';
+                if (cancelBtn) cancelBtn.style.display = 'none';
+                if (finishBtn) {
+                    finishBtn.style.display = 'inline-block';
+                    finishBtn.textContent = 'Close';
+                }
+
+                // Store result for potential save anyway (user choice)
+                popupElement.blueprintResult = { success: true, blueprint, validationErrors };
+            } else {
+                // Auto-generate cover image if enabled
+                await attemptAutoCoverGeneration(blueprint, statusElement, previewContainer);
+
+                // Success - show completion
+                if (progressContainer) progressContainer.innerHTML = buildWizardProgressHTML(6);
+                if (previewContainer) previewContainer.innerHTML = buildWizardPreview(blueprint, 5);
+
+                // Show primary ending display if available
+                if (blueprint.primary_ending && resolutionContainer) {
+                    resolutionContainer.style.display = 'block';
+                    resolutionContainer.innerHTML = buildPrimaryEndingDisplay(
+                        blueprint.primary_ending,
+                        blueprint.alternate_endings || []
+                    );
+                }
+
+                // Show finish button, hide cancel
+                if (actionsContainer) actionsContainer.style.display = 'block';
+                if (cancelBtn) cancelBtn.style.display = 'none';
+                if (finishBtn) finishBtn.style.display = 'inline-block';
+                // Only update status if cover generation didn't already
+                if (statusElement && !statusElement.innerHTML.includes('Blueprint and cover generated')) {
+                    statusElement.innerHTML = '<span style="color: #10b981;">✓ Blueprint generation complete! Review your blueprint below.</span>';
+                }
+
+                // Store the result for the finish button handler
+                popupElement.blueprintResult = result;
+            }
+        } else {
+            // Handle generation error
+            // Parse error to extract phase information
+            let errorPhase = result.phase || null;
+            if (!errorPhase && result.error?.includes('Phase ')) {
+                const phaseMatch = result.error.match(/Phase (\d)/);
+                if (phaseMatch) errorPhase = parseInt(phaseMatch[1]);
+            }
+
+            // Store retry state
+            failedAtPhase = errorPhase;
+            partialBlueprintForRetry = result.partialBlueprint || null;
+            requestForRetry = result.request || null;
+
+            // Show error using helper
+            showWizardError(result);
+            popupElement.querySelector('#storymode-wizard-actions').style.display = 'block';
+            popupElement.querySelector('#storymode-wizard-cancel-btn').style.display = 'none';
+            popupElement.querySelector('#storymode-wizard-finish-btn').style.display = 'inline-block';
+            popupElement.querySelector('#storymode-wizard-finish-btn').textContent = 'Close';
+        }
+    } catch (error) {
+        console.error('[Story Mode] Wizard mode generation error:', error);
+
+        if (wizardPopup.isCancelled) return;
+
+        // Parse error to extract phase information
+        let errorPhase = null;
+        const errorMessage = error.message || 'Unknown error';
+        if (errorMessage.includes('Phase ')) {
+            const phaseMatch = errorMessage.match(/Phase (\d)/);
+            if (phaseMatch) errorPhase = parseInt(phaseMatch[1]);
+        }
+
+        // Store retry state (catch block has no partialBlueprint/request)
+        failedAtPhase = errorPhase;
+        partialBlueprintForRetry = null;
+        requestForRetry = null;
+
+        // Show error using helper
+        showWizardError({ error: errorMessage, phase: errorPhase });
+        popupElement.querySelector('#storymode-wizard-actions').style.display = 'block';
+        popupElement.querySelector('#storymode-wizard-cancel-btn').style.display = 'none';
+        popupElement.querySelector('#storymode-wizard-finish-btn').style.display = 'inline-block';
+        popupElement.querySelector('#storymode-wizard-finish-btn').textContent = 'Close';
+        // No retry button in catch block (missing context)
+        popupElement.querySelector('#storymode-wizard-retry-btn').style.display = 'none';
+    }
+
+    // Set up finish button handler
+    const finishBtn = popupElement.querySelector('#storymode-wizard-finish-btn');
+    if (finishBtn) {
+        finishBtn.addEventListener('click', async function () {
+            const result = popupElement.blueprintResult;
+            if (result && result.blueprint) {
+                // If there are validation errors, warn user
+                if (result.validationErrors && result.validationErrors.length > 0) {
+                    const proceed = confirm(
+                        `The blueprint has some issues:\n\n${result.validationErrors.join('\n')}\n\nDo you still want to save it?`
+                    );
+                    if (!proceed) {
+                        return;
+                    }
+                }
+
+                // Sync blueprint settings to chat state with confirmation dialog
+                const syncResult = await BlueprintModule.syncBlueprintSettings(result.blueprint, true);
+
+                if (!syncResult.confirmed) {
+                    console.log('[Story Mode] User cancelled blueprint sync, blueprint not saved');
+                    toastr.warning('Blueprint generated but not saved. Settings sync was cancelled.');
+                    wizardPopup.complete(POPUP_RESULT.CANCELLED);
+                    content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
+                    return;
+                }
+
+                // Save the blueprint to blueprint state
+                const blueprintState = BlueprintModule.getBlueprintState();
+                blueprintState.blueprint = result.blueprint;
+                await BlueprintModule.saveBlueprintState(blueprintState);
+
+                // Update the blueprint UI
+                content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
+
+                toastr.success('Blueprint saved successfully!');
+            }
+
+            // Close the wizard modal
+            wizardPopup.complete(POPUP_RESULT.AFFIRMATIVE);
+        });
+    }
+
+    // Clean up function to restore button states
+    function cleanupWizard() {
+        // Hide cancel button, show generate button
+        content.find('#blueprint_cancel_generation_btn').hide();
+        content.find('#blueprint_generate_btn').show();
+        // Clear the global reference
+        window.storyModeWizardPopup = null;
+    }
+
+    // Register cleanup to run when modal closes
+    wizardPopup.dlg.addEventListener('close', function () {
+        cleanupWizard();
+    }, { once: true });
+}
+
+/**
+ * Update wizard progress indicator
+ * @param {number} currentPhase - Current phase number (1-5)
+ */
+function updateWizardProgress(currentPhase) {
+    // Update in wizard modal if active - use stored popup reference
+    const wizardPopup = window.storyModeWizardPopup;
+    if (wizardPopup && wizardPopup.content) {
+        const progressContainer = wizardPopup.content.querySelector('#storymode-wizard-progress-container');
+        if (progressContainer) {
+            progressContainer.innerHTML = buildWizardProgressHTML(currentPhase);
+        }
+
+        // Also update status text
+        const statusElement = wizardPopup.content.querySelector('#storymode-wizard-status');
+        if (statusElement) {
+            const phaseNames = ['', 'Foundation', 'Characters', 'Scenes', 'Resolutions', 'Validation'];
+            const phaseName = currentPhase >= 1 && currentPhase <= 5 ? phaseNames[currentPhase] : 'Processing';
+            statusElement.textContent = `Generating ${phaseName}... (Phase ${currentPhase}/5)`;
+        }
+    }
+}
+
+/**
+ * Update wizard preview panel
+ * @param {Object} partialBlueprint - Partial blueprint from completed phases
+ * @param {number} currentPhase - Current phase number
+ */
+function updateWizardPreview(partialBlueprint, currentPhase) {
+    // Update in wizard modal if active - use stored popup reference
+    const wizardPopup = window.storyModeWizardPopup;
+    if (wizardPopup && wizardPopup.content) {
+        const previewContainer = wizardPopup.content.querySelector('#storymode-wizard-preview-container');
+        if (previewContainer) {
+            previewContainer.innerHTML = buildWizardPreview(partialBlueprint, currentPhase);
+        }
+    }
+}
+
+/**
+ * Get phase message for display
+ * @param {number} phase - Phase number (1-5)
+ * @returns {string} Phase message
+ */
+function getPhaseMessage(phase) {
+    return BlueprintModule.PHASE_CONFIG[phase]?.description || 'Processing...';
+}
+
+/**
+ * Handle auto-cover generation for the wizard
+ * @param {Object} blueprint - The generated blueprint
+ * @param {HTMLElement} statusElement - Status element to update
+ * @param {HTMLElement} previewContainer - Preview container to update
+ * @returns {Promise<void>}
+ */
+async function handleWizardAutoCover(blueprint, statusElement, previewContainer) {
+    // Auto-generate cover image if enabled
+    const coverGenSettings = extension_settings[MODULE_NAME]?.blueprintSettings?.coverGeneration;
+    if (!coverGenSettings?.autoGenerate) return;
+
+    if (statusElement) {
+        statusElement.innerHTML = '<span style="color: #3b82f6;"><i class="fa-solid fa-paintbrush fa-spin"></i> Generating cover image...</span>';
+    }
+
+    // Sync LLM-generated cover prompt if available
+    if (blueprint.cover_prompt && (!blueprint.metadata || !blueprint.metadata.coverPrompt)) {
+        blueprint.metadata = blueprint.metadata || {};
+        // Create a basic prompt object structure compatible with SD
+        blueprint.metadata.coverPrompt = {
+            positive: blueprint.cover_prompt,
+            negative: 'text, watermark, signature, blurry, low quality, distorted, ugly, bad anatomy, extra limbs, cropped, worst quality, low resolution',
+            style: 'digital art',
+            technical: { aspect_ratio: '2:3' }
+        };
+    }
+
+    try {
+        const coverResult = await generateCoverFromSD(blueprint);
+        if (coverResult.success && coverResult.imageUrl) {
+            await addCoverToGallery(blueprint, coverResult.imageUrl, blueprint.metadata.coverPrompt);
+            setCoverImageUrl(blueprint, coverResult.imageUrl);
+
+            // Update wizard preview if it exists
+            if (previewContainer) {
+                // Re-render preview to show new cover
+                previewContainer.innerHTML = buildWizardPreview(blueprint, 5);
+            }
+
+            if (statusElement) {
+                statusElement.innerHTML = '<span style="color: #10b981;">✓ Blueprint and cover generated successfully!</span>';
+            }
+        } else {
+            toastr.warning('Blueprint generated, but cover generation failed: ' + (coverResult.error || 'Unknown error'));
+            if (statusElement) {
+                statusElement.innerHTML = '<span style="color: #f59e0b;">⚠ Blueprint generated, but cover generation failed.</span>';
+            }
+        }
+    } catch (coverError) {
+        console.error('[Story Mode] Cover generation error in wizard:', coverError);
+        toastr.warning('Blueprint generated, but cover generation encountered an error.');
+    }
+}

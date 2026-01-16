@@ -48,6 +48,7 @@ import {
     encodeBlueprintAsPNG,
     decodeBlueprintFromPNG,
     isBlueprintPNG,
+    saveCurrentBlueprintToLibrary,
 } from './lib/blueprint-integration.js';
 
 // Import Loading Indicator module
@@ -2720,6 +2721,7 @@ function createWizardModalHtml() {
             <div id="storymode-wizard-progress-container"></div>
             <div id="storymode-wizard-preview-container"></div>
             <div id="storymode-resolution-selection-container" style="display: none;"></div>
+            <div id="storymode-wizard-cover-container" style="display: none; text-align: center; margin: 20px auto; padding: 20px; background: var(--black10a); border-radius: 8px; max-width: 167px;"></div>
             <div id="storymode-wizard-actions" style="text-align: center; margin-top: 20px;">
                 <button id="storymode-wizard-cancel-btn" class="menu_button storymode-btn storymode-btn-secondary" style="margin-right: 10px;">
                     <i class="fa-solid fa-times"></i> Cancel
@@ -2865,7 +2867,7 @@ async function launchWizardModal(content) {
     const MAX_PHASE_TOKENS = 65536; // Maximum safe token limit
 
     // Phase name lookup (shared across functions)
-    const phaseNames = ['', 'Foundation', 'Characters', 'Scenes', 'Resolutions', 'Validation'];
+    const phaseNames = ['', 'Foundation', 'Characters', 'Scenes', 'Resolutions'];
 
     // Helper: Show error state in wizard
     const showWizardError = (errorResult) => {
@@ -2908,12 +2910,21 @@ async function launchWizardModal(content) {
     const cancelBtn = popupElement.querySelector('#storymode-wizard-cancel-btn');
     if (cancelBtn) {
         cancelBtn.addEventListener('click', function () {
-            if (!wizardPopup.isCancelled && confirm('Are you sure you want to cancel blueprint generation?')) {
+            // If generation is complete (finishBtn is visible), this works as "Discard & Close"
+            const isComplete = popupElement.querySelector('#storymode-wizard-finish-btn').style.display !== 'none';
+
+            if (isComplete) {
+                if (confirm('Are you sure you want to discard this blueprint and close?')) {
+                    cleanupWizard();
+                    wizardPopup.complete(POPUP_RESULT.CANCELLED);
+                }
+            } else if (!wizardPopup.isCancelled && confirm('Are you sure you want to cancel blueprint generation?')) {
                 wizardPopup.isCancelled = true;
                 const statusElement = popupElement.querySelector('#storymode-wizard-status');
                 if (statusElement) {
                     statusElement.innerHTML = '<span style="color: var(--corruption-red);">Generation cancelled by user.</span>';
                 }
+                cleanupWizard();
                 wizardPopup.complete(POPUP_RESULT.CANCELLED);
             }
         });
@@ -2983,7 +2994,7 @@ async function launchWizardModal(content) {
 
                 // Success - update UI
                 const blueprint = retryResult.blueprint;
-                popupElement.querySelector('#storymode-wizard-progress-container').innerHTML = buildWizardProgressHTML(6);
+                popupElement.querySelector('#storymode-wizard-progress-container').innerHTML = buildWizardProgressHTML(5);
                 popupElement.querySelector('#storymode-wizard-preview-container').innerHTML = buildWizardPreview(blueprint, 5);
                 if (statusElement) {
                     statusElement.innerHTML = '<span style="color: #10b981;">✓ Blueprint generation complete! Review your blueprint below.</span>';
@@ -3014,6 +3025,42 @@ async function launchWizardModal(content) {
         });
     }
 
+    // Listen for phase updates to show ending preview when Phase 4 completes
+    const handlePhaseUpdate = (data) => {
+        const { phase, blueprint } = data;
+
+        // Show ending preview when Phase 4 data arrives
+        if (phase === 4 && blueprint?.primary_ending) {
+            const resolutionContainer = popupElement.querySelector('#storymode-resolution-selection-container');
+            if (resolutionContainer) {
+                resolutionContainer.style.display = 'block';
+                resolutionContainer.innerHTML = buildPrimaryEndingDisplay(
+                    blueprint.primary_ending,
+                    blueprint.alternate_endings || []
+                );
+            }
+        }
+    };
+
+    // Attach listener using SillyTavern's eventSource
+    eventSource.on('STORY_MODE_PHASE_UPDATE', handlePhaseUpdate);
+
+    // Store cleanup function to remove listener later
+    const cleanup = () => {
+        try {
+            if (typeof eventSource.off === 'function') {
+                eventSource.off('STORY_MODE_PHASE_UPDATE', handlePhaseUpdate);
+            } else if (typeof eventSource.removeListener === 'function') {
+                eventSource.removeListener('STORY_MODE_PHASE_UPDATE', handlePhaseUpdate);
+            } else if (typeof eventSource.removeEventListener === 'function') {
+                eventSource.removeEventListener('STORY_MODE_PHASE_UPDATE', handlePhaseUpdate);
+            }
+        } catch (e) {
+            console.warn('[Story Mode] Failed to remove phase update listener:', e);
+        }
+    };
+    wizardPopup._cleanup = cleanup;
+
     try {
         // Call buildBlueprintRequest to get the proper request structure
         const request = BlueprintModule.buildBlueprintRequest(config);
@@ -3042,7 +3089,7 @@ async function launchWizardModal(content) {
 
             if (validationErrors.length > 0) {
                 // Show validation errors
-                if (progressContainer) progressContainer.innerHTML = buildWizardProgressHTML(6);
+                if (progressContainer) progressContainer.innerHTML = buildWizardProgressHTML(5);
                 if (statusElement) statusElement.innerHTML = '<span style="color: #f59e0b;">⚠ Blueprint generation incomplete - some required fields are missing.</span>';
 
                 if (errorDetailsContainer) {
@@ -3062,29 +3109,115 @@ async function launchWizardModal(content) {
                 // Store result for potential save anyway (user choice)
                 popupElement.blueprintResult = { success: true, blueprint, validationErrors };
             } else {
-                // Auto-generate cover image if enabled
-                await attemptAutoCoverGeneration(blueprint, statusElement, previewContainer);
+                console.log('[Story Mode] Phase generation success. Validating...');
 
                 // Success - show completion
-                if (progressContainer) progressContainer.innerHTML = buildWizardProgressHTML(6);
+                if (progressContainer) progressContainer.innerHTML = buildWizardProgressHTML(5);
                 if (previewContainer) previewContainer.innerHTML = buildWizardPreview(blueprint, 5);
 
-                // Show primary ending display if available
-                if (blueprint.primary_ending && resolutionContainer) {
-                    resolutionContainer.style.display = 'block';
-                    resolutionContainer.innerHTML = buildPrimaryEndingDisplay(
-                        blueprint.primary_ending,
-                        blueprint.alternate_endings || []
+                // Ask user about cover generation instead of auto-generating
+                const coverGenSettings = extension_settings[MODULE_NAME]?.blueprintSettings?.coverGeneration;
+                if (coverGenSettings?.autoGenerate && blueprint.cover_prompt) {
+                    console.log('[Story Mode] Asking user about cover generation...');
+                    const coverConfirm = await callGenericPopup(
+                        'Generate Cover Image?',
+                        'Would you like to generate a cover image for this blueprint?',
+                        'Generate',
+                        'Skip'
                     );
+
+                    if (coverConfirm === POPUP_RESULT.AFFIRMATIVE) {
+                        // User wants to generate cover
+                        const coverContainer = popupElement.querySelector('#storymode-wizard-cover-container');
+                        if (coverContainer) {
+                            coverContainer.style.display = 'block';
+                            coverContainer.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; gap: 10px;"><i class="fa-solid fa-paintbrush fa-spin" style="color: #3b82f6; font-size: 1.5em;"></i><span style="color: #3b82f6; font-weight: 500;">Generating cover image...</span></div>';
+                        }
+
+                        if (statusElement) {
+                            statusElement.innerHTML = '<span style="color: #3b82f6;"><i class="fa-solid fa-paintbrush fa-spin"></i> Generating cover image...</span>';
+                        }
+
+                        try {
+                            // Sync cover prompt if available
+                            if (blueprint.cover_prompt && (!blueprint.metadata || !blueprint.metadata.coverPrompt)) {
+                                blueprint.metadata = blueprint.metadata || {};
+                                blueprint.metadata.coverPrompt = {
+                                    positive: blueprint.cover_prompt,
+                                    negative: 'text, watermark, signature, blurry, low quality, distorted, ugly, bad anatomy, extra limbs, cropped, worst quality, low resolution',
+                                    style: 'digital art',
+                                    technical: { aspect_ratio: '2:3' }
+                                };
+                            }
+
+                            const coverResult = await generateCoverFromSD(blueprint);
+                            if (coverResult.success && coverResult.imageUrl) {
+                                await addCoverToGallery(blueprint, coverResult.imageUrl, blueprint.metadata.coverPrompt);
+                                setCoverImageUrl(blueprint, coverResult.imageUrl);
+
+                                // Hide the loading animation container
+                                if (coverContainer) {
+                                    coverContainer.style.display = 'none';
+                                }
+
+                                // Update the preview to show the cover image (smaller preview only)
+                                if (previewContainer) {
+                                    previewContainer.innerHTML = buildWizardPreview(blueprint, 5);
+                                }
+
+                                if (statusElement) {
+                                    statusElement.innerHTML = '<span style="color: #10b981;">✓ Blueprint and cover generated successfully!</span>';
+                                }
+                                toastr.success('Cover image generated!');
+                            } else {
+                                if (coverContainer) {
+                                    coverContainer.style.display = 'none';
+                                }
+                                toastr.warning('Cover generation failed: ' + (coverResult.error || 'Unknown error'));
+                                if (statusElement) {
+                                    statusElement.innerHTML = '<span style="color: #f59e0b;">⚠ Blueprint complete, but cover generation failed.</span>';
+                                }
+                            }
+                        } catch (coverError) {
+                            console.error('[Story Mode] Cover generation error:', coverError);
+                            if (coverContainer) {
+                                coverContainer.style.display = 'none';
+                            }
+                            toastr.warning('Blueprint generated, but cover generation encountered an error.');
+                            if (statusElement) {
+                                statusElement.innerHTML = '<span style="color: #f59e0b;">⚠ Blueprint complete, but cover generation failed.</span>';
+                            }
+                        }
+                    } else {
+                        // User skipped cover generation
+                        if (statusElement) {
+                            statusElement.innerHTML = '<span style="color: #10b981;">✓ Blueprint generation complete! Review your blueprint below.</span>';
+                        }
+                    }
+                } else {
+                    // No cover generation needed
+                    if (statusElement) {
+                        statusElement.innerHTML = '<span style="color: #10b981;">✓ Blueprint generation complete! Review your blueprint below.</span>';
+                    }
                 }
 
                 // Show finish button, hide cancel
-                if (actionsContainer) actionsContainer.style.display = 'block';
-                if (cancelBtn) cancelBtn.style.display = 'none';
-                if (finishBtn) finishBtn.style.display = 'inline-block';
-                // Only update status if cover generation didn't already
-                if (statusElement && !statusElement.innerHTML.includes('Blueprint and cover generated')) {
-                    statusElement.innerHTML = '<span style="color: #10b981;">✓ Blueprint generation complete! Review your blueprint below.</span>';
+                console.log('[Story Mode] Showing wizard actions...');
+                if (actionsContainer) {
+                    actionsContainer.style.display = 'block';
+                    console.log('[Story Mode] Actions container displayed.');
+                } else {
+                    console.error('[Story Mode] Actions container not found!');
+                }
+
+                if (cancelBtn) {
+                    cancelBtn.style.display = 'inline-block';
+                    cancelBtn.innerHTML = '<i class="fa-solid fa-xmark"></i> Discard & Close';
+                    cancelBtn.title = "Close without saving";
+                }
+                if (finishBtn) {
+                    finishBtn.style.display = 'inline-block';
+                    finishBtn.innerHTML = '<i class="fa-solid fa-check"></i> Save & Close';
                 }
 
                 // Store the result for the finish button handler
@@ -3171,6 +3304,19 @@ async function launchWizardModal(content) {
                 blueprintState.blueprint = result.blueprint;
                 await BlueprintModule.saveBlueprintState(blueprintState);
 
+                // Auto-save to library
+                try {
+                    await saveCurrentBlueprintToLibrary({
+                        title: result.blueprint.blueprint_title || result.blueprint.core_premise?.substring(0, 50),
+                        generateCover: false, // Cover already generated if enabled
+                        blueprint: result.blueprint // Pass explicit blueprint to avoid race condition
+                    });
+                    console.log('[Story Mode] Blueprint auto-saved to library');
+                } catch (libError) {
+                    console.error('[Story Mode] Failed to auto-save to library:', libError);
+                    // Don't block the save if library save fails
+                }
+
                 // Update the blueprint UI
                 content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
 
@@ -3178,12 +3324,17 @@ async function launchWizardModal(content) {
             }
 
             // Close the wizard modal
+            cleanupWizard();
             wizardPopup.complete(POPUP_RESULT.AFFIRMATIVE);
         });
     }
 
-    // Clean up function to restore button states
+    // Clean up function to restore button states and remove event listeners
     function cleanupWizard() {
+        // Remove event listener for phase updates
+        if (wizardPopup._cleanup) {
+            wizardPopup._cleanup();
+        }
         // Hide cancel button, show generate button
         content.find('#blueprint_cancel_generation_btn').hide();
         content.find('#blueprint_generate_btn').show();
@@ -3213,9 +3364,9 @@ function updateWizardProgress(currentPhase) {
         // Also update status text
         const statusElement = wizardPopup.content.querySelector('#storymode-wizard-status');
         if (statusElement) {
-            const phaseNames = ['', 'Foundation', 'Characters', 'Scenes', 'Resolutions', 'Validation'];
+            const phaseNames = ['', 'Foundation', 'Characters', 'Scenes', 'Resolutions'];
             const phaseName = currentPhase >= 1 && currentPhase <= 5 ? phaseNames[currentPhase] : 'Processing';
-            statusElement.textContent = `Generating ${phaseName}... (Phase ${currentPhase}/5)`;
+            statusElement.textContent = `Generating ${phaseName}... (Phase ${currentPhase}/4)`;
         }
     }
 }

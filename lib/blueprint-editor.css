@@ -172,7 +172,18 @@
 }
 
 .storymode-blueprint-info h3 {
-    display: none; /* Hide the "Blueprint Info" heading for cleaner look */
+    display: none;
+    /* Hide the "Blueprint Info" heading for cleaner look */
+}
+
+/* Blueprint title - visible override */
+.storymode-blueprint-title {
+    display: block !important;
+    margin: 0 0 4px 14px;
+    font-size: 1.1em;
+    font-weight: 600;
+    color: var(--SmartThemeEmColor);
+    line-height: 1.3;
 }
 
 /* Individual info field */
@@ -399,8 +410,15 @@
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
 }
 
 /* ============================================================================
@@ -592,7 +610,7 @@
     max-height: 450px;
     padding: 8px;
     scrollbar-width: thin;
-    scrollbar-color: rgba(255,255,255,0.3) transparent;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
 }
 
 .storymode-cover-carousel::-webkit-scrollbar {
@@ -604,7 +622,7 @@
 }
 
 .storymode-cover-carousel::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.3);
+    background: rgba(255, 255, 255, 0.3);
     border-radius: 2px;
 }
 
@@ -654,7 +672,7 @@
     position: absolute;
     top: 2px;
     left: 2px;
-    background: rgba(0,0,0,0.7);
+    background: rgba(0, 0, 0, 0.7);
     color: white;
     font-size: 0.7rem;
     padding: 2px 6px;
@@ -677,6 +695,7 @@
 
 /* Respect reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
+
     .storymode-cover-carousel-item,
     .storymode-cover-nav {
         transition: none !important;

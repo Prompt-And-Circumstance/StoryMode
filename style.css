@@ -2866,7 +2866,7 @@
     min-height: 150px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    text-align: left;
     position: relative;
     overflow: hidden;
 }

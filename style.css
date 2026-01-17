@@ -3143,3 +3143,405 @@ details.storymode-advanced-options[open] summary {
     border-left: 2px solid var(--SmartThemeBorderColor);
     margin-left: 4px;
 }
+
+/* ============================================================================
+   DEBUG PANEL - Floating overlay for live pacing info
+   ============================================================================ */
+
+.storymode-debug-panel {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 280px;
+    background: rgba(0, 0, 0, 0.85);
+    border: 1px solid var(--sm-accent);
+    border-radius: var(--sm-radius-md);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    font-size: 0.85em;
+    backdrop-filter: blur(8px);
+    animation: debugPanelSlideIn 0.3s ease;
+}
+
+@keyframes debugPanelSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.storymode-debug-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--sm-accent);
+    color: white;
+    font-weight: 600;
+    border-radius: var(--sm-radius-md) var(--sm-radius-md) 0 0;
+    cursor: grab;
+    user-select: none;
+}
+
+.storymode-debug-header:active {
+    cursor: grabbing;
+}
+
+.storymode-debug-panel.dragging {
+    opacity: 0.9;
+    transition: none;
+}
+
+.storymode-debug-panel.dragging .storymode-debug-header {
+    cursor: grabbing;
+}
+
+#storymode-debug-panel.sm-rolled-up {
+    height: auto;
+}
+
+#storymode-debug-panel.sm-rolled-up .storymode-debug-header {
+    border-radius: var(--sm-radius-md);
+}
+
+#storymode-debug-panel.sm-rolled-up .storymode-debug-content {
+    display: none;
+}
+
+
+.storymode-debug-header i {
+    font-size: 0.9em;
+}
+
+.storymode-debug-close {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    padding: 4px;
+    font-size: 0.9em;
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-debug-close:hover {
+    color: white;
+}
+
+.storymode-debug-content {
+    padding: 12px 14px;
+}
+
+.storymode-debug-section {
+    margin-bottom: 12px;
+}
+
+.storymode-debug-section:last-child {
+    margin-bottom: 0;
+}
+
+.storymode-debug-label {
+    font-size: 0.7em;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--sm-accent);
+    margin-bottom: 4px;
+}
+
+.storymode-debug-value {
+    color: white;
+    font-weight: 500;
+    font-size: 1em;
+}
+
+.storymode-debug-round {
+    font-size: 1.4em;
+    font-weight: 700;
+}
+
+.storymode-debug-meta {
+    font-size: 0.8em;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 2px;
+}
+
+.storymode-debug-bar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    margin-top: 6px;
+    overflow: hidden;
+}
+
+.storymode-debug-bar-fill {
+    height: 100%;
+    background: var(--sm-accent);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.storymode-debug-beats {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    font-size: 1.1em;
+    margin-top: 4px;
+}
+
+.storymode-debug-beats .beat-done {
+    color: var(--sm-phase-setup);
+}
+
+.storymode-debug-beats .beat-current {
+    color: var(--sm-warm);
+    animation: beatPulse 1.5s ease-in-out infinite;
+}
+
+.storymode-debug-beats .beat-pending {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+@keyframes beatPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Debug Panel Popups */
+.storymode-debug-interactable {
+    cursor: pointer;
+    transition: var(--sm-transition-fast);
+    padding: 6px 8px;
+    margin: -6px -8px;
+    border-radius: var(--sm-radius-sm);
+}
+
+.storymode-debug-interactable:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.storymode-debug-interactable .storymode-debug-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.storymode-popup-details {
+    padding: 10px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.storymode-detail-section {
+    margin-bottom: 20px;
+}
+
+.storymode-detail-section h4 {
+    margin: 0 0 8px 0;
+    color: var(--sm-accent);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 4px;
+}
+
+.storymode-detail-section p {
+    margin: 0;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+.storymode-detail-section ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.storymode-detail-section li {
+    margin-bottom: 4px;
+}
+
+.storymode-detail-row {
+    display: flex;
+    gap: 20px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.storymode-beat-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.storymode-beat-item {
+    display: flex;
+    gap: 12px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--sm-radius-md);
+    border-left: 4px solid transparent;
+}
+
+.storymode-beat-item.done {
+    opacity: 0.7;
+    border-left-color: var(--sm-phase-setup);
+}
+
+.storymode-beat-item.current {
+    background: rgba(var(--sm-accent-rgb), 0.1);
+    border-left-color: var(--sm-warm);
+    animation: beatHighlight 2s infinite;
+}
+
+.storymode-beat-status {
+    font-size: 1.2em;
+    flex-shrink: 0;
+}
+
+.storymode-beat-status .fa-circle-check {
+    color: var(--sm-phase-setup);
+}
+
+.storymode-beat-status .fa-arrow-right {
+    color: var(--sm-warm);
+}
+
+.storymode-beat-status .fa-circle {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.storymode-beat-text {
+    line-height: 1.4;
+}
+
+@keyframes beatHighlight {
+
+    0%,
+    100% {
+        background: rgba(var(--sm-accent-rgb), 0.1);
+    }
+
+    50% {
+        background: rgba(var(--sm-accent-rgb), 0.2);
+    }
+}
+
+/* ============================================================================
+   EDITOR PANELS (Story Types / Author Styles)
+   Left-aligned, clean, horizontal buttons
+   ============================================================================ */
+
+/* Editor container */
+.storymode-editor {
+    text-align: left;
+    padding: 16px;
+}
+
+/* Controls bar - horizontal button layout */
+.storymode-editor-controls {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.storymode-editor-controls .menu_button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Search field */
+.storymode-editor .storymode-field {
+    margin-bottom: 16px;
+}
+
+.storymode-editor .text_pole {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Editor list container */
+.storymode-editor-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Individual list item */
+.storymode-editor-item {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--sm-radius-sm);
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    transition: background-color var(--sm-transition);
+}
+
+.storymode-editor-item:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* Item header - name and category */
+.storymode-editor-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 8px;
+    text-align: left;
+}
+
+.storymode-editor-item-header strong {
+    font-size: 1rem;
+    color: var(--sm-accent);
+}
+
+.storymode-editor-category {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    white-space: nowrap;
+}
+
+/* Item content - description */
+.storymode-editor-item-content {
+    text-align: left;
+    margin-bottom: 10px;
+}
+
+.storymode-editor-item-content p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    max-height: 3.6em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Action buttons - horizontal layout */
+.storymode-editor-item-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.storymode-editor-item-actions .menu_button {
+    padding: 6px 10px;
+}

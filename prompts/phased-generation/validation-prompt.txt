@@ -1,0 +1,148 @@
+You are an expert story designer. Generate the VALIDATION phase of a story blueprint.
+
+This is Phase 5 of 5 in a phased blueprint generation process. You will review the complete blueprint for quality, coherence, and playability.
+
+**CRITICAL:** Generate your response immediately and directly. Do not engage in verbose internal reasoning or deliberation - you are an expert who can validate blueprints efficiently. Proceed directly to producing valid JSON.
+
+## STORY TYPE
+
+{{STORY_TYPE_JSON}}
+
+## COMPLETE BLUEPRINT (from Phases 1-4)
+
+Review the following blueprint for issues and improvement opportunities:
+
+```json
+{{BLUEPRINT_JSON}}
+```
+
+## AUTHOR STYLE GUIDANCE
+
+{{AUTHOR_STYLE_SECTION}}
+
+## VALIDATION CRITERIA
+
+Evaluate the blueprint against these dimensions:
+
+### 1. Story Coherence and Logic
+- Does the core premise make sense within the genre?
+- Are character motivations consistent and believable?
+- Do plot elements connect logically?
+- Are there gaps in cause-and-effect?
+
+### 2. Character Development Potential
+- Do character arcs have meaningful progression?
+- Are turning points specific and emotionally resonant?
+- Do initial states connect logically to final states?
+- Is there room for player choice to influence outcomes?
+
+### 3. Scene Pacing and Structure
+- Is the scene distribution balanced across phases?
+- Do scenes have clear purposes that advance the story?
+- Are there adequate hooks and connections between scenes?
+- Is the scene count appropriate for the target length?
+
+### 4. Thematic Consistency
+- Does the story explore its themes consistently?
+- Do resolutions address the story's central questions?
+- Is the tone appropriate to the genre and author style?
+- Do character outcomes reflect their arcs?
+
+### 5. Player Agency Opportunities
+- Are choice points meaningful (not cosmetic)?
+- Do choices have clear, divergent consequences?
+- Are there enough agency moments throughout the story?
+- Do resolutions reflect different player paths?
+
+### 6. Genre Conventions
+- Does the story respect the expectations of its genre?
+- Are genre elements used creatively, not generically?
+- Would this story satisfy fans of this story type?
+
+## ISSUE SEVERITY LEVELS
+
+- **Critical**: Blueprint is fundamentally broken or incomplete (e.g., missing scenes, no resolutions, character arcs make no sense)
+- **Major**: Significant problem that would impact playability (e.g., pacing issues, thin character development, weak agency)
+- **Minor**: Room for improvement but blueprint is functional (e.g., could be more specific, slightly uneven)
+
+## YOUR TASK
+
+Generate a JSON object with the following field:
+
+### **validation_results** (object)
+
+```json
+{
+  "validation_score": "number (1-100, higher is better - based on severity and count of issues found)",
+  "overall_assessment": "string (2-3 sentences summarizing the blueprint's strengths and weaknesses)",
+  "issues": [
+    {
+      "field": "string (which blueprint section has the issue - e.g., scene_plan, character_arcs, possible_resolutions, etc.)",
+      "severity": "string (one of: critical, major, minor)",
+      "description": "string (clear, specific description of the problem)",
+      "suggestion": "string (optional - concrete suggestion for fixing this issue)"
+    }
+  ],
+  "suggestions": [
+    {
+      "field": "string (which blueprint section this applies to)",
+      "suggestion": "string (specific, actionable improvement idea)"
+    }
+  ],
+  "strengths": [
+    "string (specific aspects of the blueprint that work well - e.g., 'Strong character arc for protagonist with clear emotional trajectory', 'Well-distributed scene plan with good escalation')"
+  ]
+}
+```
+
+Be specific and actionable. Don't just say "pacing is off"—say "Scene 8 feels rushed compared to surrounding scenes; consider either expanding it or merging its purpose into Scene 7."
+
+## EXAMPLE OUTPUT
+
+```json
+{
+  "validation_results": {
+    "validation_score": 82,
+    "overall_assessment": "A coherent mystery story with strong character development and good scene structure. The protagonist's emotional journey is well-defined, and choice points offer meaningful agency. Minor issues include some scenes lacking clear connection to the main plot and one resolution feeling unearned compared to character arcs.",
+    "issues": [
+      {
+        "field": "scene_plan",
+        "severity": "minor",
+        "description": "Scene 8 ('The Forgotten Archive') lacks clear connection to the main investigation - it's atmospheric but doesn't advance the mystery or character arcs.",
+        "suggestion": "Either connect this scene to the main plot (e.g., a clue found here) or merge its atmospheric elements into an adjacent scene."
+      },
+      {
+        "field": "possible_resolutions",
+        "severity": "minor",
+        "description": "Resolution 2 ('The Cost of Secrets') shows Chen compromising her ethics, but her arc suggests she values truth above comfort.",
+        "suggestion": "Either adjust this resolution to show the internal conflict more clearly, or modify her character arc to make this outcome more plausible."
+      }
+    ],
+    "suggestions": [
+      {
+        "field": "scene_plan",
+        "suggestion": "Consider adding a false victory moment in Scene 12 before the true climax - this would heighten the emotional impact of the final confrontation."
+      },
+      {
+        "field": "choice_points",
+        "suggestion": "Scenes 6-9 could benefit from more meaningful player agency - current choices feel mostly cosmetic. Add at least one choice that alters the story path significantly."
+      },
+      {
+        "field": "antagonistic_forces",
+        "suggestion": "The antagonist motivations are clear but could be more morally complex - consider adding nuance to make the final confrontation more thematically interesting."
+      }
+    ],
+    "strengths": [
+      "Strong character arc for Dr. Chen with clear emotional trajectory from detachment to engagement",
+      "Well-distributed scene plan with good escalation pattern across four acts",
+      "Choice points are specific and provide clear divergent consequences",
+      "Author style influence is evident in the scene descriptions and character voice",
+      "Resolutions explore different thematic questions raised by the story"
+    ]
+  }
+}
+```
+
+## RESPONSE FORMAT
+
+Return ONLY valid JSON. No explanations, no markdown blocks, no conversational filler. Your entire response must be a single parseable JSON object with the validation_results field specified above.

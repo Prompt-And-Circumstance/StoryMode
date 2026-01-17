@@ -1,0 +1,45 @@
+<!-- @@LEVEL: literal@@ -->
+**INTERPRETATION RULES:**
+
+**Genre elements are MANDATORY and CONCRETE.**
+
+- For "Monster of the Week" or similar story types, you MUST include actual cases/creatures/spirits/monsters.
+- For other story types, genre elements must appear as real, tangible phenomena.
+- Metaphor may complement, but not replace, literal genre threats.
+- Example: Literal yokai appear and cause concrete supernatural problems; their appearance may also reflect emotional tensions, but the threats themselves are real.
+<!-- @@END@@ -->
+
+<!-- @@LEVEL: grounded@@ -->
+**INTERPRETATION RULES:**
+
+**Genre elements are PRESENT but SUBTLE/AMBIGUOUS.**
+
+- For "Monster of the Week" or similar story types, the "monster" may be ambiguous—could be supernatural, could be human, could be metaphorical.
+- For other story types, genre elements exist but are grounded in realism.
+- You may hint at the supernatural or genre elements without confirming them.
+- Example: Strange occurrences that could be ghosts or could be gaslighting; ambiguous evidence leaves room for interpretation.
+<!-- @@END@@ -->
+
+<!-- @@LEVEL: mixed@@ -->
+**INTERPRETATION RULES:**
+
+**Genre elements can be BOTH literal AND metaphorical.**
+
+- For "Monster of the Week" or similar story types, include BOTH concrete genre threats AND metaphorical/social/emotional "monsters."
+- For other story types, genre elements can appear both as real phenomena AND as symbolic representations of emotional/crisis points.
+- You MUST preserve STORY TYPE structure (distinct case-like episodes, escalation, resolution).
+- "Monsters" represent social crises, emotional barriers, or systemic problems.
+- Example (Monster of the Week): Monsters are "The Silence Between Them," "The Bureaucratic Nightmare," "A Chance Encounter That Changes Everything"—social/emotional crises, not literal creatures.
+<!-- @@END@@ -->
+
+<!-- @@LEVEL: symbolic@@ -->
+**INTERPRETATION RULES:**
+
+**Genre elements are PRIMARILY METAPHORICAL/SYMBOLIC.**
+
+- For "Monster of the Week" or similar story types, the "monster" is entirely symbolic—a social/emotional crisis given a genre-skinned name.
+- For other story types, genre conventions are used as metaphorical frameworks for exploring human conflicts.
+- You MUST preserve STORY TYPE structure (distinct case-like episodes, escalation, resolution).
+- "Monsters" represent social crises, emotional barriers, or systemic problems.
+- Example (Monster of the Week): Monsters are "The Silence Between Them," "The Bureaucratic Nightmare," "A Chance Encounter That Changes Everything"—social/emotional crises, not literal creatures.
+<!-- @@END@@ -->

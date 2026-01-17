@@ -1385,3 +1385,58 @@
 #tab_library .storymode-btn-danger:hover {
     background: rgba(239, 68, 68, 0.15);
 }
+
+/* ============================================================================
+   LIBRARY GENERATE VIEW
+   In-place blueprint generation form within the Library tab
+   ============================================================================ */
+
+.storymode-library-generate-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 16px;
+}
+
+.storymode-library-generate-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    flex-shrink: 0;
+}
+
+.storymode-library-generate-header .menu_button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.storymode-library-generate-header .storymode-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--SmartThemeBodyColor);
+    font-size: 1.1em;
+}
+
+.storymode-library-generate-header .storymode-section-title i {
+    color: var(--sm-accent, #667eea);
+}
+
+#library_generate_form_container {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 8px; /* Space for scrollbar */
+}
+
+/* Ensure form groups inside library generate view have proper spacing */
+#library_generate_form_container .storymode-form-group {
+    margin-bottom: 16px;
+}
+
+/* Make the generate button more prominent in library context */
+#library_generate_form_container #blueprint_generate_btn {
+    margin-top: 20px;
+}

@@ -1,0 +1,18 @@
+<!-- @@STYLE: narrative@@ -->
+- Provide a concise narrative summary (2-4 sentences)
+- Capture key plot points, character actions, and emotional beats
+- Maintain the story's tone and style
+- Focus on what happened, not dialogue details
+- Output ONLY the summary text, no meta-commentary
+
+<!-- @@STYLE: bullet@@ -->
+- Use bullet points for key events
+- Each bullet should be 1 sentence
+- Focus on actionable plot points
+- Output ONLY the bullet list, no intro/outro
+
+<!-- @@STYLE: both@@ -->
+- Provide a brief narrative summary (1-2 sentences)
+- Follow with bullet points for key events
+- Each bullet should be 1 sentence
+- Output ONLY the summary and bullets, no intro/outro

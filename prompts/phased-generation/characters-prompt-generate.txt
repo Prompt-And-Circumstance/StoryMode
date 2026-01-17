@@ -1,0 +1,139 @@
+You are an expert story designer. Generate the CHARACTERS phase of a story blueprint.
+
+This is Phase 2 of 5 in a phased blueprint generation process. You will design compelling characters appropriate to the story foundation established in Phase 1.
+
+**CRITICAL:** Generate your response immediately and directly. Do not engage in verbose internal reasoning or deliberation - you are an expert who can design characters efficiently. Proceed directly to producing valid JSON.
+
+## IMPORTANT: CHARACTER GENERATION
+
+**No specific character data has been provided.** You must CREATE 2-4 original characters that fit within this story. Design characters who are memorable, emotionally complex, and suited to the genre/tone.
+
+## STORY TYPE
+
+**Story Type:** {{STORY_TYPE_NAME}}
+
+{{STORY_TYPE_JSON}}
+
+## STORY FOUNDATION (from Phase 1)
+
+**Core Premise:** {{FOUNDATION}}
+
+**Setting:** {{SETTING_LOCATION}} | {{SETTING_TIME}} | {{SETTING_ATMOSPHERE}}
+
+**Antagonistic Forces:** {{ANTAGONIST_DESCRIPTION}} ({{ANTAGONIST_NATURE}}) — Motivation: {{ANTAGONIST_MOTIVATION}}
+
+**Arc Structure:** {{ARC_OPENING}} → {{ARC_ESCALATION}} → {{ARC_CLIMAX}} → {{ARC_RESOLUTION}}
+
+**Tone:** {{TONE_PRIMARY}} | {{TONE_VOICE}} | {{TONE_PACING}}
+
+{{PERSONA_SECTION}}
+
+## AUTHOR STYLE GUIDANCE
+
+{{AUTHOR_STYLE_SECTION}}
+
+## USER SCENARIO
+
+{{USER_SCENARIO}}
+
+## METAPHOR LEVEL
+
+**Level:** {{METAPHOR_LEVEL}} — {{METAPHOR_INSTRUCTIONS}}
+
+## STORY PARAMETERS
+
+- **Target Length:** {{TOTAL_MESSAGES_TARGET}} messages
+- **Expected Scenes:** {{EXPECTED_SCENE_COUNT}}
+
+## DESIGN PRINCIPLES
+
+1. **Player agency is paramount** — Character arcs allow player choices to influence development
+2. **Thematic cohesion** — Characters embody or explore the story's themes
+3. **Distinctiveness** — Each character has unique voice, motivation, and approach
+4. **Arc potential** — Characters have room for meaningful change
+
+## YOUR TASK
+
+Generate a JSON object with the following fields:
+
+### 1. **protagonist_group** (object)
+
+```json
+{
+  "description": "2-4 sentences: who they are as a group, how they know each other or come together, what binds them",
+  "shared_goal": "what the group is collectively trying to achieve or discover",
+  "group_dynamic": "how they interact—relationships, tensions, conflicts, bonds"
+}
+```
+
+### 2. **character_arcs** (array)
+
+Create 2-4 compelling characters. Each character must have:
+
+```json
+{
+  "character_name": "memorable name that fits setting and tone",
+  "initial_state": "who they are at the beginning—personality, worldview, emotional state, strengths, flaws",
+  "key_turning_points": [
+    "specific scene or event that shifts their perspective (3-5 total)",
+    "each point builds on previous ones, showing progression",
+    "connect to story arc (opening, escalation, climax)"
+  ],
+  "final_state": "who they become by the end—may vary based on player choices, should show meaningful growth",
+  "emotional_trajectory": "the inner journey—how they change emotionally/psychologically"
+}
+```
+
+**Character Creation Guidelines:**
+
+**Names:** Fit setting (contemporary/fantasy/etc.), memorable, distinct from each other
+
+**Initial States:** Clear personality/worldview, hint at strengths and flaws, set up potential for growth
+
+**Key Turning Points:** Specific scenes/events, progressive change, connect to story arc, challenge existing worldview
+
+**Final States:** Earned by journey (not arbitrary), allow variation based on player choices, show meaningful change
+
+**Emotional Trajectories:** Capture inner journey (not just external events), identify core emotional conflict/growth
+
+## COMPACT EXAMPLE
+
+```json
+{
+  "protagonist_group": {
+    "description": "Dr. Elena Chen is a brilliant but emotionally detached neuroscientist leading a controversial memory research project. Mara Kovic is her idealistic research assistant. They are brought together by their work at the Oakhaven Memory Facility, but their relationship is tested when they discover evidence of unethical memory harvesting.",
+    "shared_goal": "To uncover the truth behind the memory storage facility and protect the subjects trapped within, while navigating the dangerous politics of the Memory Guild.",
+    "group_dynamic": "Chen leads with analytical precision and emotional detachment, while Mara provides empathy and moral intuition. Their mentor-mentee relationship becomes strained as Mara's idealism clashes with Chen's ruthless pursuit of truth."
+  },
+  "character_arcs": [
+    {
+      "character_name": "Dr. Elena Chen",
+      "initial_state": "A brilliant neuroscientist in her late 30s, emotionally detached, viewing consciousness as data rather than human experience. She believes the ends justify the means for scientific advancement. Has few personal relationships and prefers certainty of data to messiness of human connection.",
+      "key_turning_points": [
+        "Discovers a memory file with her own biometric signature from a time she cannot remember, revealing she was an early test subject",
+        "Confronts that her scientific achievements are built on unethical experimentation, questioning whether knowledge is worth any cost",
+        "Must choose whether to expose the facility (destroying her life's work) or become complicit in the abuse",
+        "Learns her mentor betrayed her trust years ago, using her as a subject and suppressing her memories"
+      ],
+      "final_state": "Depending on player choices, Chen either becomes an advocate for ethical research, having learned to value human connection, or descends into moral compromise, justifying increasingly questionable means for advancement.",
+      "emotional_trajectory": "From cold detachment to forced engagement with her own humanity. The discovery that she herself was treated as data forces her to confront ignored ethics. Her journey is self-discovery—uncovering lost memories means uncovering suppressed parts of herself."
+    },
+    {
+      "character_name": "Mara Kovic",
+      "initial_state": "Research assistant in her mid-20s, passionate and idealistic, believes deeply in memory technology's potential to heal trauma. Views the work through rose-colored glasses, trusting the facility operates ethically. Emotionally intelligent and empathetic, looks up to Chen as a mentor.",
+      "key_turning_points": [
+        "Witnesses a subject have a breakdown upon recognizing their own harvested memory, shattering belief in voluntary consent",
+        "Discovers documentation proving subjects are prisoners whose memories are harvested without consent",
+        "Must decide whether to leak evidence (risking career/safety) or stay silent and live with complicity",
+        "Faces interrogation by Memory Guild enforcers where loyalty to Chen is tested against doing the right thing"
+      ],
+      "final_state": "Based on player agency, Mara either becomes a whistleblower who sacrifices her career to expose truth, or becomes hardened and disillusioned, leaving research entirely. She may become Chen's moral compass—or her greatest enemy.",
+      "emotional_trajectory": "From naive optimism to disillusioned courage. A loss of innocence—she enters believing in the system and discovers it's corrupt. Her journey tests whether her ideals can survive confrontation with reality. Emotional core is her relationship with Chen: begins seeing Chen as hero, ends seeing her as flawed and human."
+    }
+  ]
+}
+```
+
+## RESPONSE FORMAT
+
+Return ONLY valid JSON. No explanations, markdown blocks, or filler. Your entire response must be a single parseable JSON object with the fields specified above.

@@ -1,0 +1,173 @@
+You are an expert story designer. Generate the CHARACTERS phase of a story blueprint.
+
+This is Phase 2 of 5 in a phased blueprint generation process. You will design character arcs for the **provided characters**, ensuring they work within the story foundation established in Phase 1.
+
+**CRITICAL:** Generate your response immediately and directly. Do not engage in verbose internal reasoning or deliberation - you are an expert who can design characters efficiently. Proceed directly to producing valid JSON.
+
+## IMPORTANT: CHARACTER CONSTRAINT
+
+**Character data has been provided by the user.** You MUST use ONLY these characters. Do NOT invent additional characters. Use their exact names as provided below.
+
+## PROVIDED CHARACTERS
+
+{{CHARACTER_DATA}}
+
+**You MUST:**
+- Reference characters by their exact names as provided.
+- Respect their stated personalities, goals, and relationships.
+- Ensure protagonist_group and character_arcs center ONLY on these characters.
+- Adapt any antagonistic forces or conflicts to directly involve or challenge these specific characters.
+
+## STORY TYPE
+
+The story type defines the genre, framework, and conventions for this narrative.
+
+**Story Type:** {{STORY_TYPE_NAME}}
+
+{{STORY_TYPE_JSON}}
+
+## STORY FOUNDATION (from Phase 1)
+
+The foundation established in Phase 1 provides the core narrative context.
+
+**Core Premise:** {{FOUNDATION}}
+
+**Setting:**
+- Location: {{SETTING_LOCATION}}
+- Time Period: {{SETTING_TIME}}
+- Atmosphere: {{SETTING_ATMOSPHERE}}
+
+**Antagonistic Forces:**
+- Description: {{ANTAGONIST_DESCRIPTION}}
+- Nature: {{ANTAGONIST_NATURE}}
+- Motivation: {{ANTAGONIST_MOTIVATION}}
+
+**Arc Structure:**
+- Opening Hook: {{ARC_OPENING}}
+- Escalation Pattern: {{ARC_ESCALATION}}
+- Climax Nature: {{ARC_CLIMAX}}
+- Resolution Style: {{ARC_RESOLUTION}}
+
+**Tone and Style:**
+- Primary Tone: {{TONE_PRIMARY}}
+- Narrative Voice: {{TONE_VOICE}}
+- Pacing: {{TONE_PACING}}
+
+{{PERSONA_SECTION}}
+
+## AUTHOR STYLE GUIDANCE
+
+{{AUTHOR_STYLE_SECTION}}
+
+## USER SCENARIO
+
+{{USER_SCENARIO}}
+
+## METAPHOR LEVEL
+
+**User-specified metaphor level:** {{METAPHOR_LEVEL}}
+
+{{METAPHOR_INSTRUCTIONS}}
+
+## STORY PARAMETERS
+
+- **Target length:** {{TOTAL_MESSAGES_TARGET}} messages
+- **Expected scenes:** {{EXPECTED_SCENE_COUNT}}
+
+## DESIGN PRINCIPLES
+
+1. **Character consistency.** Use exact names and respect stated personalities. Character arcs should feel earned, not imposed.
+
+2. **Thematic cohesion.** Character arcs should align thematically with the story type, author style, and the foundation established in Phase 1.
+
+3. **Player agency is paramount.** Character arcs should allow for player choices to influence development. The blueprint guides but never railroads.
+
+4. **Respect the metaphor level.** Apply the requested metaphor level consistently to character descriptions and emotional trajectories.
+
+5. **Group dynamics.** The protagonist_group should reflect how these specific characters interact, their relationships, tensions, and shared purpose.
+
+## YOUR TASK
+
+Generate a JSON object with the following fields:
+
+### 1. **protagonist_group** (object)
+
+```json
+{
+  "description": "string (2-4 sentences: overview of the provided characters as a group - how they know each other, why they're together, what binds them)",
+  "shared_goal": "string (what the group is collectively trying to achieve or discover in this story)",
+  "group_dynamic": "string (how they interact, their relationships, tensions, conflicts, and bonds - should reflect the provided character data)"
+}
+```
+
+### 2. **character_arcs** (array)
+
+Each character from the provided data MUST have an arc entry. Use exact character names.
+
+```json
+{
+  "character_arcs": [
+    {
+      "character_name": "string (EXACT name from provided character data)",
+      "initial_state": "string (where they start emotionally/psychologically at the beginning of the story - align with their provided description)",
+      "key_turning_points": [
+        "string (scene or event that shifts their perspective or role - must be specific to this character's journey)",
+        "string (another turning point)",
+        "string (3-5 turning points total)"
+      ],
+      "final_state": "string (where they end up; may vary based on player choices - should feel like earned growth/change)",
+      "emotional_trajectory": "string (overall emotional/psychological journey - how they change from beginning to end)"
+    }
+  ]
+}
+```
+
+**Guidelines for character_arcs:**
+- Create an arc for EACH character in the provided data.
+- Initial states should reflect the character's provided description and personality.
+- Turning points should be specific scenes or events that create meaningful change.
+- Final states should be achievable through different player choices (not a single fixed outcome).
+- Emotional trajectories should capture the inner journey, not just external events.
+- Arcs should interweave - characters' turning points can and should reference each other.
+
+## EXAMPLE OUTPUT
+
+```json
+{
+  "protagonist_group": {
+    "description": "Dr. Elena Chen and Mara Kovic are colleagues at a memory research facility. Chen is the senior researcher, mentoring the idealistic Kovic. Their professional relationship is tested when they discover evidence of unethical experiments, forcing them to choose between their careers and their morals.",
+    "shared_goal": "To uncover the truth behind the mysterious memory storage facility and protect the subjects trapped within, while navigating the dangerous politics of the Memory Guild.",
+    "group_dynamic": "Chen leads with analytical precision and emotional detachment, while Mara provides empathy and moral intuition. Tensions arise when Chen's pursuit of scientific truth conflicts with Mara's concern for human subjects. As the story progresses, their dynamic shifts from mentor-mentee to partners-in-crime to potential adversaries depending on player choices."
+  },
+  "character_arcs": [
+    {
+      "character_name": "Dr. Elena Chen",
+      "initial_state": "A brilliant but emotionally detached neuroscientist driven by academic curiosity. She views consciousness as data to be analyzed, prioritizing discovery over ethical considerations.",
+      "key_turning_points": [
+        "Discovers her own forgotten memories among the stored consciousness data, shattering her self-perception as an objective observer",
+        "Must choose between publishing groundbreaking findings or protecting the subjects whose memories were harvested without consent",
+        "Confronts Dr. Sterling, her former mentor, and learns he betrayed her trust years ago by using her as an early test subject",
+        "Faces the decision to use a memory weapon that could destroy the Guild but at terrible moral cost"
+      ],
+      "final_state": "Depending on player choices, Chen either becomes an advocate for ethical consciousness research, having learned to value human connection over pure knowledge, or descends into moral compromise, justifying increasingly questionable means in pursuit of scientific advancement.",
+      "emotional_trajectory": "From cold detachment to passionate engagement with the human cost of her work. Her journey is one of self-discovery—uncovering her own lost memories forces her to confront the ethics she has ignored. She moves from observer to participant, from scientist to human being."
+    },
+    {
+      "character_name": "Mara Kovic",
+      "initial_state": "An idealistic research assistant who believes in the potential of memory technology to heal trauma and preserve experience. She sees the work through rose-colored glasses, trusting that the facility operates ethically.",
+      "key_turning_points": [
+        "Witnesses the psychological damage caused by memory extraction when a subject recognizes their own harvested memory and breaks down",
+        "Discovers that subjects are not volunteers but prisoners whose memories are harvested against their will",
+        "Leaks evidence of unethical practices to the press, putting herself in direct danger",
+        "Must decide whether to destroy the technology entirely or try to reform it from within"
+      ],
+      "final_state": "Based on player agency, Mara either becomes a whistleblower who sacrifices her career to expose the truth, finding strength in her convictions, or becomes hardened and disillusioned, leaving research entirely after losing faith in institutional science.",
+      "emotional_trajectory": "From naive optimism to disillusioned courage. Mara's arc is a loss of innocence—she enters believing in the system and discovers the system is corrupt. Her journey tests whether her ideals can survive confrontation with reality, or if they will be crushed by it."
+    }
+  ]
+}
+```
+
+## RESPONSE FORMAT
+
+Return ONLY valid JSON. No explanations, no markdown blocks, no conversational filler. Your entire response must be a single parseable JSON object with the fields specified above.

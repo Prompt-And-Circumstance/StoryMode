@@ -63,10 +63,11 @@ index.js (imports all, orchestrates)
 
 **Events:**
 ```javascript
-eventSource.on(event_types.GENERATION_STARTED, ...)  // Clear flags, update prompt
-eventSource.on(event_types.MESSAGE_RECEIVED, ...)    // Round increment (user) or arc completion (AI)
-eventSource.on(event_types.CHAT_CHANGED, ...)         // Reload state
-eventSource.on(event_types.MESSAGE_REGENERATED, ...)  // Set regeneration flag
+eventSource.on(event_types.GENERATION_STARTED, ...)      // Clear flags, update prompt
+eventSource.on(event_types.USER_MESSAGE_RENDERED, ...)   // Round increment (user message)
+eventSource.on(event_types.MESSAGE_RECEIVED, ...)        // Arc completion checks (AI message)
+eventSource.on(event_types.CHAT_CHANGED, ...)            // Reload state
+eventSource.on(event_types.MESSAGE_REGENERATED, ...)     // Set regeneration flag
 ```
 
 **CSS Loading:** SillyTavern loads ES6 modules **without bundling**. Use `@import url()` in `style.css`, not `import './file.css'` in JS.
@@ -235,6 +236,28 @@ const popup = new Popup(html, POPUP_TYPE.TEXT, 'Title', {
 - Use `large: true` for content-heavy modals (forms, long lists)
 - Omit `large` for content-focused modals (status, compact UIs)
 - Always use `wide: true` for blueprints/wizards (better readability)
+
+### Library In-Place View Switching
+The Library tab uses dual containers (`#library_grid_view` and `#library_generate_view`) for in-place content switching without tab navigation:
+```javascript
+// Show generate form (sets context flag for return navigation)
+content.data('generateFromLibrary', true);
+showLibraryGenerateView(content);
+
+// Return to grid (helper clears flag and switches view)
+function returnToLibraryIfNeeded() {
+    const wasFromLibrary = content.data('generateFromLibrary');
+    if (wasFromLibrary) {
+        content.removeData('generateFromLibrary');
+        showLibraryGridView(content);
+        return true;
+    }
+    return false;
+}
+```
+- Flag set when entering generate view from Library
+- Flag cleared on: back button, tab switch, wizard completion/cancellation
+- Helper returns boolean for conditional fallback logic
 
 ## Code Style
 

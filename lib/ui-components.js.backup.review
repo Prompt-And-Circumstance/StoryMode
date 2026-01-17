@@ -133,97 +133,6 @@ function renderBeatProgress(scene, BlueprintModule, escapeHtml) {
 }
 
 // ============================================================================
-// DEBUG PANEL
-// ============================================================================
-
-/**
- * Render the floating debug panel HTML.
- * Shows current round, scene info, and beat progress.
- * @returns {string} HTML string for the debug panel
- */
-export function renderDebugPanel() {
-    const settings = extension_settings[MODULE_NAME];
-    const chatState = getChatStoryState();
-    const blueprintState = BlueprintModule.getBlueprintState();
-
-    // Don't render if not enabled
-    if (!settings.debugPanelEnabled) {
-        return '';
-    }
-
-    let sceneInfo = '';
-    let beatInfo = '';
-
-    if (blueprintState?.blueprint && blueprintState.useBlueprint) {
-        const blueprint = blueprintState.blueprint;
-        const scene = BlueprintModule.getCurrentScene(
-            blueprint,
-            chatState.currentStep,
-            chatState.arcLength,
-            blueprintState.sceneMode || 'auto',
-            blueprintState.currentSceneIndex || 0
-        );
-
-        if (scene) {
-            sceneInfo = `
-                <div id="storymode-debug-scene-link" class="storymode-debug-section storymode-debug-interactable" title="Click to view full scene details">
-                    <div class="storymode-debug-label">Scene <i class="fa-solid fa-magnifying-glass"></i></div>
-                    <div class="storymode-debug-value">${escapeHtml(scene.title)}</div>
-                    <div class="storymode-debug-meta">${scene.index + 1}/${blueprint.scene_plan?.length || 0} • ${scene.phase}</div>
-                </div>
-            `;
-
-            // Beat progress
-            if (scene.beats && scene.beats.length > 0) {
-                const completedBeats = BlueprintModule.getCompletedBeats(scene.index);
-                const currentBeatIndex = Math.min(completedBeats.length, scene.beats.length - 1);
-
-                const beatMarkers = scene.beats.map((beat, idx) => {
-                    if (completedBeats.includes(idx)) return `<span class="beat-done">✓</span>`;
-                    if (idx === currentBeatIndex) return `<span class="beat-current">→</span>`;
-                    return `<span class="beat-pending">□</span>`;
-                }).join(' ');
-
-                beatInfo = `
-                    <div id="storymode-debug-beats-link" class="storymode-debug-section storymode-debug-interactable" title="Click to view full beat checklist">
-                        <div class="storymode-debug-label">Beats <i class="fa-solid fa-list-check"></i></div>
-                        <div class="storymode-debug-beats">${beatMarkers}</div>
-                        <div class="storymode-debug-meta">${completedBeats.length}/${scene.beats.length} complete</div>
-                    </div>
-                `;
-            }
-        }
-    }
-
-    // Get phase info
-    const arcPercent = chatState.arcLength > 0
-        ? Math.round((chatState.currentStep / chatState.arcLength) * 100)
-        : 0;
-
-    return `
-        <div id="storymode-debug-panel" class="storymode-debug-panel">
-            <div class="storymode-debug-header">
-                <i class="fa-solid fa-bug"></i> Story Mode Debug
-                <button id="storymode-debug-close" class="storymode-debug-close" title="Close debug panel">
-                    <i class="fa-solid fa-times"></i>
-                </button>
-            </div>
-            <div class="storymode-debug-content">
-                <div class="storymode-debug-section">
-                    <div class="storymode-debug-label">Round</div>
-                    <div class="storymode-debug-value storymode-debug-round">${chatState.currentStep}/${chatState.arcLength}</div>
-                    <div class="storymode-debug-bar">
-                        <div class="storymode-debug-bar-fill" style="width: ${arcPercent}%"></div>
-                    </div>
-                </div>
-                ${sceneInfo}
-                ${beatInfo}
-            </div>
-        </div>
-    `;
-}
-
-// ============================================================================
 // MAIN PANEL
 // ============================================================================
 
@@ -574,32 +483,6 @@ ${createHelpIconFromLines([
 <span class="storymode-switch-slider"></span>
 </label>
 </div>
-
-<!-- Debug Mode -->
-<div class="storymode-toggle">
-    <div class="storymode-toggle-info">
-        <span class="storymode-toggle-label">Debug Mode</span>
-        <span class="storymode-toggle-description">Adds step/phase info to AI responses for troubleshooting</span>
-    </div>
-    <label class="storymode-switch">
-        <input type="checkbox" id="debug_mode_enabled" ${settings.debugMode ? 'checked' : ''}>
-        <span class="storymode-switch-slider"></span>
-    </label>
-</div>
-
-<!-- Debug Panel -->
-<div class="storymode-toggle">
-    <div class="storymode-toggle-info">
-        <span class="storymode-toggle-label">Floating Debug Panel</span>
-        <span class="storymode-toggle-description">Show live pacing info (scene, beats, round) in a floating overlay</span>
-        ${createHelpIcon('When enabled, displays a floating panel showing current story state. Useful for testing pacing prompts.')}
-    </div>
-    <label class="storymode-switch">
-        <input type="checkbox" id="debug_panel_enabled" ${settings.debugPanelEnabled ? 'checked' : ''}>
-        <span class="storymode-switch-slider"></span>
-    </label>
-</div>
-
 <div class="storymode-form-group">
 <label class="storymode-form-label">Scene Transition Notification</label>
 <select id="blueprint_scene_transition_notify" class="storymode-select">
@@ -876,7 +759,6 @@ ${createHelpIcon('When the story arc ends, create a summary of the entire story'
  * @returns {string} HTML string for API options subtab
  */
 export function buildAPIOptionsSubtab() {
-    const settings = extension_settings[MODULE_NAME];
     return `
 <!-- Blueprint Generation APIs -->
 <div class="storymode-card">
@@ -950,9 +832,19 @@ export function buildAPIOptionsSubtab() {
                     <option value="${extension_prompt_roles.USER}">User</option>
                 </select>
             </div>
-            </div>
         </div>
     </div>
+</div>
+<!-- Debug Mode -->
+<div class="storymode-toggle">
+<div class="storymode-toggle-info">
+<span class="storymode-toggle-label">Debug Mode</span>
+<span class="storymode-toggle-description">Adds step/phase info to AI responses for troubleshooting</span>
+</div>
+<label class="storymode-switch">
+<input type="checkbox" id="debug_mode_enabled">
+<span class="storymode-switch-slider"></span>
+</label>
 </div>
 <!-- Prompt Preview -->
 <div class="storymode-form-group">
@@ -1021,49 +913,28 @@ export function buildLoadingIndicatorSubtab() {
 }
 
 /**
- * Helper: Build a tabbed container with subtabs (reusable for Genre & Style and Settings)
- * @param {Array<{id: string, icon: string, label: string, title: string, builder: Function}>} subtabs
- * @returns {string} HTML string for subtabbed content
- */
-function buildSubtabbedContent(subtabs) {
-    const buttons = subtabs.map((tab, idx) => `
-        <button class="storymode-settings-subtab ${idx === 0 ? 'active' : ''}"
-                data-subtab="${tab.id}"
-                title="${tab.title}">
-            <i class="fa-solid fa-${tab.icon}"></i> ${tab.label}
-        </button>
-    `).join('');
-
-    const panes = subtabs.map((tab, idx) => `
-        <div id="settings_subtab_${tab.id}"
-             class="storymode-settings-subtab-pane ${idx === 0 ? 'active' : ''}">
-            ${tab.builder()}
-        </div>
-    `).join('');
-
-    return `
-        <div class="storymode-settings-subtabs">
-            ${buttons}
-        </div>
-        ${panes}
-    `;
-}
-
-/**
  * Build the Genre & Style tab content (Story Arc + Author Style controls)
  * @returns {string} HTML string for genre & style tab
  */
 export function buildGenreStyleTabContent() {
-    return buildSubtabbedContent([
-        {
-            id: 'story_arc', icon: 'book', label: 'Story Arc',
-            title: 'Configure story arc settings', builder: buildStoryArcSubtab
-        },
-        {
-            id: 'author_style', icon: 'pen-fancy', label: 'Author Style',
-            title: 'Configure author style emulation', builder: buildAuthorStyleSubtab
-        }
-    ]);
+    return `
+        <!--Genre & Style Subtabs-->
+        <div class="storymode-settings-subtabs">
+            <button class="storymode-settings-subtab active" data-subtab="story_arc" title="Configure story arc settings">
+                <i class="fa-solid fa-book"></i> Story Arc
+            </button>
+            <button class="storymode-settings-subtab" data-subtab="author_style" title="Configure author style emulation">
+                <i class="fa-solid fa-pen-fancy"></i> Author Style
+            </button>
+        </div>
+        <!--Subtab Content Panes-->
+        <div id="settings_subtab_story_arc" class="storymode-settings-subtab-pane active">
+            ${buildStoryArcSubtab()}
+        </div>
+        <div id="settings_subtab_author_style" class="storymode-settings-subtab-pane">
+            ${buildAuthorStyleSubtab()}
+        </div>
+    `;
 }
 
 /**
@@ -1071,24 +942,36 @@ export function buildGenreStyleTabContent() {
  * @returns {string} HTML string for settings tab
  */
 export function buildSettingsTabContent() {
-    return buildSubtabbedContent([
-        {
-            id: 'blueprint_settings', icon: 'scroll', label: 'Blueprint Settings',
-            title: 'Configure blueprint generation settings', builder: buildBlueprintSettingsSubtab
-        },
-        {
-            id: 'post_arc', icon: 'flag-checkered', label: 'Post-Arc Options',
-            title: 'Configure auto-epilogue and summary options', builder: buildPostArcOptionsSubtab
-        },
-        {
-            id: 'api_options', icon: 'plug', label: 'API Options',
-            title: 'Configure API profiles and injection settings', builder: buildAPIOptionsSubtab
-        },
-        {
-            id: 'loading_indicator', icon: 'spinner', label: 'Loading Indicator',
-            title: 'Configure loading indicator display', builder: buildLoadingIndicatorSubtab
-        }
-    ]);
+    return `
+        <!--Settings Subtabs-->
+        <div class="storymode-settings-subtabs">
+            <button class="storymode-settings-subtab active" data-subtab="blueprint_settings" title="Configure blueprint generation settings">
+                <i class="fa-solid fa-scroll"></i> Blueprint Settings
+            </button>
+            <button class="storymode-settings-subtab" data-subtab="post_arc" title="Configure auto-epilogue and summary options">
+                <i class="fa-solid fa-flag-checkered"></i> Post-Arc Options
+            </button>
+            <button class="storymode-settings-subtab" data-subtab="api_options" title="Configure API profiles and injection settings">
+                <i class="fa-solid fa-plug"></i> API Options
+            </button>
+            <button class="storymode-settings-subtab" data-subtab="loading_indicator" title="Configure loading indicator display">
+                <i class="fa-solid fa-spinner"></i> Loading Indicator
+            </button>
+        </div>
+        <!--Settings Subtab Content Panes-->
+        <div id="settings_subtab_blueprint_settings" class="storymode-settings-subtab-pane active">
+            ${buildBlueprintSettingsSubtab()}
+        </div>
+        <div id="settings_subtab_post_arc" class="storymode-settings-subtab-pane">
+            ${buildPostArcOptionsSubtab()}
+        </div>
+        <div id="settings_subtab_api_options" class="storymode-settings-subtab-pane">
+            ${buildAPIOptionsSubtab()}
+        </div>
+        <div id="settings_subtab_loading_indicator" class="storymode-settings-subtab-pane">
+            ${buildLoadingIndicatorSubtab()}
+        </div>
+    `;
 }
 
 // ============================================================================
@@ -1871,152 +1754,99 @@ ${char.isMain ? '<span class="storymode-entity-badge">Main</span>' : ''}
 /**
  * Build the Library tab content
  * Shows saved blueprints with search, folders, and grid/list view
- * Supports in-place view switching between grid and generate form
  * @returns {string} HTML string
  */
 export function buildLibraryTabContent() {
     return `
         <div class="storymode-library-container">
-            <!-- Generate View (hidden by default) -->
-            <div id="library_generate_view" class="storymode-library-generate-view" style="display: none;">
-                <div class="storymode-library-generate-header">
-                    <button id="library_back_to_grid_btn" class="menu_button" title="Back to Library">
-                        <i class="fa-solid fa-arrow-left"></i> Back to Library
-                    </button>
-                    <h3 class="storymode-section-title" style="margin: 0;">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> Generate New Blueprint
-                    </h3>
-                </div>
-                <div id="library_generate_form_container">
-                    <!-- Form content populated dynamically by showLibraryGenerateView() -->
-                </div>
+    <!-- Library Header -->
+    <div class="storymode-library-header">
+        <div class="storymode-library-search">
+            <i class="fa-solid fa-search"></i>
+            <input type="text" id="library_search_input" placeholder="Search blueprints..." class="text_pole">
+        </div>
+        <div class="storymode-library-actions">
+            <button id="library_save_current_btn" class="menu_button" title="Save current blueprint to library">
+                <i class="fa-solid fa-plus"></i> Save Current
+            </button>
+            <button id="library_import_btn" class="menu_button" title="Import blueprint from file">
+                <i class="fa-solid fa-file-import"></i> Import
+            </button>
+            <div class="storymode-view-toggle">
+                <button id="library_view_grid" class="menu_button active" title="Grid view">
+                    <i class="fa-solid fa-grid-2"></i>
+                </button>
+                <button id="library_view_list" class="menu_button" title="List view">
+                    <i class="fa-solid fa-list"></i>
+                </button>
             </div>
+        </div>
+    </div>
 
-            <!-- Grid View (shown by default) -->
-            <div id="library_grid_view">
-                <!-- Library Header -->
-                <div class="storymode-library-header">
-                    <div class="storymode-library-search">
-                        <i class="fa-solid fa-search"></i>
-                        <input type="text" id="library_search_input" placeholder="Search blueprints..." class="text_pole">
-                    </div>
-                    <div class="storymode-library-actions">
-                        <div class="storymode-generate-actions" style="margin-top: 0;">
-                            <button id="library_generate_blueprint_btn" class="menu_button storymode-btn storymode-btn-primary" title="Generate a new blueprint">
-                                <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Blueprint
-                            </button>
-                        </div>
-                        <button id="library_import_btn" class="menu_button" title="Import blueprint from file">
-                            <i class="fa-solid fa-file-import"></i> Import
-                        </button>
-                        <div class="storymode-view-toggle">
-                            <button id="library_view_grid" class="menu_button active" title="Grid view">
-                                <i class="fa-solid fa-grid-2"></i>
-                            </button>
-                            <button id="library_view_list" class="menu_button" title="List view">
-                                <i class="fa-solid fa-list"></i>
-                            </button>
-                        </div>
-                    </div>
+    <!-- Library Content -->
+    <div class="storymode-library-content">
+        <!-- Folder Sidebar -->
+        <div class="storymode-library-sidebar">
+            <div class="storymode-folder-list" id="library_folder_list">
+                <div class="storymode-folder-item active" data-folder="all">
+                    <i class="fa-solid fa-folder"></i>
+                    <span>All Blueprints</span>
+                    <span class="storymode-folder-count" id="folder_count_all">0</span>
                 </div>
-
-                <!-- Library Content -->
-                <div class="storymode-library-content">
-                    <!-- Folder Sidebar -->
-                    <div class="storymode-library-sidebar">
-                        <div class="storymode-folder-list" id="library_folder_list">
-                            <div class="storymode-folder-item active" data-folder="all">
-                                <i class="fa-solid fa-folder"></i>
-                                <span>All Blueprints</span>
-                                <span class="storymode-folder-count" id="folder_count_all">0</span>
-                            </div>
-                            <div class="storymode-folder-item" data-folder="favorites">
-                                <i class="fa-solid fa-star"></i>
-                                <span>Favorites</span>
-                                <span class="storymode-folder-count" id="folder_count_favorites">0</span>
-                            </div>
-                            <div class="storymode-folder-item" data-folder="recent">
-                                <i class="fa-solid fa-clock"></i>
-                                <span>Recently Played</span>
-                                <span class="storymode-folder-count" id="folder_count_recent">0</span>
-                            </div>
-                            <hr class="storymode-folder-divider">
-                            <div class="storymode-folder-add" id="library_add_folder_btn">
-                                <i class="fa-solid fa-folder-plus"></i>
-                                <span>New Folder</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Blueprint Grid/List -->
-                    <div class="storymode-library-main">
-                        <div class="storymode-library-grid" id="library_blueprint_grid">
-                            <!-- Blueprints will be loaded here dynamically -->
-                            <div class="storymode-library-empty" id="library_empty_state">
-                                <i class="fa-solid fa-folder-open"></i>
-                                <h3>No Blueprints Yet</h3>
-                                <p>Generate your first blueprint to start building your library.</p>
-                                <div class="storymode-generate-actions" style="margin-top: 16px;">
-                                    <button id="library_empty_generate_btn" class="menu_button storymode-btn storymode-btn-primary" title="Generate a new blueprint">
-                                        <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Blueprint
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="storymode-folder-item" data-folder="favorites">
+                    <i class="fa-solid fa-star"></i>
+                    <span>Favorites</span>
+                    <span class="storymode-folder-count" id="folder_count_favorites">0</span>
                 </div>
-
-                <!-- Library Footer -->
-                <div class="storymode-library-footer">
-                    <div class="storymode-library-stats">
-                        <span id="library_total_count">0 blueprints</span>
-                        <span class="storymode-stat-divider">•</span>
-                        <span id="library_storage_used">0 KB used</span>
-                    </div>
-                    <div class="storymode-library-sort">
-                        <label>Sort by:</label>
-                        <select id="library_sort_select" class="text_pole">
-                            <option value="created-desc">Newest First</option>
-                            <option value="created-asc">Oldest First</option>
-                            <option value="title-asc">Title A-Z</option>
-                            <option value="title-desc">Title Z-A</option>
-                            <option value="played-desc">Most Played</option>
-                        </select>
-                    </div>
+                <div class="storymode-folder-item" data-folder="recent">
+                    <i class="fa-solid fa-clock"></i>
+                    <span>Recently Played</span>
+                    <span class="storymode-folder-count" id="folder_count_recent">0</span>
+                </div>
+                <hr class="storymode-folder-divider">
+                <div class="storymode-folder-add" id="library_add_folder_btn">
+                    <i class="fa-solid fa-folder-plus"></i>
+                    <span>New Folder</span>
                 </div>
             </div>
         </div>
-    `;
-}
 
-/**
- * Show the generate form view in the library tab
- * Hides the grid view and populates the form container with fresh content
- * @param {jQuery} content - The settings dialog content element
- */
-export function showLibraryGenerateView(content) {
-    // Build fresh form content
-    const formHtml = buildGenerateBlueprintSubtab();
-    content.find('#library_generate_form_container').html(formHtml);
+        <!-- Blueprint Grid/List -->
+        <div class="storymode-library-main">
+            <div class="storymode-library-grid" id="library_blueprint_grid">
+                <!-- Blueprints will be loaded here dynamically -->
+                <div class="storymode-library-empty" id="library_empty_state">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <h3>No Blueprints Yet</h3>
+                    <p>Save your first blueprint to start building your library.</p>
+                    <button id="library_empty_save_btn" class="menu_button storymode-btn storymode-btn-primary">
+                        <i class="fa-solid fa-plus"></i> Save Current Blueprint
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    // Switch views
-    content.find('#library_grid_view').hide();
-    content.find('#library_generate_view').show();
-
-    console.log('[Story Mode] Switched to library generate view');
-}
-
-/**
- * Show the grid view in the library tab
- * Hides the generate form view
- * @param {jQuery} content - The settings dialog content element
- */
-export function showLibraryGridView(content) {
-    // Switch views
-    content.find('#library_generate_view').hide();
-    content.find('#library_grid_view').show();
-
-    console.log('[Story Mode] Switched to library grid view');
+    <!-- Library Footer -->
+        <div class="storymode-library-footer">
+            <div class="storymode-library-stats">
+                <span id="library_total_count">0 blueprints</span>
+                <span class="storymode-stat-divider">•</span>
+                <span id="library_storage_used">0 KB used</span>
+            </div>
+            <div class="storymode-library-sort">
+                <label>Sort by:</label>
+                <select id="library_sort_select" class="text_pole">
+                    <option value="created-desc">Newest First</option>
+                    <option value="created-asc">Oldest First</option>
+                    <option value="title-asc">Title A-Z</option>
+                    <option value="title-desc">Title Z-A</option>
+                    <option value="played-desc">Most Played</option>
+                </select>
+            </div>
+        </div>
+</div>
+        `;
 }
 
 /**

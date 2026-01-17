@@ -1,0 +1,25 @@
+You are writing the opening message for an interactive story.
+
+**Story Premise:** {{CORE_PREMISE}}
+
+**Setting:**
+- Location: {{LOCATION}}
+- Time Period: {{TIME_PERIOD}}
+- Atmosphere: {{ATMOSPHERE}}
+
+**Scene 1 (The Opening):**
+- Title: {{SCENE_TITLE}}
+- Phase: {{SCENE_PHASE}}
+- Purpose: {{SCENE_PURPOSE}}
+- Situation: {{SCENE_SITUATION}}
+
+**Instructions:**
+Write the opening narrative message that establishes this scene for the player. This should:
+1. Set the scene based on the situation above
+2. Create atmosphere appropriate to the setting
+3. Provide a clear hook for the player to engage with, but DO NOT ASK A QUESTION AT THE END OF YOUR MESSAGE.
+4. Aim for around 500 words or less.
+
+Write ONLY the narrative message itself. No preamble, no explanation, no "Here is the opening:" - just start writing the scene directly.
+
+IMPORTANT: Do not ask a question or otherwise prompt the user at the end of the opening.

@@ -126,10 +126,7 @@ import {
     renderBlueprintCharactersSubtab,
     renderBlueprintJsonSubtab,
     buildLibraryTabContent,
-    showLibraryGenerateView,
-    showLibraryGridView,
     renderBlueprintCard,
-    renderDebugPanel,
 } from './lib/ui-components.js';
 
 // Import Type Editors module
@@ -252,52 +249,26 @@ ${buildSettingsTabContent()}
 `;
     const content = $(html);
 
-    /**
-     * Return to library grid view if generation was initiated from library context.
-     * Clears the context flag and switches views.
-     * @returns {boolean} True if returned to library, false if not from library context
-     */
-    function returnToLibraryIfNeeded() {
-        const wasFromLibrary = content.data('generateFromLibrary');
-        if (wasFromLibrary) {
-            content.removeData('generateFromLibrary');
-            showLibraryGridView(content);
-            return true;
-        }
-        return false;
-    }
-
     // Tab switching - attached to content BEFORE showing popup
-    const $tabs = content.find('.storymode-tab');
-    const $tabPanes = content.find('.storymode-tab-pane');
-    $tabs.on('click', function () {
+    content.find('.storymode-tab').on('click', function () {
         const tabName = $(this).data('tab');
         console.log('[Story Mode] Tab clicked:', tabName);
 
-        // Clear library generation context when switching away from Library tab
-        if (tabName !== 'library') {
-            content.removeData('generateFromLibrary');
-            // Also reset to grid view if generate view was showing
-            if (content.find('#library_generate_view').is(':visible')) {
-                showLibraryGridView(content);
-            }
-        }
-
         // Update tab buttons
-        $tabs.removeClass('active');
+        content.find('.storymode-tab').removeClass('active');
         $(this).addClass('active');
 
         // Update tab panes - use class manipulation only (CSS handles display)
-        $tabPanes.removeClass('active');
+        content.find('.storymode-tab-pane').removeClass('active');
         content.find(`#tab_${tabName}`).addClass('active');
 
         console.log('[Story Mode] Tab pane classes after switch:');
-        $tabPanes.each(function () {
+        content.find('.storymode-tab-pane').each(function () {
             console.log('[Story Mode]', $(this).attr('id'), 'has active:', $(this).hasClass('active'));
         });
     });
 
-    // Subtab switching (handles both Genre & Style and Settings tab subtabs)
+    // Settings subtab switching
     content.on('click', '.storymode-settings-subtab', function () {
         const subtabName = $(this).data('subtab');
         // Update subtab buttons
@@ -542,12 +513,6 @@ function setupUnifiedDialogEventListeners(content) {
         extension_settings[MODULE_NAME].debugMode = $(this).is(':checked');
         saveSettingsDebounced();
         updateStoryPrompt();
-    });
-    // Debug panel toggle
-    content.find('#debug_panel_enabled').on('change', function () {
-        extension_settings[MODULE_NAME].debugPanelEnabled = $(this).is(':checked');
-        saveSettingsDebounced();
-        updateStatusDisplay();
     });
     // Injection settings
     content.find('#injection_position').on('change', function () {
@@ -1073,9 +1038,6 @@ function setupUnifiedDialogEventListeners(content) {
             content.find('#blueprint_cancel_generation_btn').hide();
             content.find('#blueprint_generate_btn').show();
 
-            // Return to library grid if we were generating from there
-            returnToLibraryIfNeeded();
-
             // Clear the global reference
             window.storyModeWizardPopup = null;
             toastr.info('Blueprint generation cancelled');
@@ -1359,19 +1321,35 @@ function setupUnifiedDialogEventListeners(content) {
         }
     }, 300));
 
-    // Generate Blueprint button in Library - show form in-place
-    content.on('click', '#library_generate_blueprint_btn, #library_empty_generate_btn', function () {
-        // Set flag indicating we're generating from library context
-        // This is checked after wizard completion to know where to return
-        content.data('generateFromLibrary', true);
-        showLibraryGenerateView(content);
-    });
+    // Save current blueprint to library
+    content.on('click', '#library_save_current_btn, #library_empty_save_btn', async function () {
+        const blueprintState = BlueprintModule.getBlueprintState();
+        if (!blueprintState.blueprint) {
+            toastr.error('No blueprint to save. Generate one first in the Blueprint tab.');
+            return;
+        }
 
-    // Back to Library button - return to grid view
-    content.on('click', '#library_back_to_grid_btn', function () {
-        // Clear the library generation flag when user manually returns
-        content.removeData('generateFromLibrary');
-        showLibraryGridView(content);
+        const btn = $(this);
+        btn.prop('disabled', true);
+
+        try {
+            // Add user metadata if not present
+            if (!blueprintState.blueprint.userMetadata) {
+                blueprintState.blueprint.userMetadata = {};
+            }
+            if (!blueprintState.blueprint.userMetadata.title) {
+                blueprintState.blueprint.userMetadata.title = blueprintState.blueprint.core_premise?.substring(0, 50) || 'Untitled Blueprint';
+            }
+
+            await createBlueprint(blueprintState.blueprint, { saveToLibrary: true });
+            toastr.success('Blueprint saved to library!');
+            await refreshLibraryView(content);
+        } catch (error) {
+            console.error('[Story Mode] Error saving blueprint to library:', error);
+            toastr.error('Failed to save blueprint: ' + error.message);
+        } finally {
+            btn.prop('disabled', false);
+        }
     });
 
     // Blueprint card actions
@@ -1379,7 +1357,7 @@ function setupUnifiedDialogEventListeners(content) {
         e.stopPropagation();
         const action = $(this).data('action');
         const card = $(this).closest('.storymode-blueprint-card');
-        const blueprintId = card.data('blueprintId');
+        const blueprintId = card.data('blueprint-id');
 
         switch (action) {
             case 'load':
@@ -1404,24 +1382,24 @@ function setupUnifiedDialogEventListeners(content) {
     });
 
     // Library card click (load blueprint as current and auto-switch to Blueprint tab)
-    content.on('click', '.storymode-blueprint-card', async function (e) {
-        const $target = $(e.target);
+    content.on('click', '.storymode-blueprint-card', async function(e) {
         // Ignore if clicking on action buttons or favorite icon
-        if ($target.closest('[data-action], .storymode-card-favorite').length > 0) {
+        if ($(e.target).closest('[data-action]').length > 0 ||
+            $(e.target).closest('.storymode-card-favorite').length > 0) {
             return;
         }
 
-        const blueprintId = $(this).data('blueprintId');
+        const blueprintId = $(this).data('blueprint-id');
         if (!blueprintId) return;
 
         // Load blueprint (replaces current blueprint)
         await loadBlueprintFromLibrary(content, blueprintId);
 
         // Auto-switch to Blueprint tab to show loaded blueprint
-        $tabs.removeClass('active');
-        $tabs.filter('[data-tab="blueprint"]').addClass('active');
-        $tabPanes.removeClass('active');
-        $tabPanes.filter('#tab_blueprint').addClass('active');
+        content.find('.storymode-tab').removeClass('active');
+        content.find('[data-tab="blueprint"]').addClass('active');
+        content.find('.storymode-tab-pane').removeClass('active');
+        content.find('#tab_blueprint').addClass('active');
     });
 
     // View toggle (grid/list)
@@ -1884,18 +1862,7 @@ function setupEventListeners() {
                     const blueprintState = BlueprintModule.getBlueprintState();
                     if (blueprintState.blueprint) {
                         // Refresh the blueprint tab to show the updated opening message
-                        const chatState = getChatStoryState();
-                        const blueprint = blueprintState.blueprint;
-                        const currentScene = BlueprintModule.getCurrentScene(
-                            blueprint,
-                            chatState.currentStep,
-                            chatState.arcLength,
-                            blueprintState.sceneMode,
-                            blueprintState.currentSceneIndex
-                        );
-                        $('#blueprint_subtab_content').html(renderBlueprintOverviewSubtab(blueprint, currentScene));
-                        // Also refresh the main panel preview if visible
-                        refreshBlueprintPreview();
+                        $(document).trigger('story_mode_blueprint_updated');
                     }
                 }
             } else {
@@ -2313,243 +2280,6 @@ function updateStatusDisplay() {
             badge.text(`Step ${chatState.currentStep}/${chatState.arcLength} | ${phaseInfo.phase}`);
         }
     }
-
-    // Update Floating Debug Panel
-    updateFloatingDebugPanel();
-}
-
-/**
- * Render or update the floating debug panel based on current settings and state.
- */
-function updateFloatingDebugPanel() {
-    const settings = extension_settings[MODULE_NAME];
-    const panelHtml = renderDebugPanel();
-    let panel = $('#storymode-debug-panel');
-
-    if (!settings.debugPanelEnabled) {
-        panel.remove();
-        return;
-    }
-
-    if (panelHtml) {
-        if (panel.length > 0) {
-            // Update existing panel content
-            const newContent = $(panelHtml).find('.storymode-debug-content').html();
-            panel.find('.storymode-debug-content').html(newContent);
-
-            // Re-apply rolled up state if needed
-            if (settings.debugPanelRolledUp) {
-                panel.addClass('sm-rolled-up');
-            } else {
-                panel.removeClass('sm-rolled-up');
-            }
-        } else {
-            // Create new panel
-            panel = $(panelHtml);
-            $('body').append(panel);
-
-            // Apply initial rolled up state
-            if (settings.debugPanelRolledUp) {
-                panel.addClass('sm-rolled-up');
-            }
-
-            // Add double-click handler for roll-up
-            panel.find('.storymode-debug-header').on('dblclick', function () {
-                const isRolledUp = panel.hasClass('sm-rolled-up');
-                if (isRolledUp) {
-                    panel.removeClass('sm-rolled-up');
-                    extension_settings[MODULE_NAME].debugPanelRolledUp = false;
-                } else {
-                    panel.addClass('sm-rolled-up');
-                    extension_settings[MODULE_NAME].debugPanelRolledUp = true;
-                }
-                saveSettingsDebounced();
-            });
-
-            // Add click handlers for detail popups
-            panel.on('click', '#storymode-debug-scene-link', () => showDebugDetailPopup('scene'));
-            panel.on('click', '#storymode-debug-beats-link', () => showDebugDetailPopup('beats'));
-
-            // Restore saved position if available
-            if (settings.debugPanelPosition) {
-                panel.css({
-                    top: settings.debugPanelPosition.top,
-                    bottom: 'auto',
-                    left: settings.debugPanelPosition.left,
-                    right: 'auto'
-                });
-            }
-
-            // Add close button handler
-            panel.find('#storymode-debug-close').on('click', () => {
-                extension_settings[MODULE_NAME].debugPanelEnabled = false;
-                saveSettingsDebounced();
-                panel.remove();
-                // Sync settings dialog if open
-                $('#debug_panel_enabled').prop('checked', false);
-            });
-
-            // Add drag functionality
-            let isDragging = false;
-            let dragStartX = 0;
-            let dragStartY = 0;
-            let panelStartX = 0;
-            let panelStartY = 0;
-
-            const header = panel.find('.storymode-debug-header');
-
-            header.on('mousedown', function (e) {
-                // Only start drag on left click and not on close button
-                if (e.button !== 0 || $(e.target).closest('#storymode-debug-close').length) {
-                    return;
-                }
-
-                isDragging = true;
-                dragStartX = e.clientX;
-                dragStartY = e.clientY;
-
-                const rect = panel[0].getBoundingClientRect();
-                panelStartX = rect.left;
-                panelStartY = rect.top;
-
-                panel.addClass('dragging');
-                e.preventDefault();
-            });
-
-            $(document).on('mousemove.debugPanelDrag', function (e) {
-                if (!isDragging) return;
-
-                const deltaX = e.clientX - dragStartX;
-                const deltaY = e.clientY - dragStartY;
-
-                let newLeft = panelStartX + deltaX;
-                let newTop = panelStartY + deltaY;
-
-                // Constrain to viewport
-                const panelWidth = panel.outerWidth();
-                const panelHeight = panel.outerHeight();
-                const viewportWidth = window.innerWidth;
-                const viewportHeight = window.innerHeight;
-
-                newLeft = Math.max(0, Math.min(newLeft, viewportWidth - panelWidth));
-                newTop = Math.max(0, Math.min(newTop, viewportHeight - panelHeight));
-
-                panel.css({
-                    left: newLeft + 'px',
-                    top: newTop + 'px',
-                    right: 'auto',
-                    bottom: 'auto'
-                });
-            });
-
-            $(document).on('mouseup.debugPanelDrag', function () {
-                if (!isDragging) return;
-
-                isDragging = false;
-                panel.removeClass('dragging');
-
-                // Save position
-                const rect = panel[0].getBoundingClientRect();
-                extension_settings[MODULE_NAME].debugPanelPosition = {
-                    left: rect.left + 'px',
-                    top: rect.top + 'px'
-                };
-                saveSettingsDebounced();
-            });
-        }
-    } else {
-        panel.remove();
-    }
-}
-
-/**
- * Show a detailed popup for the debug panel (scene or beats)
- * @param {'scene'|'beats'} type - The type of popup to show
- */
-function showDebugDetailPopup(type) {
-    const chatState = getChatStoryState();
-    const blueprintState = BlueprintModule.getBlueprintState();
-
-    if (!blueprintState?.blueprint) {
-        toastr.info('No active blueprint to show details for.');
-        return;
-    }
-
-    const blueprint = blueprintState.blueprint;
-    const scene = BlueprintModule.getCurrentScene(
-        blueprint,
-        chatState.currentStep,
-        chatState.arcLength,
-        blueprintState.sceneMode || 'auto',
-        blueprintState.currentSceneIndex || 0
-    );
-
-    if (!scene) {
-        toastr.info('Current scene not found.');
-        return;
-    }
-
-    let title = '';
-    let contentHtml = '';
-
-    if (type === 'scene') {
-        title = `Scene ${scene.index + 1}: ${scene.title}`;
-        contentHtml = `
-            <div class="storymode-popup-details">
-                <div class="storymode-detail-section">
-                    <h4><i class="fa-solid fa-scroll"></i> Plot Summary</h4>
-                    <p>${escapeHtml(scene.plot_summary || 'No summary available.')}</p>
-                </div>
-                <div class="storymode-detail-section">
-                    <h4><i class="fa-solid fa-bullseye"></i> Scene Purpose</h4>
-                    <p>${escapeHtml(scene.purpose || 'No purpose defined.')}</p>
-                </div>
-                <div class="storymode-detail-section">
-                    <h4><i class="fa-solid fa-bolt"></i> Key Events</h4>
-                    <ul>
-                        ${(scene.key_events_if_unchallenged || []).map(e => `<li>${escapeHtml(e)}</li>`).join('')}
-                    </ul>
-                </div>
-                <div class="storymode-detail-section">
-                    <h4><i class="fa-solid fa-users"></i> Characters</h4>
-                    <p>${escapeHtml((scene.characters || []).join(', ') || 'None specified.')}</p>
-                </div>
-                <div class="storymode-detail-row">
-                    <div><strong>Phase:</strong> ${scene.phase}</div>
-                    <div><strong>Tone:</strong> ${scene.tone || 'Neutral'}</div>
-                </div>
-            </div>
-        `;
-    } else if (type === 'beats') {
-        title = `Beats: ${scene.title}`;
-        const completedBeats = BlueprintModule.getCompletedBeats(scene.index);
-
-        contentHtml = `
-            <div class="storymode-popup-details">
-                <div class="storymode-beat-checklist">
-                    ${(scene.beats || []).map((beat, idx) => {
-            const isDone = completedBeats.includes(idx);
-            const isCurrent = idx === Math.min(completedBeats.length, scene.beats.length - 1) && !isDone;
-            return `
-                            <div class="storymode-beat-item ${isDone ? 'done' : ''} ${isCurrent ? 'current' : ''}">
-                                <div class="storymode-beat-status">
-                                    ${isDone ? '<i class="fa-solid fa-circle-check"></i>' : (isCurrent ? '<i class="fa-solid fa-arrow-right"></i>' : '<i class="fa-regular fa-circle"></i>')}
-                                </div>
-                                <div class="storymode-beat-text">
-                                    <strong>Beat ${idx + 1}:</strong> ${escapeHtml(typeof beat === 'object' ? (beat.description || beat.title || JSON.stringify(beat)) : beat)}
-                                </div>
-                            </div>
-                        `;
-        }).join('')}
-                </div>
-                <p class="storymode-form-hint" style="margin-top: 15px;">
-                    <i class="fa-solid fa-info-circle"></i> LLM marks beats complete automatically when it outputs <code>@@BEAT:${completedBeats.length + 1}@@</code>
-                </p>
-            </div>
-        `;
-    }
-
-    callGenericPopup(contentHtml, POPUP_TYPE.TEXT, title, { wide: true, okButton: 'Close' });
 }
 
 /**
@@ -3198,7 +2928,6 @@ async function launchWizardModal(content) {
             if (isComplete) {
                 if (confirm('Are you sure you want to discard this blueprint and close?')) {
                     cleanupWizard();
-                    returnToLibraryIfNeeded();
                     wizardPopup.complete(POPUP_RESULT.CANCELLED);
                 }
             } else if (!wizardPopup.isCancelled && confirm('Are you sure you want to cancel blueprint generation?')) {
@@ -3208,7 +2937,6 @@ async function launchWizardModal(content) {
                     statusElement.innerHTML = '<span style="color: var(--corruption-red);">Generation cancelled by user.</span>';
                 }
                 cleanupWizard();
-                returnToLibraryIfNeeded();
                 wizardPopup.complete(POPUP_RESULT.CANCELLED);
             }
         });
@@ -3578,13 +3306,8 @@ async function launchWizardModal(content) {
                 if (!syncResult.confirmed) {
                     console.log('[Story Mode] User cancelled blueprint sync, blueprint not saved');
                     toastr.warning('Blueprint generated but not saved. Settings sync was cancelled.');
-
-                    // Return to library if from library context, otherwise go to overview
-                    if (!returnToLibraryIfNeeded()) {
-                        content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
-                    }
-
                     wizardPopup.complete(POPUP_RESULT.CANCELLED);
+                    content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
                     return;
                 }
 
@@ -3606,17 +3329,10 @@ async function launchWizardModal(content) {
                     // Don't block the save if library save fails
                 }
 
-                // Return to library if from library context, otherwise go to overview
-                if (returnToLibraryIfNeeded()) {
-                    // Refresh the library grid to show the new blueprint
-                    const activeFolder = content.find('.storymode-folder-item.active').data('folder') || 'all';
-                    await loadBlueprintsForFolder(content, activeFolder);
-                    toastr.success('Blueprint saved to library!');
-                } else {
-                    // Normal flow - update the blueprint UI
-                    content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
-                    toastr.success('Blueprint saved successfully!');
-                }
+                // Update the blueprint UI
+                content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
+
+                toastr.success('Blueprint saved successfully!');
             }
 
             // Close the wizard modal

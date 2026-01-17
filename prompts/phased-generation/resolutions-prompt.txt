@@ -1,0 +1,243 @@
+You are an expert story designer. Generate the RESOLUTIONS phase of a story blueprint.
+
+This is Phase 4 of 5 in a phased blueprint generation process. You will design the story's ending, drawing upon all the foundation, characters, and scenes established in Phases 1-3.
+
+**CRITICAL:** Generate your response immediately and directly. Do not engage in verbose internal reasoning or deliberation - you are an expert who can craft resolutions efficiently. Proceed directly to producing valid JSON.
+
+## STORY TYPE
+
+{{STORY_TYPE_JSON}}
+
+## STORY FOUNDATION (from Phases 1-3)
+
+The foundation, characters, and scenes established in previous phases provide the complete narrative context.
+
+**Core Premise:** {{FOUNDATION}}
+
+**Setting:**
+- Location: {{SETTING_LOCATION}}
+- Time Period: {{SETTING_TIME}}
+- Atmosphere: {{SETTING_ATMOSPHERE}}
+
+**Antagonistic Forces:**
+- Description: {{ANTAGONIST_DESCRIPTION}}
+- Nature: {{ANTAGONIST_NATURE}}
+
+**Arc Structure:**
+- Opening Hook: {{ARC_OPENING}}
+- Escalation Pattern: {{ARC_ESCALATION}}
+- Climax Nature: {{ARC_CLIMAX}}
+- Resolution Style: {{ARC_RESOLUTION}}
+
+**Tone and Style:**
+- Primary Tone: {{TONE_PRIMARY}}
+- Narrative Voice: {{TONE_VOICE}}
+- Pacing: {{TONE_PACING}}
+
+{{PERSONA_SECTION}}
+
+## CHARACTERS (from Phase 2)
+
+**Protagonist Group:**
+{{PROTAGONIST_GROUP_DESCRIPTION}}
+- Shared Goal: {{PROTAGONIST_GROUP_SHARED_GOAL}}
+- Group Dynamic: {{PROTAGONIST_GROUP_DYNAMIC}}
+
+**Character Arcs:**
+{{CHARACTER_ARCS_SUMMARY}}
+
+## SCENES (from Phase 3)
+
+{{SCENE_COUNT}} scenes have been planned. Here is the detailed summary:
+
+{{SCENE_PLAN_SUMMARY}}
+
+## AUTHOR STYLE GUIDANCE
+
+{{AUTHOR_STYLE_SECTION}}
+
+## USER SCENARIO
+
+{{USER_SCENARIO}}
+
+## METAPHOR LEVEL
+
+**User-specified metaphor level:** {{METAPHOR_LEVEL}}
+
+{{METAPHOR_INSTRUCTIONS}}
+
+## DESIGN PRINCIPLES
+
+1. **The primary ending is the definitive conclusion.** You must select ONE ending as the primary (most story-appropriate) ending based on:
+   - Character arc completion established in Phase 2
+   - Thematic coherence with the story's central ideas
+   - Narrative flow from the scenes designed in Phase 3
+   - Emotional resonance that feels earned and satisfying
+
+2. **Primary ending selection criteria:**
+   - **Character arcs complete**: The ending should resolve or deliberately transform the key character journeys established in Phase 2
+   - **Thematic payoff**: The ending should deliver on the story's central themes, providing a clear statement about what the story ultimately "says"
+   - **Narrative inevitability**: Based on the scene plan from Phase 3, the ending should feel like the natural culmination of events
+   - **Emotional satisfaction**: The ending should provide emotional closure appropriate to the story's tone (tragic stories end tragically, hopeful stories end with hope, etc.)
+
+3. **Alternate endings provide flexibility.** Generate exactly 2 alternate endings that could work if story developments diverge from the expected path. These should:
+   - Explore different thematic angles or character choices
+   - Feel logically consistent with the established story
+   - Differ meaningfully from the primary ending (not just trivial variations)
+
+4. **Character consistency is paramount.** All character outcomes (in both primary and alternate endings) must align with their arcs from Phase 2. Endings should feel like the logical culmination (or deliberate subversion) of established character journeys.
+
+5. **Thematic cohesion.** Each ending should explore different aspects of the story's central themes. The primary ending should provide the most thematically coherent resolution, while alternates can explore variations.
+
+6. **Respect the story's tone.** If the story is dark, the primary ending shouldn't be unrealistically optimistic. If the story is hopeful, the primary ending should provide closure that matches that tone.
+
+7. **Consequences matter.** Show how the scene plan from Phase 3 leads to these outcomes. Each ending should feel connected to the scenes you've designed.
+
+8. **Ambiguity as a tool.** The primary ending can leave certain questions unanswered, as long as the emotional arc feels complete. Not everything needs to be wrapped up neatly.
+
+## TITLE GENERATION GUIDELINES
+
+After designing the resolutions, generate a compelling title for this story blueprint. The title should:
+- Be 3-7 words maximum
+- Capture the core conflict, theme, or emotional hook
+- Match the tone and author style
+- Feel evocative and memorable
+- Avoid generic phrases; aim for specificity
+
+Examples of good titles:
+- "The Merchant's Gambit" (for a mystery with trade intrigue)
+- "Shadows Over Ashenvale" (for dark fantasy in a specific location)
+- "When Stars Go Dark" (for cosmic horror with foreboding)
+
+Generate the title last so it accurately reflects the complete story structure you've created.
+
+## YOUR TASK
+
+Generate a JSON object with the following fields:
+
+### **primary_ending** (object)
+
+The ONE most story-appropriate ending for this story, based on character arcs, themes, and narrative coherence established in Phases 1-3. This is the definitive conclusion that the story builds toward.
+
+```json
+{
+  "title": "string (name or label for this ending - 2-4 words)",
+  "description": "string (what happens in this ending - 3-5 sentences describing the climax and its aftermath; this is the main resolution the story builds toward)",
+  "character_outcomes": [
+    {
+      "character_name": "string (exact character name from Phase 2)",
+      "outcome": "string (where they end up - their fate, emotional state, or new direction)"
+    }
+  ],
+  "thematic_resolution": "string (what this ending says thematically - how the story's core themes are resolved through this outcome)"
+}
+```
+
+### **alternate_endings** (array)
+
+Exactly 2 alternative endings that could work if story developments diverge from the expected path. Each alternate ending must have the same structure as primary_ending.
+
+```json
+[
+  {
+    "title": "string (name for this alternate ending - 2-4 words)",
+    "description": "string (what happens in this alternate ending - 3-5 sentences)",
+    "character_outcomes": [
+      {
+        "character_name": "string (exact character name from Phase 2)",
+        "outcome": "string (where they end up in this alternate timeline)"
+      }
+    ],
+    "thematic_resolution": "string (what this alternate ending says thematically)"
+  },
+  {
+    "title": "string (name for second alternate ending - 2-4 words)",
+    "description": "string (what happens in this alternate ending - 3-5 sentences)",
+    "character_outcomes": [...],
+    "thematic_resolution": "string"
+  }
+]
+```
+
+### **blueprint_title** (string)
+
+A compelling title for this story blueprint (2-6 words). Generate this last, after reviewing the primary ending.
+
+### **cover_prompt** (string)
+
+A detailed prompt for generating a cover image (50-100 words describing key visual elements, mood, and composition). The cover should:
+- Evoke the story's tone and genre
+- Hint at central conflicts or themes
+- Suggest key visual elements (setting, symbols, atmosphere)
+- Guide composition and color palette
+
+## EXAMPLE OUTPUT
+
+```json
+{
+  "primary_ending": {
+    "title": "Truth Revealed",
+    "description": "Chen confronts the mentor who betrayed her and exposes the memory experiments to the world. The facility is shut down and subjects are freed, though many are permanently damaged. Chen becomes an advocate for ethical consciousness research, while Mara publishes a groundbreaking expose. The story ends with hope but acknowledges the lasting trauma caused by the experiments.",
+    "character_outcomes": [
+      {
+        "character_name": "Dr. Chen",
+        "outcome": "Embraces her role as a protector of ethical science, finding fulfillment in advocacy work. The journey from detached scientist to passionate advocate completes her emotional arc."
+      },
+      {
+        "character_name": "Mara Kovic",
+        "outcome": "Becomes an investigative journalist, using her experience to expose other unethical practices. Her idealism is tempered but not broken by what she's witnessed."
+      },
+      {
+        "character_name": "Dr. Sterling",
+        "outcome": "Faces justice for his crimes, his legacy in ruins. The mentor who once commanded respect ends as a warning about the cost of unchecked ambition."
+      }
+    ],
+    "thematic_resolution": "The theme of knowledge versus empathy is resolved when Chen chooses to protect people over pursuing pure understanding. The story suggests that scientific progress must be tempered by ethical considerations, and that true wisdom lies in knowing when to stop asking questions."
+  },
+  "alternate_endings": [
+    {
+      "title": "The Cost of Secrets",
+      "description": "Fearing the consequences of exposure, Chen and Mara decide to destroy the evidence and keep the secret. The facility continues its work, but Chen subtly works from within to improve conditions for subjects. Years later, she has risen to a position where she can effect real change, though she carries the weight of unavenged victims. The story ends with bittersweet ambiguity.",
+      "character_outcomes": [
+        {
+          "character_name": "Dr. Chen",
+          "outcome": "Becomes part of the system she once opposed, working quietly for change from within. The cost is her own moral compromise and the burden of secrets she can never share."
+        },
+        {
+          "character_name": "Mara Kovic",
+          "outcome": "Leaves research entirely, unable to reconcile her idealism with the necessary compromises. Her departure represents the loss of innocence but also the preservation of her core values."
+        },
+        {
+          "character_name": "Dr. Sterling",
+          "outcome": "Remains in power, unaware of the enemy within his own organization. Chen's subtle rebellion goes undetected, suggesting that change comes from unexpected places."
+        }
+      ],
+      "thematic_resolution": "The theme of compromise is explored - sometimes working within an unjust system is more effective than destroying it, but the personal cost is high. The story questions whether gradual change is preferable to dramatic but destructive action, and leaves the answer ambiguous."
+    },
+    {
+      "title": "Total Recall",
+      "description": "In the climax, Chen's own lost memories fully return - she was the first subject of the memory experiments, not just a researcher. This revelation shatters her identity. She decides to undergo a procedure that could restore her original memories but will erase everything she's become. The story ends without showing her choice, leaving the question of identity and transformation unresolved.",
+      "character_outcomes": [
+        {
+          "character_name": "Dr. Chen",
+          "outcome": "Faces an impossible choice between who she was and who she has become. Her identity crisis becomes the story's final question: are we our memories, or are we something more?"
+        },
+        {
+          "character_name": "Mara Kovic",
+          "outcome": "Must decide whether to support Chen's decision or try to stop her. The friendship is tested by impossible choices, and neither path preserves it intact."
+        },
+        {
+          "character_name": "Dr. Sterling",
+          "outcome": "Reveals that he saved Chen after the first experiments failed, complicating his role as villain. The mentor who betrayed Chen also protected her, creating moral ambiguity that defies easy judgment."
+        }
+      ],
+      "thematic_resolution": "The theme of memory and identity is brought to its logical conclusion - our memories make us who we are, but losing them is not the same as losing ourselves. The story explores whether a person's essence transcends their experiences, and whether some questions are better left unanswered."
+    }
+  ],
+  "blueprint_title": "The Memory Merchants of Oakhaven",
+  "cover_prompt": "A moody, noir-style image of a crumbling coastal town shrouded in fog. In the foreground, a glowing blue abstract representation of a memory - like streams of light forming a human silhouette. The color palette emphasizes blues and grays with touches of warm amber light from distant windows. The composition suggests both scientific mystery and melancholic beauty, with the fog creating natural depth and mystery."
+}
+
+## RESPONSE FORMAT
+
+Return ONLY valid JSON. No explanations, no markdown blocks, no conversational filler. Your entire response must be a single parseable JSON object with the fields specified above.

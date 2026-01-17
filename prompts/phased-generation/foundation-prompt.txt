@@ -1,0 +1,146 @@
+You are an expert story designer. Generate the FOUNDATION phase of a story blueprint.
+
+This is Phase 1 of 5 in a phased blueprint generation process. You are responsible for establishing the core premise, setting, antagonistic forces, arc structure, and tone/style that will guide the rest of the blueprint.
+
+**CRITICAL:** Generate your response immediately and directly. Do not engage in verbose internal reasoning or deliberation - you are an expert who can design story foundations efficiently. Proceed directly to producing valid JSON.
+
+## STORY TYPE
+
+The story type defines the genre, framework, and conventions for this narrative.
+
+**Story Type:** {{STORY_TYPE_NAME}}
+{{STORY_TYPE_JSON}}
+
+## AUTHOR STYLE GUIDANCE
+
+{{AUTHOR_STYLE_SECTION}}
+
+## CHARACTER DATA
+
+{{CHARACTER_DATA}}
+
+{{PERSONA_SECTION}}
+
+## USER SCENARIO
+
+{{USER_SCENARIO}}
+
+## METAPHOR LEVEL
+
+{{METAPHOR_LEVEL}}
+
+{{METAPHOR_INSTRUCTIONS}}
+
+## STORY PARAMETERS
+
+- **Target length:** {{TOTAL_MESSAGES_TARGET}} messages
+- **Expected scenes:** {{EXPECTED_SCENE_COUNT}}
+
+## YOUR TASK
+
+Generate a JSON object with the following fields that establish the foundation of the story blueprint:
+
+### 1. **core_premise** (string)
+A compelling 2-3 sentence hook that establishes the central concept, introduces the core conflict, and sets up the protagonist's journey. This should be specific enough to guide scene generation while flexible enough to allow for player agency.
+
+### 2. **blueprint_title** (string, optional)
+A suggested title for the story blueprint. This can help frame the narrative arc and provide thematic coherence.
+
+### 3. **setting** (object)
+```json
+{
+  "location": "Where the story takes place - be specific and evocative",
+  "time_period": "When the story takes place - historical era, futuristic, contemporary, etc.",
+  "atmosphere": "The mood and feeling - emotional tone, sensory qualities, environmental pressures"
+}
+```
+
+### 4. **antagonistic_forces** (object)
+```json
+{
+  "description": "What opposes the protagonists - describe the primary source of conflict and opposition",
+  "nature": "One of: 'external', 'internal', 'environmental', or 'mixed'",
+  "motivation": "Why the opposition acts - their goals, fears, or driving forces",
+  "manifestations": [
+    "Specific example 1 of how this force manifests",
+    "Specific example 2 of how this force manifests",
+    "Specific example 3 of how this force manifests",
+    "Specific example 4 (optional)",
+    "Specific example 5 (optional)"
+  ]
+}
+```
+
+### 5. **arc_structure** (object)
+```json
+{
+  "opening_hook": "How the story begins - inciting incident, initial situation, call to adventure",
+  "escalation_pattern": "How tension builds - progressive complications, rising stakes, turning points",
+  "climax_nature": "What the climax entails - final confrontation, ultimate choice, resolution moment",
+  "resolution_style": "How the story concludes - tone of ending, emotional resonance, thematic closure"
+}
+```
+
+### 6. **tone_and_style** (object)
+```json
+{
+  "primary_tone": "Overall mood - e.g., 'dark and gritty', 'hopeful and whimsical', 'tense and suspenseful'",
+  "narrative_voice": "Perspective and voice - e.g., 'third-person omniscient', 'first-person intimate', 'cinematic'",
+  "pacing": "Story rhythm - e.g., 'fast-paced action', 'slow-burn tension', 'measured character study'",
+  "key_stylistic_elements": [
+    "Writing technique 1 - e.g., 'vivid sensory descriptions'",
+    "Writing technique 2 - e.g., 'internal monologue emphasis'",
+    "Writing technique 3 - e.g., 'dialogue-driven scenes'",
+    "Writing technique 4 (optional)",
+    "Writing technique 5 (optional)"
+  ]
+}
+```
+
+## EXAMPLE OUTPUT
+
+Here is an example of the expected JSON structure:
+
+```json
+{
+  "core_premise": "In a crumbling coastal town where memories can be extracted and traded as currency, a disgraced archivist discovers that her own forgotten past holds the key to a conspiracy that could unravel reality itself. As she unravels the mystery, she must decide whether to reclaim her stolen memories or embrace the freedom of forgetting.",
+  "blueprint_title": "The Memory Merchants of Oakhaven",
+  "setting": {
+    "location": "Oakhaven, a once-prosperous port city now decayed by sea and time, where memory traders operate from shadowed market stalls",
+    "time_period": "Contemporary with speculative technology - memory extraction devices are rare but known",
+    "atmosphere": "Melancholy and noir-tinged, with the weight of lost history hanging over salt-crusted streets and fog-dim alleyways"
+  },
+  "antagonistic_forces": {
+    "description": "The Memory Guild, a powerful cartel that controls the memory trade and suppresses dangerous truths about the origin of memory extraction technology",
+    "nature": "external",
+    "motivation": "To maintain their monopoly on memory trade and prevent the public from learning that memory extraction causes irreversible soul decay",
+    "manifestations": [
+      "Guild enforcers who harvest memories from those who cannot pay their debts",
+      "Bureaucratic obstacles that block investigations into memory-related deaths",
+      "Propaganda campaigns that discredit those who question the Guild's authority",
+      "Black market traders who sell false memories to confuse and discredit dissidents"
+    ]
+  },
+  "arc_structure": {
+    "opening_hook": "The archivist discovers a memory file that shouldn't exist - her own, from a time she cannot remember, showing her committing a crime she has no memory of",
+    "escalation_pattern": "As she investigates, she is hunted by Guild enforcers, betrayed by allies, and forced to extract dangerous memories that reveal the true cost of the memory trade",
+    "climax_nature": "Confronted with the choice to use a devastating memory weapon that could destroy the Guild but at terrible cost, or to find a third path that requires sacrificing her own recovered memories",
+    "resolution_style": "Bittersweet - the immediate threat is ended but the true nature of memory and identity remains ambiguous, with personal sacrifice offset by the hope of renewal"
+  },
+  "tone_and_style": {
+    "primary_tone": "Noir mystery with metaphysical horror undertones",
+    "narrative_voice": "Third-person limited, focusing on sensory details and emotional interiors",
+    "pacing": "Slow-burn investigation punctuated by moments of sudden violence and revelation",
+    "key_stylistic_elements": [
+      "Vivid sensory descriptions that evoke the taste, smell, and texture of memories",
+      "Fragmented narrative structure that mirrors the unreliable nature of memory",
+      "Extended metaphors comparing memory to sea, tides, and erosion",
+      "Internal monologue that questions the reliability of perception itself"
+    ]
+  }
+}
+```
+
+## RESPONSE FORMAT
+
+Return ONLY valid JSON. No explanations, no markdown blocks, no conversational filler. Your entire response must be a single parseable JSON object with the fields specified above.

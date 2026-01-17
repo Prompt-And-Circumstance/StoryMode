@@ -1,0 +1,173 @@
+You are an expert story designer. Generate the SCENES phase of a story blueprint.
+
+This is Phase 3 of 5 in a phased blueprint generation process. You will design a complete scene plan that builds upon the foundation and characters established in Phases 1-2.
+
+**CRITICAL:** Generate your response immediately and directly. Do not engage in verbose internal reasoning or deliberation - you are an expert who can design scenes efficiently. Proceed directly to producing valid JSON.
+
+## STORY TYPE
+
+{{STORY_TYPE_JSON}}
+
+## STORY FOUNDATION (from Phases 1-2)
+
+**Core Premise:** {{FOUNDATION}}
+
+**Setting:** {{SETTING_LOCATION}} | {{SETTING_TIME}} | {{SETTING_ATMOSPHERE}}
+
+**Antagonistic Forces:** {{ANTAGONIST_DESCRIPTION}} ({{ANTAGONIST_NATURE}})
+
+**Arc Structure:** {{ARC_OPENING}} → {{ARC_ESCALATION}} → {{ARC_CLIMAX}} → {{ARC_RESOLUTION}}
+
+**Tone:** {{TONE_PRIMARY}} | {{TONE_VOICE}} | {{TONE_PACING}}
+**Stylistic Elements:** {{TONE_STYLISTIC_ELEMENTS}}
+
+{{PERSONA_SECTION}}
+
+## CHARACTERS (from Phase 2)
+
+**Protagonists:** {{PROTAGONIST_GROUP_DESCRIPTION}} (Goal: {{PROTAGONIST_GROUP_SHARED_GOAL}})
+
+**Character Arcs:** {{CHARACTER_ARCS_SUMMARY}}
+
+## AUTHOR STYLE GUIDANCE
+
+{{AUTHOR_STYLE_SECTION}}
+
+## USER SCENARIO
+
+{{USER_SCENARIO}}
+
+## METAPHOR LEVEL
+
+**Level:** {{METAPHOR_LEVEL}} — {{METAPHOR_INSTRUCTIONS}}
+
+## STORY PARAMETERS
+
+- **Target Length:** {{TOTAL_MESSAGES_TARGET}} messages
+- **Expected Scenes:** {{EXPECTED_SCENE_COUNT}}
+- **Scene Distribution:** Setup (~25%) → Escalation (~50%) → Climax (~15%) → Resolution (~10%)
+
+## SCENE STRUCTURE
+
+Each scene needs:
+- **situation**: 1–2 sentences describing what the protagonists face
+- **key_events_if_unchallenged**: 3–5 core events that advance the scene (player choices override/expand these)
+- **choice_points**: 0–2 per scene (story-altering decisions only; include example player intents and narrative consequences)
+- **beats**: 3–7 beats that mark progression through the scene (see beat types below)
+
+Beat types: **establishment** (set scene/mood) | **hook** (create interest) | **reaction** (character response) | **escalation** (raise stakes) | **pivot** (change direction) | **emotional** (emotional moment) | **transition** (bridge to next scene)
+
+Each beat requires: index, title, description, type, and required (true/false).
+
+Optional: character_focus (which characters experience emotional beats), hooks_for_future (threads connecting to later scenes), expected_rounds (how many rounds this scene spans).
+
+**CRITICAL:** Ensure that the characters' **Key Turning Points** (listed in the CHARACTERS section) are represented in the scene plan. Assign specific scenes to trigger these pivotal moments.
+
+## YOUR TASK
+
+Generate a JSON object with **scene_plan** (array of {{EXPECTED_SCENE_COUNT}} scene objects). Each scene must follow this structure:
+
+```json
+{
+  "index": 0,
+  "title": "memorable scene title",
+  "phase": "setup|escalation|climax|resolution",
+  "purpose": "what this scene accomplishes for plot/character/theme",
+  "situation": "1–2 sentences describing the scene",
+  "key_events_if_unchallenged": ["event 1", "event 2", "event 3"],
+  "choice_points": [
+    {
+      "id": "scene_choice_id",
+      "description": "what decision do players make?",
+      "example_player_intents": ["intent 1", "intent 2"],
+      "consequences": {
+        "direction_if_choice_1": "outcome",
+        "direction_if_choice_2": "outcome"
+      }
+    }
+  ],
+  "beats": [
+    {
+      "index": 0,
+      "title": "beat title",
+      "description": "what happens—specific action or revelation",
+      "type": "establishment|hook|reaction|escalation|pivot|emotional|transition",
+      "required": true
+    }
+  ]
+}
+```
+
+## QUICK EXAMPLE
+
+One setup scene to show structure (your output should have {{EXPECTED_SCENE_COUNT}} scenes):
+
+```json
+{
+  "scene_plan": [
+    {
+      "index": 0,
+      "title": "The Discovery",
+      "phase": "setup",
+      "purpose": "Introduce the central conflict and hook the protagonists",
+      "situation": "The protagonists stumble upon something that shouldn't exist, sparking questions and concern.",
+      "key_events_if_unchallenged": [
+        "Discovery of an anomaly or object",
+        "Initial confusion or disbelief",
+        "Realization that this matters",
+        "Decision to investigate further"
+      ],
+      "choice_points": [
+        {
+          "id": "scene0_approach",
+          "description": "How do the protagonists respond to the discovery?",
+          "example_player_intents": [
+            "Investigate immediately",
+            "Tell someone in authority",
+            "Keep it secret and gather information first"
+          ],
+          "consequences": {
+            "direction_if_choice_1": "Gain advantage but risk exposure",
+            "direction_if_choice_2": "Get assistance but lose control",
+            "direction_if_choice_3": "Maintain secrecy but isolate themselves"
+          }
+        }
+      ],
+      "beats": [
+        {
+          "index": 0,
+          "title": "Normal Routine",
+          "description": "Protagonists going about their business in the story world",
+          "type": "establishment",
+          "required": true
+        },
+        {
+          "index": 1,
+          "title": "Something's Off",
+          "description": "First hint that something is amiss—sensory detail or inconsistency",
+          "type": "hook",
+          "required": true
+        },
+        {
+          "index": 2,
+          "title": "Full Realization",
+          "description": "The anomaly becomes undeniable and demands attention",
+          "type": "escalation",
+          "required": true
+        },
+        {
+          "index": 3,
+          "title": "First Decision",
+          "description": "Protagonists commit to a course of action",
+          "type": "transition",
+          "required": true
+        }
+      ]
+    }
+  ]
+}
+```
+
+## RESPONSE FORMAT
+
+Return ONLY valid JSON. No explanations, markdown blocks, or filler. Your entire response must be a single parseable JSON object with the scene_plan field.

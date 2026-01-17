@@ -48,7 +48,6 @@ import {
     encodeBlueprintAsPNG,
     decodeBlueprintFromPNG,
     isBlueprintPNG,
-    saveCurrentBlueprintToLibrary,
 } from './lib/blueprint-integration.js';
 
 // Import Loading Indicator module
@@ -117,7 +116,6 @@ import {
     buildBlueprintSettingsSubtab,
     buildPostArcOptionsSubtab,
     buildAPIOptionsSubtab,
-    buildGenreStyleTabContent,
     buildSettingsTabContent,
     buildGenerateBlueprintSubtab,
     buildBlueprintTabContent,
@@ -125,11 +123,9 @@ import {
     renderBlueprintScenesSubtab,
     renderBlueprintCharactersSubtab,
     renderBlueprintJsonSubtab,
+    buildSummaryTabContent,
     buildLibraryTabContent,
-    showLibraryGenerateView,
-    showLibraryGridView,
     renderBlueprintCard,
-    renderDebugPanel,
 } from './lib/ui-components.js';
 
 // Import Type Editors module
@@ -155,7 +151,6 @@ import {
 // Import Event Handlers module
 import {
     onMessageReceived,
-    onUserMessageRendered,
     handleUserMessageStep,
     handleAIMessageChecks,
     handleArcCompletion,
@@ -219,32 +214,32 @@ async function showSettingsDialog() {
 <div class="storymode-content-area">
 <!-- Tab Navigation -->
 <div class="storymode-tabs">
-<button class="storymode-tab active" data-tab="genre-style" title="Configure story arc and writing style">
-<i class="fa-solid fa-book-open"></i> Genre & Style
+<button class="storymode-tab active" data-tab="settings" title="Configure story arc, author style, and blueprint settings">
+<i class="fa-solid fa-gear"></i> Settings
 </button>
-<button class="storymode-tab" data-tab="library" title="Browse and manage your blueprint collection">
-<i class="fa-solid fa-folder-open"></i> Library
-</button>
-<button class="storymode-tab" data-tab="blueprint" title="View and manage the current story blueprint">
+<button class="storymode-tab" data-tab="blueprint" title="Generate and manage story blueprints">
 <i class="fa-solid fa-scroll"></i> Blueprint
 </button>
-<button class="storymode-tab" data-tab="settings" title="Configure extension settings and API options">
-<i class="fa-solid fa-gear"></i> Settings
+<button class="storymode-tab" data-tab="summary" title="View story arc summaries">
+<i class="fa-solid fa-file-lines"></i> Summary
+</button>
+<button class="storymode-tab" data-tab="library" title="Save and manage your blueprint collection">
+<i class="fa-solid fa-folder-open"></i> Library
 </button>
 </div>
 <!-- Tab Content -->
 <div class="storymode-tab-content">
-<div id="tab_genre-style" class="storymode-tab-pane active">
-${buildGenreStyleTabContent()}
-</div>
-<div id="tab_library" class="storymode-tab-pane">
-${buildLibraryTabContent()}
+<div id="tab_settings" class="storymode-tab-pane active">
+${buildSettingsTabContent()}
 </div>
 <div id="tab_blueprint" class="storymode-tab-pane">
 ${buildBlueprintTabContent()}
 </div>
-<div id="tab_settings" class="storymode-tab-pane">
-${buildSettingsTabContent()}
+<div id="tab_summary" class="storymode-tab-pane">
+${buildSummaryTabContent()}
+</div>
+<div id="tab_library" class="storymode-tab-pane">
+${buildLibraryTabContent()}
 </div>
 </div>
 </div>
@@ -252,52 +247,26 @@ ${buildSettingsTabContent()}
 `;
     const content = $(html);
 
-    /**
-     * Return to library grid view if generation was initiated from library context.
-     * Clears the context flag and switches views.
-     * @returns {boolean} True if returned to library, false if not from library context
-     */
-    function returnToLibraryIfNeeded() {
-        const wasFromLibrary = content.data('generateFromLibrary');
-        if (wasFromLibrary) {
-            content.removeData('generateFromLibrary');
-            showLibraryGridView(content);
-            return true;
-        }
-        return false;
-    }
-
     // Tab switching - attached to content BEFORE showing popup
-    const $tabs = content.find('.storymode-tab');
-    const $tabPanes = content.find('.storymode-tab-pane');
-    $tabs.on('click', function () {
+    content.find('.storymode-tab').on('click', function () {
         const tabName = $(this).data('tab');
         console.log('[Story Mode] Tab clicked:', tabName);
 
-        // Clear library generation context when switching away from Library tab
-        if (tabName !== 'library') {
-            content.removeData('generateFromLibrary');
-            // Also reset to grid view if generate view was showing
-            if (content.find('#library_generate_view').is(':visible')) {
-                showLibraryGridView(content);
-            }
-        }
-
         // Update tab buttons
-        $tabs.removeClass('active');
+        content.find('.storymode-tab').removeClass('active');
         $(this).addClass('active');
 
         // Update tab panes - use class manipulation only (CSS handles display)
-        $tabPanes.removeClass('active');
+        content.find('.storymode-tab-pane').removeClass('active');
         content.find(`#tab_${tabName}`).addClass('active');
 
         console.log('[Story Mode] Tab pane classes after switch:');
-        $tabPanes.each(function () {
+        content.find('.storymode-tab-pane').each(function () {
             console.log('[Story Mode]', $(this).attr('id'), 'has active:', $(this).hasClass('active'));
         });
     });
 
-    // Subtab switching (handles both Genre & Style and Settings tab subtabs)
+    // Settings subtab switching
     content.on('click', '.storymode-settings-subtab', function () {
         const subtabName = $(this).data('subtab');
         // Update subtab buttons
@@ -543,12 +512,6 @@ function setupUnifiedDialogEventListeners(content) {
         saveSettingsDebounced();
         updateStoryPrompt();
     });
-    // Debug panel toggle
-    content.find('#debug_panel_enabled').on('change', function () {
-        extension_settings[MODULE_NAME].debugPanelEnabled = $(this).is(':checked');
-        saveSettingsDebounced();
-        updateStatusDisplay();
-    });
     // Injection settings
     content.find('#injection_position').on('change', function () {
         extension_settings[MODULE_NAME].position = parseInt($(this).val());
@@ -760,9 +723,8 @@ function setupUnifiedDialogEventListeners(content) {
         const btn = $(this);
         const originalText = btn.html();
 
-        // Check if wizard mode is enabled (default true, unless "Legacy Mode" checked)
-        const wizardDisabled = content.find('#storymode_wizard_disabled').is(':checked');
-        const wizardEnabled = !wizardDisabled;
+        // Check if wizard mode is enabled
+        const wizardEnabled = content.find('#storymode_wizard_enabled').is(':checked');
 
         // If wizard mode is enabled, launch the wizard modal
         if (wizardEnabled) {
@@ -1032,9 +994,8 @@ function setupUnifiedDialogEventListeners(content) {
         input.click();
     });
     // Wizard mode toggle change handler - save setting
-    content.on('change', '#storymode_wizard_disabled', function () {
-        const wizardDisabled = $(this).is(':checked');
-        const wizardEnabled = !wizardDisabled;
+    content.on('change', '#storymode_wizard_enabled', function () {
+        const wizardEnabled = $(this).is(':checked');
         console.log('[Story Mode] Wizard mode toggled:', wizardEnabled);
 
         // Save to extension settings
@@ -1062,20 +1023,8 @@ function setupUnifiedDialogEventListeners(content) {
             if (statusElement) {
                 statusElement.innerHTML = '<span style="color: var(--corruption-red);">Generation cancelled from settings panel.</span>';
             }
-
-            // Set cancellation flag so the async generation loop stops
-            wizardPopup.isCancelled = true;
-
             // Close the wizard popup
             wizardPopup.complete(POPUP_RESULT.CANCELLED);
-
-            // Explicitly restore button states in the settings panel immediately
-            content.find('#blueprint_cancel_generation_btn').hide();
-            content.find('#blueprint_generate_btn').show();
-
-            // Return to library grid if we were generating from there
-            returnToLibraryIfNeeded();
-
             // Clear the global reference
             window.storyModeWizardPopup = null;
             toastr.info('Blueprint generation cancelled');
@@ -1359,19 +1308,35 @@ function setupUnifiedDialogEventListeners(content) {
         }
     }, 300));
 
-    // Generate Blueprint button in Library - show form in-place
-    content.on('click', '#library_generate_blueprint_btn, #library_empty_generate_btn', function () {
-        // Set flag indicating we're generating from library context
-        // This is checked after wizard completion to know where to return
-        content.data('generateFromLibrary', true);
-        showLibraryGenerateView(content);
-    });
+    // Save current blueprint to library
+    content.on('click', '#library_save_current_btn, #library_empty_save_btn', async function () {
+        const blueprintState = BlueprintModule.getBlueprintState();
+        if (!blueprintState.blueprint) {
+            toastr.error('No blueprint to save. Generate one first in the Blueprint tab.');
+            return;
+        }
 
-    // Back to Library button - return to grid view
-    content.on('click', '#library_back_to_grid_btn', function () {
-        // Clear the library generation flag when user manually returns
-        content.removeData('generateFromLibrary');
-        showLibraryGridView(content);
+        const btn = $(this);
+        btn.prop('disabled', true);
+
+        try {
+            // Add user metadata if not present
+            if (!blueprintState.blueprint.userMetadata) {
+                blueprintState.blueprint.userMetadata = {};
+            }
+            if (!blueprintState.blueprint.userMetadata.title) {
+                blueprintState.blueprint.userMetadata.title = blueprintState.blueprint.core_premise?.substring(0, 50) || 'Untitled Blueprint';
+            }
+
+            await createBlueprint(blueprintState.blueprint, { saveToLibrary: true });
+            toastr.success('Blueprint saved to library!');
+            await refreshLibraryView(content);
+        } catch (error) {
+            console.error('[Story Mode] Error saving blueprint to library:', error);
+            toastr.error('Failed to save blueprint: ' + error.message);
+        } finally {
+            btn.prop('disabled', false);
+        }
     });
 
     // Blueprint card actions
@@ -1379,7 +1344,7 @@ function setupUnifiedDialogEventListeners(content) {
         e.stopPropagation();
         const action = $(this).data('action');
         const card = $(this).closest('.storymode-blueprint-card');
-        const blueprintId = card.data('blueprintId');
+        const blueprintId = card.data('blueprint-id');
 
         switch (action) {
             case 'load':
@@ -1403,25 +1368,15 @@ function setupUnifiedDialogEventListeners(content) {
         }
     });
 
-    // Library card click (load blueprint as current and auto-switch to Blueprint tab)
-    content.on('click', '.storymode-blueprint-card', async function (e) {
-        const $target = $(e.target);
-        // Ignore if clicking on action buttons or favorite icon
-        if ($target.closest('[data-action], .storymode-card-favorite').length > 0) {
+    // Blueprint cover image click - opens editor
+    content.on('click', '.storymode-blueprint-card .storymode-card-cover', async function (e) {
+        // Don't trigger if clicking the favorite button
+        if ($(e.target).closest('.storymode-card-favorite').length > 0) {
             return;
         }
-
-        const blueprintId = $(this).data('blueprintId');
-        if (!blueprintId) return;
-
-        // Load blueprint (replaces current blueprint)
-        await loadBlueprintFromLibrary(content, blueprintId);
-
-        // Auto-switch to Blueprint tab to show loaded blueprint
-        $tabs.removeClass('active');
-        $tabs.filter('[data-tab="blueprint"]').addClass('active');
-        $tabPanes.removeClass('active');
-        $tabPanes.filter('#tab_blueprint').addClass('active');
+        const card = $(this).closest('.storymode-blueprint-card');
+        const blueprintId = card.data('blueprint-id');
+        await editBlueprintFromLibrary(content, blueprintId);
     });
 
     // View toggle (grid/list)
@@ -1884,18 +1839,7 @@ function setupEventListeners() {
                     const blueprintState = BlueprintModule.getBlueprintState();
                     if (blueprintState.blueprint) {
                         // Refresh the blueprint tab to show the updated opening message
-                        const chatState = getChatStoryState();
-                        const blueprint = blueprintState.blueprint;
-                        const currentScene = BlueprintModule.getCurrentScene(
-                            blueprint,
-                            chatState.currentStep,
-                            chatState.arcLength,
-                            blueprintState.sceneMode,
-                            blueprintState.currentSceneIndex
-                        );
-                        $('#blueprint_subtab_content').html(renderBlueprintOverviewSubtab(blueprint, currentScene));
-                        // Also refresh the main panel preview if visible
-                        refreshBlueprintPreview();
+                        $(document).trigger('story_mode_blueprint_updated');
                     }
                 }
             } else {
@@ -2313,243 +2257,6 @@ function updateStatusDisplay() {
             badge.text(`Step ${chatState.currentStep}/${chatState.arcLength} | ${phaseInfo.phase}`);
         }
     }
-
-    // Update Floating Debug Panel
-    updateFloatingDebugPanel();
-}
-
-/**
- * Render or update the floating debug panel based on current settings and state.
- */
-function updateFloatingDebugPanel() {
-    const settings = extension_settings[MODULE_NAME];
-    const panelHtml = renderDebugPanel();
-    let panel = $('#storymode-debug-panel');
-
-    if (!settings.debugPanelEnabled) {
-        panel.remove();
-        return;
-    }
-
-    if (panelHtml) {
-        if (panel.length > 0) {
-            // Update existing panel content
-            const newContent = $(panelHtml).find('.storymode-debug-content').html();
-            panel.find('.storymode-debug-content').html(newContent);
-
-            // Re-apply rolled up state if needed
-            if (settings.debugPanelRolledUp) {
-                panel.addClass('sm-rolled-up');
-            } else {
-                panel.removeClass('sm-rolled-up');
-            }
-        } else {
-            // Create new panel
-            panel = $(panelHtml);
-            $('body').append(panel);
-
-            // Apply initial rolled up state
-            if (settings.debugPanelRolledUp) {
-                panel.addClass('sm-rolled-up');
-            }
-
-            // Add double-click handler for roll-up
-            panel.find('.storymode-debug-header').on('dblclick', function () {
-                const isRolledUp = panel.hasClass('sm-rolled-up');
-                if (isRolledUp) {
-                    panel.removeClass('sm-rolled-up');
-                    extension_settings[MODULE_NAME].debugPanelRolledUp = false;
-                } else {
-                    panel.addClass('sm-rolled-up');
-                    extension_settings[MODULE_NAME].debugPanelRolledUp = true;
-                }
-                saveSettingsDebounced();
-            });
-
-            // Add click handlers for detail popups
-            panel.on('click', '#storymode-debug-scene-link', () => showDebugDetailPopup('scene'));
-            panel.on('click', '#storymode-debug-beats-link', () => showDebugDetailPopup('beats'));
-
-            // Restore saved position if available
-            if (settings.debugPanelPosition) {
-                panel.css({
-                    top: settings.debugPanelPosition.top,
-                    bottom: 'auto',
-                    left: settings.debugPanelPosition.left,
-                    right: 'auto'
-                });
-            }
-
-            // Add close button handler
-            panel.find('#storymode-debug-close').on('click', () => {
-                extension_settings[MODULE_NAME].debugPanelEnabled = false;
-                saveSettingsDebounced();
-                panel.remove();
-                // Sync settings dialog if open
-                $('#debug_panel_enabled').prop('checked', false);
-            });
-
-            // Add drag functionality
-            let isDragging = false;
-            let dragStartX = 0;
-            let dragStartY = 0;
-            let panelStartX = 0;
-            let panelStartY = 0;
-
-            const header = panel.find('.storymode-debug-header');
-
-            header.on('mousedown', function (e) {
-                // Only start drag on left click and not on close button
-                if (e.button !== 0 || $(e.target).closest('#storymode-debug-close').length) {
-                    return;
-                }
-
-                isDragging = true;
-                dragStartX = e.clientX;
-                dragStartY = e.clientY;
-
-                const rect = panel[0].getBoundingClientRect();
-                panelStartX = rect.left;
-                panelStartY = rect.top;
-
-                panel.addClass('dragging');
-                e.preventDefault();
-            });
-
-            $(document).on('mousemove.debugPanelDrag', function (e) {
-                if (!isDragging) return;
-
-                const deltaX = e.clientX - dragStartX;
-                const deltaY = e.clientY - dragStartY;
-
-                let newLeft = panelStartX + deltaX;
-                let newTop = panelStartY + deltaY;
-
-                // Constrain to viewport
-                const panelWidth = panel.outerWidth();
-                const panelHeight = panel.outerHeight();
-                const viewportWidth = window.innerWidth;
-                const viewportHeight = window.innerHeight;
-
-                newLeft = Math.max(0, Math.min(newLeft, viewportWidth - panelWidth));
-                newTop = Math.max(0, Math.min(newTop, viewportHeight - panelHeight));
-
-                panel.css({
-                    left: newLeft + 'px',
-                    top: newTop + 'px',
-                    right: 'auto',
-                    bottom: 'auto'
-                });
-            });
-
-            $(document).on('mouseup.debugPanelDrag', function () {
-                if (!isDragging) return;
-
-                isDragging = false;
-                panel.removeClass('dragging');
-
-                // Save position
-                const rect = panel[0].getBoundingClientRect();
-                extension_settings[MODULE_NAME].debugPanelPosition = {
-                    left: rect.left + 'px',
-                    top: rect.top + 'px'
-                };
-                saveSettingsDebounced();
-            });
-        }
-    } else {
-        panel.remove();
-    }
-}
-
-/**
- * Show a detailed popup for the debug panel (scene or beats)
- * @param {'scene'|'beats'} type - The type of popup to show
- */
-function showDebugDetailPopup(type) {
-    const chatState = getChatStoryState();
-    const blueprintState = BlueprintModule.getBlueprintState();
-
-    if (!blueprintState?.blueprint) {
-        toastr.info('No active blueprint to show details for.');
-        return;
-    }
-
-    const blueprint = blueprintState.blueprint;
-    const scene = BlueprintModule.getCurrentScene(
-        blueprint,
-        chatState.currentStep,
-        chatState.arcLength,
-        blueprintState.sceneMode || 'auto',
-        blueprintState.currentSceneIndex || 0
-    );
-
-    if (!scene) {
-        toastr.info('Current scene not found.');
-        return;
-    }
-
-    let title = '';
-    let contentHtml = '';
-
-    if (type === 'scene') {
-        title = `Scene ${scene.index + 1}: ${scene.title}`;
-        contentHtml = `
-            <div class="storymode-popup-details">
-                <div class="storymode-detail-section">
-                    <h4><i class="fa-solid fa-scroll"></i> Plot Summary</h4>
-                    <p>${escapeHtml(scene.plot_summary || 'No summary available.')}</p>
-                </div>
-                <div class="storymode-detail-section">
-                    <h4><i class="fa-solid fa-bullseye"></i> Scene Purpose</h4>
-                    <p>${escapeHtml(scene.purpose || 'No purpose defined.')}</p>
-                </div>
-                <div class="storymode-detail-section">
-                    <h4><i class="fa-solid fa-bolt"></i> Key Events</h4>
-                    <ul>
-                        ${(scene.key_events_if_unchallenged || []).map(e => `<li>${escapeHtml(e)}</li>`).join('')}
-                    </ul>
-                </div>
-                <div class="storymode-detail-section">
-                    <h4><i class="fa-solid fa-users"></i> Characters</h4>
-                    <p>${escapeHtml((scene.characters || []).join(', ') || 'None specified.')}</p>
-                </div>
-                <div class="storymode-detail-row">
-                    <div><strong>Phase:</strong> ${scene.phase}</div>
-                    <div><strong>Tone:</strong> ${scene.tone || 'Neutral'}</div>
-                </div>
-            </div>
-        `;
-    } else if (type === 'beats') {
-        title = `Beats: ${scene.title}`;
-        const completedBeats = BlueprintModule.getCompletedBeats(scene.index);
-
-        contentHtml = `
-            <div class="storymode-popup-details">
-                <div class="storymode-beat-checklist">
-                    ${(scene.beats || []).map((beat, idx) => {
-            const isDone = completedBeats.includes(idx);
-            const isCurrent = idx === Math.min(completedBeats.length, scene.beats.length - 1) && !isDone;
-            return `
-                            <div class="storymode-beat-item ${isDone ? 'done' : ''} ${isCurrent ? 'current' : ''}">
-                                <div class="storymode-beat-status">
-                                    ${isDone ? '<i class="fa-solid fa-circle-check"></i>' : (isCurrent ? '<i class="fa-solid fa-arrow-right"></i>' : '<i class="fa-regular fa-circle"></i>')}
-                                </div>
-                                <div class="storymode-beat-text">
-                                    <strong>Beat ${idx + 1}:</strong> ${escapeHtml(typeof beat === 'object' ? (beat.description || beat.title || JSON.stringify(beat)) : beat)}
-                                </div>
-                            </div>
-                        `;
-        }).join('')}
-                </div>
-                <p class="storymode-form-hint" style="margin-top: 15px;">
-                    <i class="fa-solid fa-info-circle"></i> LLM marks beats complete automatically when it outputs <code>@@BEAT:${completedBeats.length + 1}@@</code>
-                </p>
-            </div>
-        `;
-    }
-
-    callGenericPopup(contentHtml, POPUP_TYPE.TEXT, title, { wide: true, okButton: 'Close' });
 }
 
 /**
@@ -2875,7 +2582,6 @@ jQuery(async function () {
     }
 
     eventSource.on(event_types.MESSAGE_RECEIVED, onMessageReceived);
-    eventSource.on(event_types.USER_MESSAGE_RENDERED, onUserMessageRendered);
     eventSource.on(event_types.CHAT_CHANGED, onChatChanged);
 
     // ============================================================================
@@ -2908,15 +2614,22 @@ jQuery(async function () {
 // ============================================================================
 
 /**
- * Gather form data for blueprint generation
+ * Launch the wizard modal for phased blueprint generation
+ * This creates a dedicated modal window for the wizard UI instead of embedding it in the settings dialog
  * @param {jQuery} content - The settings dialog content element
- * @returns {Object} Config object for generation
  */
-function getWizardFormData(content) {
+async function launchWizardModal(content) {
+    // Show cancel button, hide generate button
+    content.find('#blueprint_generate_btn').hide();
+    content.find('#blueprint_cancel_generation_btn').show();
+
+    // Gather form data from the blueprint generation form
     const selectedCharacterIds = [];
     content.find('input[name="blueprint_character"]:checked').each(function () {
         const charId = $(this).val();
-        if (charId) selectedCharacterIds.push(charId);
+        if (charId) {
+            selectedCharacterIds.push(charId);
+        }
     });
 
     const selectedPersonas = [];
@@ -2943,20 +2656,6 @@ function getWizardFormData(content) {
     // Build character data from context
     const context = getContext();
     const characterData = [];
-
-    // Helper to add char if valid
-    const addCharIfSelected = (char) => {
-        if (char) {
-            characterData.push({
-                name: char.name,
-                description: char.description,
-                personality: char.personality,
-                scenario: char.scenario,
-                greeting: char.greeting
-            });
-        }
-    };
-
     if (context.groupId) {
         const group = context.groups?.find(g => g.id === context.groupId);
         if (group && group.members) {
@@ -2967,17 +2666,36 @@ function getWizardFormData(content) {
                     (typeof c === 'string' && c === memberFilename)
                 );
                 if (charIndex !== -1 && selectedCharacterIds.includes(charIndex.toString())) {
-                    addCharIfSelected(context.characters[charIndex]);
+                    const char = context.characters[charIndex];
+                    if (char) {
+                        characterData.push({
+                            name: char.name,
+                            description: char.description,
+                            personality: char.personality,
+                            scenario: char.scenario,
+                            greeting: char.greeting
+                        });
+                    }
                 }
             });
         }
     } else {
         if (selectedCharacterIds.includes(context.characterId?.toString())) {
-            addCharIfSelected(context.characters?.[parseInt(context.characterId, 10)]);
+            const char = context.characters?.[parseInt(context.characterId, 10)];
+            if (char) {
+                characterData.push({
+                    name: char.name,
+                    description: char.description,
+                    personality: char.personality,
+                    scenario: char.scenario,
+                    greeting: char.greeting
+                });
+            }
         }
     }
 
-    return {
+    // Build request config object
+    const config = {
         storyTypeId,
         authorStyleId: authorStyleId || undefined,
         characterData,
@@ -2987,14 +2705,9 @@ function getWizardFormData(content) {
         metaphorLevel: metaphorLevel,
         customMasterPrompt: customMasterPrompt
     };
-}
 
-/**
- * Create the HTML structure for the wizard modal
- * @returns {string} HTML string
- */
-function createWizardModalHtml() {
-    return `
+    // Create wizard modal content as HTML string
+    const wizardHtml = `
         <div class="storymode-wizard-modal">
             <div class="storymode-wizard-header" style="text-align: center; margin-bottom: 20px;">
                 <h2 style="margin: 0 0 10px 0;"><i class="fa-solid fa-wand-magic-sparkles"></i> Blueprint Generation Wizard</h2>
@@ -3003,7 +2716,6 @@ function createWizardModalHtml() {
             <div id="storymode-wizard-progress-container"></div>
             <div id="storymode-wizard-preview-container"></div>
             <div id="storymode-resolution-selection-container" style="display: none;"></div>
-            <div id="storymode-wizard-cover-container" style="display: none; text-align: center; margin: 20px auto; padding: 20px; background: var(--black10a); border-radius: 8px; max-width: 167px;"></div>
             <div id="storymode-wizard-actions" style="text-align: center; margin-top: 20px;">
                 <button id="storymode-wizard-cancel-btn" class="menu_button storymode-btn storymode-btn-secondary" style="margin-right: 10px;">
                     <i class="fa-solid fa-times"></i> Cancel
@@ -3025,87 +2737,6 @@ function createWizardModalHtml() {
             </div>
         </div>
     `;
-}
-
-/**
- * Validate blueprint for required fields
- * @param {Object} blueprint - The generated blueprint
- * @returns {Array<string>} List of validation error messages
- */
-function validateBlueprint(blueprint) {
-    const errors = [];
-    if (!blueprint.core_premise) errors.push('Missing core premise');
-    if (!blueprint.setting) errors.push('Missing setting information');
-    if (!blueprint.antagonistic_forces) errors.push('Missing antagonistic forces');
-    if (!blueprint.arc_structure) errors.push('Missing arc structure');
-    if (!blueprint.scene_plan || blueprint.scene_plan.length === 0) errors.push('No scenes generated');
-    return errors;
-}
-
-/**
- * Attempt to auto-generate cover image for the blueprint
- * @param {Object} blueprint - The blueprint object
- * @param {HTMLElement} statusElement - Status text element
- * @param {HTMLElement} previewContainer - Preview container element
- */
-async function attemptAutoCoverGeneration(blueprint, statusElement, previewContainer) {
-    const coverGenSettings = extension_settings[MODULE_NAME]?.blueprintSettings?.coverGeneration;
-    if (!coverGenSettings?.autoGenerate) return;
-
-    if (statusElement) {
-        statusElement.innerHTML = '<span style="color: #3b82f6;"><i class="fa-solid fa-paintbrush fa-spin"></i> Generating cover image...</span>';
-    }
-
-    // Sync LLM-generated cover prompt if available
-    if (blueprint.cover_prompt && (!blueprint.metadata || !blueprint.metadata.coverPrompt)) {
-        blueprint.metadata = blueprint.metadata || {};
-        blueprint.metadata.coverPrompt = {
-            positive: blueprint.cover_prompt,
-            negative: 'text, watermark, signature, blurry, low quality, distorted, ugly, bad anatomy, extra limbs, cropped, worst quality, low resolution',
-            style: 'digital art',
-            technical: { aspect_ratio: '2:3' }
-        };
-    }
-
-    try {
-        const coverResult = await generateCoverFromSD(blueprint);
-        if (coverResult.success && coverResult.imageUrl) {
-            await addCoverToGallery(blueprint, coverResult.imageUrl, blueprint.metadata.coverPrompt);
-            setCoverImageUrl(blueprint, coverResult.imageUrl);
-
-            // Update wizard preview if it exists
-            if (previewContainer) {
-                previewContainer.innerHTML = buildWizardPreview(blueprint, 5);
-            }
-
-            if (statusElement) {
-                statusElement.innerHTML = '<span style="color: #10b981;">✓ Blueprint and cover generated successfully!</span>';
-            }
-        } else {
-            toastr.warning('Blueprint generated, but cover generation failed: ' + (coverResult.error || 'Unknown error'));
-            if (statusElement) {
-                statusElement.innerHTML = '<span style="color: #f59e0b;">⚠ Blueprint generated, but cover generation failed.</span>';
-            }
-        }
-    } catch (coverError) {
-        console.error('[Story Mode] Cover generation error in wizard:', coverError);
-        toastr.warning('Blueprint generated, but cover generation encountered an error.');
-    }
-}
-
-/**
- * Launch the wizard modal for phased blueprint generation
- * This creates a dedicated modal window for the wizard UI instead of embedding it in the settings dialog
- * @param {jQuery} content - The settings dialog content element
- */
-async function launchWizardModal(content) {
-    // Show cancel button, hide generate button
-    content.find('#blueprint_generate_btn').hide();
-    content.find('#blueprint_cancel_generation_btn').show();
-
-    // Gather form data and create wizard modal
-    const config = getWizardFormData(content);
-    const wizardHtml = createWizardModalHtml();
 
     // Create wizard modal
     const wizardPopup = new Popup(wizardHtml, POPUP_TYPE.TEXT, 'Blueprint Wizard', {
@@ -3140,16 +2771,14 @@ async function launchWizardModal(content) {
     }
 
     // Store for tracking generation state
-    wizardPopup.isCancelled = false;
+    let isCancelled = false;
     let failedAtPhase = null;
     let partialBlueprintForRetry = null;
     let requestForRetry = null;
     let lastRawResponse = null;
-    let phaseTokensUsed = {}; // Track token limits used per phase
-    const MAX_PHASE_TOKENS = 65536; // Maximum safe token limit
 
     // Phase name lookup (shared across functions)
-    const phaseNames = ['', 'Foundation', 'Characters', 'Scenes', 'Resolutions'];
+    const phaseNames = ['', 'Foundation', 'Characters', 'Scenes', 'Resolutions', 'Validation'];
 
     // Helper: Show error state in wizard
     const showWizardError = (errorResult) => {
@@ -3162,15 +2791,8 @@ async function launchWizardModal(content) {
         const retryBtn = popupElement.querySelector('#storymode-wizard-retry-btn');
         const showResponseBtn = popupElement.querySelector('#storymode-wizard-show-response-btn');
 
-        // Store token usage from error result
-        if (errorResult.phaseTokensUsed) {
-            phaseTokensUsed[phase] = errorResult.phaseTokensUsed;
-        }
-
-        const tokenInfo = phaseTokensUsed[phase] ? ` (used ${phaseTokensUsed[phase]} tokens)` : '';
-
         if (statusElement) {
-            statusElement.innerHTML = `<span style="color: var(--corruption-red);">✗ ${errorResult.phase ? 'Retry failed' : 'Generation failed'} at Phase ${phase}${tokenInfo}.</span>`;
+            statusElement.innerHTML = `<span style="color: var(--corruption-red);">✗ ${errorResult.phase ? 'Retry failed' : 'Generation failed'} at Phase ${phase}.</span>`;
         }
         if (errorDetailsContainer) {
             errorDetailsContainer.style.display = 'block';
@@ -3192,23 +2814,12 @@ async function launchWizardModal(content) {
     const cancelBtn = popupElement.querySelector('#storymode-wizard-cancel-btn');
     if (cancelBtn) {
         cancelBtn.addEventListener('click', function () {
-            // If generation is complete (finishBtn is visible), this works as "Discard & Close"
-            const isComplete = popupElement.querySelector('#storymode-wizard-finish-btn').style.display !== 'none';
-
-            if (isComplete) {
-                if (confirm('Are you sure you want to discard this blueprint and close?')) {
-                    cleanupWizard();
-                    returnToLibraryIfNeeded();
-                    wizardPopup.complete(POPUP_RESULT.CANCELLED);
-                }
-            } else if (!wizardPopup.isCancelled && confirm('Are you sure you want to cancel blueprint generation?')) {
-                wizardPopup.isCancelled = true;
+            if (!isCancelled && confirm('Are you sure you want to cancel blueprint generation?')) {
+                isCancelled = true;
                 const statusElement = popupElement.querySelector('#storymode-wizard-status');
                 if (statusElement) {
                     statusElement.innerHTML = '<span style="color: var(--corruption-red);">Generation cancelled by user.</span>';
                 }
-                cleanupWizard();
-                returnToLibraryIfNeeded();
                 wizardPopup.complete(POPUP_RESULT.CANCELLED);
             }
         });
@@ -3227,28 +2838,10 @@ async function launchWizardModal(content) {
             popupElement.querySelector('#storymode-wizard-error-details').style.display = 'none';
             retryBtn.style.display = 'none';
 
-            // Calculate token overrides for Phase 2
-            let tokenOverrides = {};
-            if (failedAtPhase === 2) {
-                const currentTokens = phaseTokensUsed[2] || 8192; // Default to 8192 if not tracked
-                const newTokens = Math.min(currentTokens * 2, MAX_PHASE_TOKENS);
-                tokenOverrides[2] = newTokens;
-
-                console.log(`[Story Mode] Doubling Phase 2 tokens: ${currentTokens} -> ${newTokens}`);
-
-                // Show notification to user
-                if (newTokens >= MAX_PHASE_TOKENS) {
-                    toastr.warning(`Phase 2 token limit at maximum (${MAX_PHASE_TOKENS})`);
-                } else {
-                    toastr.info(`Retrying Phase 2 with ${newTokens} tokens (doubled from ${currentTokens})`);
-                }
-            }
-
             // Update status
             const statusElement = popupElement.querySelector('#storymode-wizard-status');
-            const tokenInfo = tokenOverrides[failedAtPhase] ? ` with ${tokenOverrides[failedAtPhase]} tokens` : '';
             if (statusElement) {
-                statusElement.innerHTML = `<span style="color: #f59e0b;">Retrying ${phaseNames[failedAtPhase]} phase... (Phase ${failedAtPhase}/5)${tokenInfo}</span>`;
+                statusElement.innerHTML = `<span style="color: #f59e0b;">Retrying ${phaseNames[failedAtPhase]} phase... (Phase ${failedAtPhase}/5)</span>`;
             }
 
             // Reset error state
@@ -3260,15 +2853,10 @@ async function launchWizardModal(content) {
                     requestForRetry,
                     storyTypes,
                     authorStyles,
-                    {
-                        phased: true,
-                        startPhase: retryPhase,
-                        partialBlueprint: partialBlueprintForRetry,
-                        phaseTokenOverrides: tokenOverrides
-                    }
+                    { phased: true, startPhase: retryPhase, partialBlueprint: partialBlueprintForRetry }
                 );
 
-                if (wizardPopup.isCancelled || !retryResult.success) {
+                if (isCancelled || !retryResult.success) {
                     if (!retryResult.success) {
                         failedAtPhase = retryPhase;
                         showWizardError(retryResult);
@@ -3278,7 +2866,7 @@ async function launchWizardModal(content) {
 
                 // Success - update UI
                 const blueprint = retryResult.blueprint;
-                popupElement.querySelector('#storymode-wizard-progress-container').innerHTML = buildWizardProgressHTML(5);
+                popupElement.querySelector('#storymode-wizard-progress-container').innerHTML = buildWizardProgressHTML(6);
                 popupElement.querySelector('#storymode-wizard-preview-container').innerHTML = buildWizardPreview(blueprint, 5);
                 if (statusElement) {
                     statusElement.innerHTML = '<span style="color: #10b981;">✓ Blueprint generation complete! Review your blueprint below.</span>';
@@ -3309,42 +2897,6 @@ async function launchWizardModal(content) {
         });
     }
 
-    // Listen for phase updates to show ending preview when Phase 4 completes
-    const handlePhaseUpdate = (data) => {
-        const { phase, blueprint } = data;
-
-        // Show ending preview when Phase 4 data arrives
-        if (phase === 4 && blueprint?.primary_ending) {
-            const resolutionContainer = popupElement.querySelector('#storymode-resolution-selection-container');
-            if (resolutionContainer) {
-                resolutionContainer.style.display = 'block';
-                resolutionContainer.innerHTML = buildPrimaryEndingDisplay(
-                    blueprint.primary_ending,
-                    blueprint.alternate_endings || []
-                );
-            }
-        }
-    };
-
-    // Attach listener using SillyTavern's eventSource
-    eventSource.on('STORY_MODE_PHASE_UPDATE', handlePhaseUpdate);
-
-    // Store cleanup function to remove listener later
-    const cleanup = () => {
-        try {
-            if (typeof eventSource.off === 'function') {
-                eventSource.off('STORY_MODE_PHASE_UPDATE', handlePhaseUpdate);
-            } else if (typeof eventSource.removeListener === 'function') {
-                eventSource.removeListener('STORY_MODE_PHASE_UPDATE', handlePhaseUpdate);
-            } else if (typeof eventSource.removeEventListener === 'function') {
-                eventSource.removeEventListener('STORY_MODE_PHASE_UPDATE', handlePhaseUpdate);
-            }
-        } catch (e) {
-            console.warn('[Story Mode] Failed to remove phase update listener:', e);
-        }
-    };
-    wizardPopup._cleanup = cleanup;
-
     try {
         // Call buildBlueprintRequest to get the proper request structure
         const request = BlueprintModule.buildBlueprintRequest(config);
@@ -3353,13 +2905,21 @@ async function launchWizardModal(content) {
         const result = await BlueprintModule.generateBlueprint(request, storyTypes, authorStyles, { phased: true });
 
         // Check if user cancelled
-        if (wizardPopup.isCancelled) {
+        if (isCancelled) {
             return;
         }
 
         if (result.success) {
+            // Validate blueprint has required fields
             const blueprint = result.blueprint;
-            const validationErrors = validateBlueprint(blueprint);
+            const validationErrors = [];
+
+            // Check for essential fields
+            if (!blueprint.core_premise) validationErrors.push('Missing core premise');
+            if (!blueprint.setting) validationErrors.push('Missing setting information');
+            if (!blueprint.antagonistic_forces) validationErrors.push('Missing antagonistic forces');
+            if (!blueprint.arc_structure) validationErrors.push('Missing arc structure');
+            if (!blueprint.scene_plan || blueprint.scene_plan.length === 0) validationErrors.push('No scenes generated');
 
             // Update to show completion or validation errors
             const progressContainer = popupElement.querySelector('#storymode-wizard-progress-container');
@@ -3373,9 +2933,12 @@ async function launchWizardModal(content) {
 
             if (validationErrors.length > 0) {
                 // Show validation errors
-                if (progressContainer) progressContainer.innerHTML = buildWizardProgressHTML(5);
-                if (statusElement) statusElement.innerHTML = '<span style="color: #f59e0b;">⚠ Blueprint generation incomplete - some required fields are missing.</span>';
-
+                if (progressContainer) {
+                    progressContainer.innerHTML = buildWizardProgressHTML(6);
+                }
+                if (statusElement) {
+                    statusElement.innerHTML = '<span style="color: #f59e0b;">⚠ Blueprint generation incomplete - some required fields are missing.</span>';
+                }
                 if (errorDetailsContainer) {
                     errorDetailsContainer.style.display = 'block';
                     const errorMsg = popupElement.querySelector('#storymode-wizard-error-message');
@@ -3383,8 +2946,12 @@ async function launchWizardModal(content) {
                     if (errorMsg) errorMsg.textContent = 'The generated blueprint is missing: ' + validationErrors.join(', ');
                     if (errorPhase) errorPhase.textContent = 'The LLM may have returned incomplete data. Try regenerating.';
                 }
-                if (actionsContainer) actionsContainer.style.display = 'block';
-                if (cancelBtn) cancelBtn.style.display = 'none';
+                if (actionsContainer) {
+                    actionsContainer.style.display = 'block';
+                }
+                if (cancelBtn) {
+                    cancelBtn.style.display = 'none';
+                }
                 if (finishBtn) {
                     finishBtn.style.display = 'inline-block';
                     finishBtn.textContent = 'Close';
@@ -3393,115 +2960,81 @@ async function launchWizardModal(content) {
                 // Store result for potential save anyway (user choice)
                 popupElement.blueprintResult = { success: true, blueprint, validationErrors };
             } else {
-                console.log('[Story Mode] Phase generation success. Validating...');
+                // Auto-generate cover image if enabled
+                const coverGenSettings = extension_settings[MODULE_NAME]?.blueprintSettings?.coverGeneration;
+                if (coverGenSettings?.autoGenerate) {
+                    if (statusElement) {
+                        statusElement.innerHTML = '<span style="color: #3b82f6;"><i class="fa-solid fa-paintbrush fa-spin"></i> Generating cover image...</span>';
+                    }
+
+                    // Sync LLM-generated cover prompt if available
+                    if (blueprint.cover_prompt && (!blueprint.metadata || !blueprint.metadata.coverPrompt)) {
+                        blueprint.metadata = blueprint.metadata || {};
+                        // Create a basic prompt object structure compatible with SD
+                        blueprint.metadata.coverPrompt = {
+                            positive: blueprint.cover_prompt,
+                            negative: 'text, watermark, signature, blurry, low quality, distorted, ugly, bad anatomy, extra limbs, cropped, worst quality, low resolution',
+                            style: 'digital art',
+                            technical: { aspect_ratio: '2:3' }
+                        };
+                    }
+
+                    try {
+                        const coverResult = await generateCoverFromSD(blueprint);
+                        if (coverResult.success && coverResult.imageUrl) {
+                            await addCoverToGallery(blueprint, coverResult.imageUrl, blueprint.metadata.coverPrompt);
+                            setCoverImageUrl(blueprint, coverResult.imageUrl);
+
+                            // Update wizard preview if it exists
+                            if (previewContainer) {
+                                // Re-render preview to show new cover
+                                previewContainer.innerHTML = buildWizardPreview(blueprint, 5);
+                            }
+
+                            if (statusElement) {
+                                statusElement.innerHTML = '<span style="color: #10b981;">✓ Blueprint and cover generated successfully!</span>';
+                            }
+                        } else {
+                            toastr.warning('Blueprint generated, but cover generation failed: ' + (coverResult.error || 'Unknown error'));
+                            if (statusElement) {
+                                statusElement.innerHTML = '<span style="color: #f59e0b;">⚠ Blueprint generated, but cover generation failed.</span>';
+                            }
+                        }
+                    } catch (coverError) {
+                        console.error('[Story Mode] Cover generation error in wizard:', coverError);
+                        toastr.warning('Blueprint generated, but cover generation encountered an error.');
+                    }
+                }
 
                 // Success - show completion
-                if (progressContainer) progressContainer.innerHTML = buildWizardProgressHTML(5);
-                if (previewContainer) previewContainer.innerHTML = buildWizardPreview(blueprint, 5);
+                if (progressContainer) {
+                    progressContainer.innerHTML = buildWizardProgressHTML(6); // 6 = completed
+                }
+                if (previewContainer) {
+                    previewContainer.innerHTML = buildWizardPreview(blueprint, 5);
+                }
 
-                // Ask user about cover generation instead of auto-generating
-                const coverGenSettings = extension_settings[MODULE_NAME]?.blueprintSettings?.coverGeneration;
-                if (coverGenSettings?.autoGenerate && blueprint.cover_prompt) {
-                    console.log('[Story Mode] Asking user about cover generation...');
-                    const coverConfirm = await callGenericPopup(
-                        'Generate Cover Image?',
-                        'Would you like to generate a cover image for this blueprint?',
-                        'Generate',
-                        'Skip'
+                // Show primary ending display if available
+                if (blueprint.primary_ending && resolutionContainer) {
+                    resolutionContainer.style.display = 'block';
+                    resolutionContainer.innerHTML = buildPrimaryEndingDisplay(
+                        blueprint.primary_ending,
+                        blueprint.alternate_endings || []
                     );
-
-                    if (coverConfirm === POPUP_RESULT.AFFIRMATIVE) {
-                        // User wants to generate cover
-                        const coverContainer = popupElement.querySelector('#storymode-wizard-cover-container');
-                        if (coverContainer) {
-                            coverContainer.style.display = 'block';
-                            coverContainer.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; gap: 10px;"><i class="fa-solid fa-paintbrush fa-spin" style="color: #3b82f6; font-size: 1.5em;"></i><span style="color: #3b82f6; font-weight: 500;">Generating cover image...</span></div>';
-                        }
-
-                        if (statusElement) {
-                            statusElement.innerHTML = '<span style="color: #3b82f6;"><i class="fa-solid fa-paintbrush fa-spin"></i> Generating cover image...</span>';
-                        }
-
-                        try {
-                            // Sync cover prompt if available
-                            if (blueprint.cover_prompt && (!blueprint.metadata || !blueprint.metadata.coverPrompt)) {
-                                blueprint.metadata = blueprint.metadata || {};
-                                blueprint.metadata.coverPrompt = {
-                                    positive: blueprint.cover_prompt,
-                                    negative: 'text, watermark, signature, blurry, low quality, distorted, ugly, bad anatomy, extra limbs, cropped, worst quality, low resolution',
-                                    style: 'digital art',
-                                    technical: { aspect_ratio: '2:3' }
-                                };
-                            }
-
-                            const coverResult = await generateCoverFromSD(blueprint);
-                            if (coverResult.success && coverResult.imageUrl) {
-                                await addCoverToGallery(blueprint, coverResult.imageUrl, blueprint.metadata.coverPrompt);
-                                setCoverImageUrl(blueprint, coverResult.imageUrl);
-
-                                // Hide the loading animation container
-                                if (coverContainer) {
-                                    coverContainer.style.display = 'none';
-                                }
-
-                                // Update the preview to show the cover image (smaller preview only)
-                                if (previewContainer) {
-                                    previewContainer.innerHTML = buildWizardPreview(blueprint, 5);
-                                }
-
-                                if (statusElement) {
-                                    statusElement.innerHTML = '<span style="color: #10b981;">✓ Blueprint and cover generated successfully!</span>';
-                                }
-                                toastr.success('Cover image generated!');
-                            } else {
-                                if (coverContainer) {
-                                    coverContainer.style.display = 'none';
-                                }
-                                toastr.warning('Cover generation failed: ' + (coverResult.error || 'Unknown error'));
-                                if (statusElement) {
-                                    statusElement.innerHTML = '<span style="color: #f59e0b;">⚠ Blueprint complete, but cover generation failed.</span>';
-                                }
-                            }
-                        } catch (coverError) {
-                            console.error('[Story Mode] Cover generation error:', coverError);
-                            if (coverContainer) {
-                                coverContainer.style.display = 'none';
-                            }
-                            toastr.warning('Blueprint generated, but cover generation encountered an error.');
-                            if (statusElement) {
-                                statusElement.innerHTML = '<span style="color: #f59e0b;">⚠ Blueprint complete, but cover generation failed.</span>';
-                            }
-                        }
-                    } else {
-                        // User skipped cover generation
-                        if (statusElement) {
-                            statusElement.innerHTML = '<span style="color: #10b981;">✓ Blueprint generation complete! Review your blueprint below.</span>';
-                        }
-                    }
-                } else {
-                    // No cover generation needed
-                    if (statusElement) {
-                        statusElement.innerHTML = '<span style="color: #10b981;">✓ Blueprint generation complete! Review your blueprint below.</span>';
-                    }
                 }
 
                 // Show finish button, hide cancel
-                console.log('[Story Mode] Showing wizard actions...');
                 if (actionsContainer) {
                     actionsContainer.style.display = 'block';
-                    console.log('[Story Mode] Actions container displayed.');
-                } else {
-                    console.error('[Story Mode] Actions container not found!');
                 }
-
                 if (cancelBtn) {
-                    cancelBtn.style.display = 'inline-block';
-                    cancelBtn.innerHTML = '<i class="fa-solid fa-xmark"></i> Discard & Close';
-                    cancelBtn.title = "Close without saving";
+                    cancelBtn.style.display = 'none';
                 }
                 if (finishBtn) {
                     finishBtn.style.display = 'inline-block';
-                    finishBtn.innerHTML = '<i class="fa-solid fa-check"></i> Save & Close';
+                }
+                if (statusElement) {
+                    statusElement.innerHTML = '<span style="color: #10b981;">✓ Blueprint generation complete! Review your blueprint below.</span>';
                 }
 
                 // Store the result for the finish button handler
@@ -3531,7 +3064,7 @@ async function launchWizardModal(content) {
     } catch (error) {
         console.error('[Story Mode] Wizard mode generation error:', error);
 
-        if (wizardPopup.isCancelled) return;
+        if (isCancelled) return;
 
         // Parse error to extract phase information
         let errorPhase = null;
@@ -3578,13 +3111,8 @@ async function launchWizardModal(content) {
                 if (!syncResult.confirmed) {
                     console.log('[Story Mode] User cancelled blueprint sync, blueprint not saved');
                     toastr.warning('Blueprint generated but not saved. Settings sync was cancelled.');
-
-                    // Return to library if from library context, otherwise go to overview
-                    if (!returnToLibraryIfNeeded()) {
-                        content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
-                    }
-
                     wizardPopup.complete(POPUP_RESULT.CANCELLED);
+                    content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
                     return;
                 }
 
@@ -3593,44 +3121,19 @@ async function launchWizardModal(content) {
                 blueprintState.blueprint = result.blueprint;
                 await BlueprintModule.saveBlueprintState(blueprintState);
 
-                // Auto-save to library
-                try {
-                    await saveCurrentBlueprintToLibrary({
-                        title: result.blueprint.blueprint_title || result.blueprint.core_premise?.substring(0, 50),
-                        generateCover: false, // Cover already generated if enabled
-                        blueprint: result.blueprint // Pass explicit blueprint to avoid race condition
-                    });
-                    console.log('[Story Mode] Blueprint auto-saved to library');
-                } catch (libError) {
-                    console.error('[Story Mode] Failed to auto-save to library:', libError);
-                    // Don't block the save if library save fails
-                }
+                // Update the blueprint UI
+                content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
 
-                // Return to library if from library context, otherwise go to overview
-                if (returnToLibraryIfNeeded()) {
-                    // Refresh the library grid to show the new blueprint
-                    const activeFolder = content.find('.storymode-folder-item.active').data('folder') || 'all';
-                    await loadBlueprintsForFolder(content, activeFolder);
-                    toastr.success('Blueprint saved to library!');
-                } else {
-                    // Normal flow - update the blueprint UI
-                    content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
-                    toastr.success('Blueprint saved successfully!');
-                }
+                toastr.success('Blueprint saved successfully!');
             }
 
             // Close the wizard modal
-            cleanupWizard();
             wizardPopup.complete(POPUP_RESULT.AFFIRMATIVE);
         });
     }
 
-    // Clean up function to restore button states and remove event listeners
+    // Clean up function to restore button states
     function cleanupWizard() {
-        // Remove event listener for phase updates
-        if (wizardPopup._cleanup) {
-            wizardPopup._cleanup();
-        }
         // Hide cancel button, show generate button
         content.find('#blueprint_cancel_generation_btn').hide();
         content.find('#blueprint_generate_btn').show();
@@ -3660,9 +3163,9 @@ function updateWizardProgress(currentPhase) {
         // Also update status text
         const statusElement = wizardPopup.content.querySelector('#storymode-wizard-status');
         if (statusElement) {
-            const phaseNames = ['', 'Foundation', 'Characters', 'Scenes', 'Resolutions'];
+            const phaseNames = ['', 'Foundation', 'Characters', 'Scenes', 'Resolutions', 'Validation'];
             const phaseName = currentPhase >= 1 && currentPhase <= 5 ? phaseNames[currentPhase] : 'Processing';
-            statusElement.textContent = `Generating ${phaseName}... (Phase ${currentPhase}/4)`;
+            statusElement.textContent = `Generating ${phaseName}... (Phase ${currentPhase}/5)`;
         }
     }
 }
@@ -3690,59 +3193,4 @@ function updateWizardPreview(partialBlueprint, currentPhase) {
  */
 function getPhaseMessage(phase) {
     return BlueprintModule.PHASE_CONFIG[phase]?.description || 'Processing...';
-}
-
-/**
- * Handle auto-cover generation for the wizard
- * @param {Object} blueprint - The generated blueprint
- * @param {HTMLElement} statusElement - Status element to update
- * @param {HTMLElement} previewContainer - Preview container to update
- * @returns {Promise<void>}
- */
-async function handleWizardAutoCover(blueprint, statusElement, previewContainer) {
-    // Auto-generate cover image if enabled
-    const coverGenSettings = extension_settings[MODULE_NAME]?.blueprintSettings?.coverGeneration;
-    if (!coverGenSettings?.autoGenerate) return;
-
-    if (statusElement) {
-        statusElement.innerHTML = '<span style="color: #3b82f6;"><i class="fa-solid fa-paintbrush fa-spin"></i> Generating cover image...</span>';
-    }
-
-    // Sync LLM-generated cover prompt if available
-    if (blueprint.cover_prompt && (!blueprint.metadata || !blueprint.metadata.coverPrompt)) {
-        blueprint.metadata = blueprint.metadata || {};
-        // Create a basic prompt object structure compatible with SD
-        blueprint.metadata.coverPrompt = {
-            positive: blueprint.cover_prompt,
-            negative: 'text, watermark, signature, blurry, low quality, distorted, ugly, bad anatomy, extra limbs, cropped, worst quality, low resolution',
-            style: 'digital art',
-            technical: { aspect_ratio: '2:3' }
-        };
-    }
-
-    try {
-        const coverResult = await generateCoverFromSD(blueprint);
-        if (coverResult.success && coverResult.imageUrl) {
-            await addCoverToGallery(blueprint, coverResult.imageUrl, blueprint.metadata.coverPrompt);
-            setCoverImageUrl(blueprint, coverResult.imageUrl);
-
-            // Update wizard preview if it exists
-            if (previewContainer) {
-                // Re-render preview to show new cover
-                previewContainer.innerHTML = buildWizardPreview(blueprint, 5);
-            }
-
-            if (statusElement) {
-                statusElement.innerHTML = '<span style="color: #10b981;">✓ Blueprint and cover generated successfully!</span>';
-            }
-        } else {
-            toastr.warning('Blueprint generated, but cover generation failed: ' + (coverResult.error || 'Unknown error'));
-            if (statusElement) {
-                statusElement.innerHTML = '<span style="color: #f59e0b;">⚠ Blueprint generated, but cover generation failed.</span>';
-            }
-        }
-    } catch (coverError) {
-        console.error('[Story Mode] Cover generation error in wizard:', coverError);
-        toastr.warning('Blueprint generated, but cover generation encountered an error.');
-    }
 }

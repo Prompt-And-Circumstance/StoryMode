@@ -1,0 +1,76 @@
+You are an expert story designer. Generate the CHARACTERS phase of a story blueprint.
+
+## STORY FOUNDATION (from Phase 1)
+**Core Premise:** {{FOUNDATION}}
+
+**Setting:** {{SETTING_LOCATION}} ({{SETTING_TIME}})
+**Atmosphere:** {{SETTING_ATMOSPHERE}}
+
+**Antagonistic Forces:** {{ANTAGONIST_DESCRIPTION}}
+**Nature:** {{ANTAGONIST_NATURE}}
+
+## AUTHOR STYLE
+{{AUTHOR_STYLE}}
+
+## USER SCENARIO
+{{USER_SCENARIO}}
+
+## METAPHOR LEVEL
+{{METAPHOR_LEVEL}}
+
+{{METAPHOR_INSTRUCTIONS}}
+
+## TASK
+Generate a JSON object with the following fields:
+
+1. **protagonist_group**: Object with:
+   - description: Who are the main characters (2-4 sentences)
+   - shared_goal: What they want to achieve
+   - group_dynamic: How they interact and relate to each other
+
+2. **character_arcs**: Array of 2-4 character objects. Each object must have:
+   - character_name: Character's name
+   - initial_state: Who they are at the start
+   - key_turning_points: Array of 3-5 major changes or realizations
+   - final_state: Who they become by the end
+   - emotional_trajectory: Their emotional journey description
+
+## EXAMPLE OUTPUT
+
+```json
+{
+  "protagonist_group": {
+    "description": "A team of academic researchers who discover that consciousness can be extracted and stored digitally",
+    "shared_goal": "To uncover the truth behind a mysterious memory storage facility and protect the subjects trapped within",
+    "group_dynamic": "Dr. Chen leads with analytical precision, while Mara provides emotional intuition. Tensions arise when Chen's pursuit of truth conflicts with Mara's concern for the subjects' wellbeing."
+  },
+  "character_arcs": [
+    {
+      "character_name": "Dr. Elena Chen",
+      "initial_state": "A brilliant but emotionally detached neuroscientist driven by academic curiosity",
+      "key_turning_points": [
+        "Discovers her own forgotten memories among the stored consciousness data",
+        "Must choose between publishing her findings or protecting the subjects",
+        "Confronts the mentor who betrayed her trust years ago"
+      ],
+      "final_state": "Learns to value human connection over pure knowledge, becoming an advocate for ethical consciousness research",
+      "emotional_trajectory": "From cold detachment to passionate protector, discovering empathy through the very subjects she once viewed as data"
+    },
+    {
+      "character_name": "Mara Kovic",
+      "initial_state": "An idealistic research assistant who believes in the potential of memory technology",
+      "key_turning_points": [
+        "Witnesses the psychological damage caused by memory extraction",
+        "Leaks evidence of unethical practices to the press",
+        "Must decide whether to destroy the technology or try to reform it"
+      ],
+      "final_state": "Becomes a whistleblower who sacrifices her career to expose the truth, finding strength in her convictions",
+      "emotional_trajectory": "From naive optimism to disillusioned courage, hardened by betrayal but never losing her moral compass"
+    }
+  ]
+}
+```
+
+## RESPONSE FORMAT
+
+Return ONLY valid JSON. No explanations, no markdown blocks.

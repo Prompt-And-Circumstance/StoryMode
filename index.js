@@ -19,6 +19,7 @@ import {
     system_message_types,
     saveChatConditional,
     main_api,
+    doNewChat,
 } from '/script.js';
 
 import {
@@ -51,8 +52,12 @@ import {
     saveCurrentBlueprintToLibrary,
 } from './lib/blueprint-integration.js';
 
-// Import Loading Indicator module
-import * as LoadingIndicator from './lib/loading-indicator.js';
+// Import Scene Image Generation modules
+import * as SceneImageStorage from './lib/scene-image-storage.js';
+import * as SceneImageGenerator from './lib/scene-image-generator.js';
+
+// Import Blueprint Export module (extended PNG format)
+import { exportBlueprintAsPNG } from './lib/blueprint-export.js';
 
 // Import UI Components module (wizard components)
 import {
@@ -60,6 +65,9 @@ import {
     buildWizardPreview,
     buildPrimaryEndingDisplay,
 } from './lib/ui-components.js';
+
+// Import Controller Panel module
+import { updateControllerPanel } from './lib/controller-panel.js';
 
 // Import State Manager module
 import {
@@ -87,6 +95,8 @@ import {
     getOriginalAuthorStyle,
     getConnectionProfiles,
     migrateFromExtensionSettings,
+    getCurrentSceneIndex,
+    setCurrentSceneIndex,
 } from './lib/state-manager.js';
 
 // Import Arc Engine module
@@ -129,7 +139,6 @@ import {
     showLibraryGenerateView,
     showLibraryGridView,
     renderBlueprintCard,
-    renderDebugPanel,
 } from './lib/ui-components.js';
 
 // Import Type Editors module
@@ -206,7 +215,7 @@ console.log('[Story Mode] All modules imported and initialized successfully');
 * @async
 * @returns {Promise<void>}
 */
-async function showSettingsDialog() {
+async function showSettingsDialog(initialTab = 'genre-style') {
     const settings = extension_settings[MODULE_NAME];
     const chatState = getChatStoryState();
     const html = `
@@ -338,7 +347,7 @@ ${buildSettingsTabContent()}
                 chatState.currentStep,
                 chatState.arcLength,
                 blueprintState.sceneMode || 'auto',
-                blueprintState.currentSceneIndex || 0
+                getCurrentSceneIndex()
             );
             if (subtabName === 'overview') {
                 contentDiv.html(renderBlueprintOverviewSubtab(blueprint, currentScene));
@@ -360,6 +369,20 @@ ${buildSettingsTabContent()}
 
     // Update prompt preview
     updatePreviewInDialog(content);
+
+    // Activate initial tab if specified
+    if (initialTab && initialTab !== 'genre-style') {
+        $tabs.removeClass('active');
+        $tabPanes.removeClass('active');
+        $tabs.filter(`[data-tab="${initialTab}"]`).addClass('active');
+        content.find(`#tab_${initialTab}`).addClass('active');
+
+        // Initialize tab-specific content for the initial tab
+        if (initialTab === 'library') {
+            // Defer to allow popup to render first
+            setTimeout(() => refreshLibraryView(content), 0);
+        }
+    }
 
     // Show popup
     const popup = new Popup(content, POPUP_TYPE.TEXT, 'Story Mode Settings', {
@@ -385,7 +408,7 @@ function populateConnectionProfiles(content) {
         { selector: '#blueprint_generation_api', settingsKey: 'blueprintSettings.generationApi' },
         { selector: '#opening_message_api', settingsKey: 'blueprintSettings.openingMessageApi' },
         { selector: '#epilogue_api', settingsKey: 'epilogueApi' },
-        { selector: '#summary_api', settingsKey: 'summaryApi' }
+        { selector: '#summary_api', settingsKey: 'summaryApi' },
     ];
 
     dropdowns.forEach(({ selector, settingsKey }) => {
@@ -543,11 +566,22 @@ function setupUnifiedDialogEventListeners(content) {
         saveSettingsDebounced();
         updateStoryPrompt();
     });
-    // Debug panel toggle
-    content.find('#debug_panel_enabled').on('change', function () {
-        extension_settings[MODULE_NAME].debugPanelEnabled = $(this).is(':checked');
+    // Controller Mode dropdown (Disabled / Floating / Docked)
+    content.find('#controller_mode_select').on('change', function () {
+        const mode = $(this).val();
+
+        if (mode === 'disabled') {
+            extension_settings[MODULE_NAME].debugPanelEnabled = false;
+        } else if (mode === 'floating') {
+            extension_settings[MODULE_NAME].debugPanelEnabled = true;
+            extension_settings[MODULE_NAME].debugPanelDocked = false;
+        } else if (mode === 'docked') {
+            extension_settings[MODULE_NAME].debugPanelEnabled = true;
+            extension_settings[MODULE_NAME].debugPanelDocked = true;
+        }
+
         saveSettingsDebounced();
-        updateStatusDisplay();
+        updateControllerPanel();
     });
     // Injection settings
     content.find('#injection_position').on('change', function () {
@@ -685,6 +719,32 @@ function setupUnifiedDialogEventListeners(content) {
             saveSettingsDebounced();
         });
     });
+
+    // Scene Image Generation settings
+    const sceneImageSettings = [
+        { selector: '#scene_image_gen_enabled', key: 'enabled', transform: v => $(v).is(':checked') },
+        { selector: '#scene_image_gen_auto', key: 'autoGenerate', transform: v => $(v).is(':checked') },
+        { selector: '#scene_image_gen_gallery', key: 'addToGallery', transform: v => $(v).is(':checked') },
+        { selector: '#scene_image_gen_style', key: 'imageStyle', transform: v => $(v).val() },
+        { selector: '#scene_image_custom_prompt', key: 'customStylePrompt', transform: v => $(v).val() },
+    ];
+
+    sceneImageSettings.forEach(({ selector, key, transform }) => {
+        content.find(selector).on('change', function () {
+            const settings = extension_settings[MODULE_NAME];
+            settings.imageGeneration = settings.imageGeneration || {};
+            settings.imageGeneration[key] = transform(this);
+            saveSettingsDebounced();
+            console.log(`[Story Mode] Scene Image Generation setting ${key} changed to:`, transform(this));
+        });
+    });
+
+    // Show/hide custom prompt group based on image style selection
+    content.find('#scene_image_gen_style').on('change', function () {
+        const isCustom = $(this).val() === 'custom';
+        $('#scene_image_custom_prompt_group').toggle(isCustom);
+    });
+
     content.find('#blueprint_generation_api').on('change', function () {
         const selectedApi = $(this).val() || null;
         extension_settings[MODULE_NAME].blueprintSettings = extension_settings[MODULE_NAME].blueprintSettings || {};
@@ -693,12 +753,13 @@ function setupUnifiedDialogEventListeners(content) {
         console.log('[Story Mode] Settings Dialog: Generation API changed to:', selectedApi || 'main API');
         console.log('[Story Mode] Settings Dialog: Full blueprintSettings.generationApi:', extension_settings[MODULE_NAME].blueprintSettings.generationApi);
     });
-    // Opening message API dropdown
+    // Opening Message API dropdown
     content.find('#opening_message_api').on('change', function () {
         const selectedApi = $(this).val() || null;
         extension_settings[MODULE_NAME].blueprintSettings = extension_settings[MODULE_NAME].blueprintSettings || {};
         extension_settings[MODULE_NAME].blueprintSettings.openingMessageApi = selectedApi;
         saveSettingsDebounced();
+        console.log('[Story Mode] Settings Dialog: Opening Message API changed to:', selectedApi || 'main API');
     });
     // Epilogue API dropdown
     content.find('#epilogue_api').on('change', function () {
@@ -715,28 +776,22 @@ function setupUnifiedDialogEventListeners(content) {
     // Loading Indicator settings
     content.find('#loading_indicator_enabled').on('change', function () {
         const enabled = $(this).is(':checked');
-        LoadingIndicator.updateSettings({ enabled });
     });
     content.find('#loading_indicator_position').on('change', function () {
         const position = $(this).val();
-        LoadingIndicator.updateSettings({ position });
     });
     content.find('#loading_indicator_animation').on('change', function () {
         const animationStyle = $(this).val();
-        LoadingIndicator.updateSettings({ animationStyle });
     });
     content.find('#loading_indicator_gif_url').on('change', function () {
         const customGifUrl = $(this).val() || null;
-        LoadingIndicator.updateSettings({ customGifUrl });
     });
     content.find('#loading_indicator_phrases').on('change', function () {
         const phrasesText = $(this).val();
         const phrases = phrasesText.split('\n').map(p => p.trim()).filter(p => p.length > 0);
-        LoadingIndicator.updateSettings({ phrases });
     });
     content.find('#loading_indicator_preview').on('click', function () {
         // Start animated preview
-        LoadingIndicator.startPreview();
     });
     // Reset Arc button (Story Arc subtab)
     content.find('#reset_arc_btn').on('click', async function () {
@@ -754,282 +809,6 @@ function setupUnifiedDialogEventListeners(content) {
             // Refresh current step display in the Story Arc subtab
             content.find('#current_step_display').text('Step 0 / ' + chatState.arcLength);
         }
-    });
-    // Generate blueprint button (Generate Blueprint subtab)
-    content.on('click', '#blueprint_generate_btn', async function () {
-        const btn = $(this);
-        const originalText = btn.html();
-
-        // Check if wizard mode is enabled (default true, unless "Legacy Mode" checked)
-        const wizardDisabled = content.find('#storymode_wizard_disabled').is(':checked');
-        const wizardEnabled = !wizardDisabled;
-
-        // If wizard mode is enabled, launch the wizard modal
-        if (wizardEnabled) {
-            await launchWizardModal(content);
-            return;
-        }
-
-        // Set loading state
-        btn.prop('disabled', true);
-        btn.html('<i class="fa-solid fa-circle-notch fa-spin"></i> Generating...');
-        LoadingIndicator.show('Generating story blueprint...');
-        try {
-            // Gather form data
-            const selectedCharacterIds = [];
-            content.find('input[name="blueprint_character"]:checked').each(function () {
-                const charId = $(this).val();
-                if (charId) {
-                    selectedCharacterIds.push(charId);
-                }
-            });
-            console.log('[Story Mode] Selected character IDs:', selectedCharacterIds);
-            const selectedPersonas = [];
-            content.find('input[name="blueprint_persona"]:checked').each(function () {
-                const personaId = $(this).val();
-                const personaName = $(this).data('name');
-                if (personaId) {
-                    selectedPersonas.push({
-                        id: personaId,
-                        name: personaName || personaId
-                    });
-                }
-            });
-            console.log('[Story Mode] Selected personas:', selectedPersonas);
-            const scenario = content.find('#blueprint_scenario').val() || '';
-            const metaphorLevel = content.find('#blueprint_metaphor_level').val() || 'mixed';
-            const storyLength = content.find('#blueprint_story_length').val() || 'medium';
-            const customRounds = content.find('#blueprint_custom_rounds').val();
-            const customMasterPrompt = content.find('#blueprint_master_prompt').val() || null;
-            // Get story type and author style from new dropdowns
-            const storyTypeId = content.find('#blueprint_story_type').val() || '';
-            const authorStyleId = content.find('#blueprint_author_style').val() || '';
-            // Use custom rounds if provided and valid, otherwise use the selected story length
-            const finalStoryLength = customRounds && parseInt(customRounds) > 0 ? parseInt(customRounds) : parseInt(storyLength);
-            // Build character data from context
-            const context = getContext();
-            const characterData = [];
-            if (context.groupId) {
-                // Group chat: get all characters from the group
-                const group = context.groups?.find(g => g.id === context.groupId);
-                if (group && group.members) {
-                    group.members.forEach(memberFilename => {
-                        // Find the character in the characters array by matching filename
-                        const charIndex = (context.characters || []).findIndex(c =>
-                            c.filename === memberFilename ||
-                            c.avatar === memberFilename ||
-                            (typeof c === 'string' && c === memberFilename)
-                        );
-                        if (charIndex !== -1 && selectedCharacterIds.includes(charIndex.toString())) {
-                            const char = context.characters[charIndex];
-                            if (char) {
-                                characterData.push({
-                                    name: char.name,
-                                    description: char.description,
-                                    personality: char.personality,
-                                    scenario: char.scenario,
-                                    greeting: char.greeting
-                                });
-                            }
-                        }
-                    });
-                }
-            } else {
-                // Single chat: get the main character
-                if (selectedCharacterIds.includes(context.characterId?.toString())) {
-                    const char = context.characters?.[parseInt(context.characterId, 10)];
-                    if (char) {
-                        characterData.push({
-                            name: char.name,
-                            description: char.description,
-                            personality: char.personality,
-                            scenario: char.scenario,
-                            greeting: char.greeting
-                        });
-                    }
-                }
-            }
-            // Build request config object
-            const config = {
-                storyTypeId,
-                authorStyleId: authorStyleId || undefined,
-                characterData,
-                personaData: selectedPersonas,
-                scenario,
-                messageTarget: finalStoryLength,
-                metaphorLevel: metaphorLevel,
-                customMasterPrompt: customMasterPrompt
-            };
-            console.log('[Story Mode] Blueprint config:', {
-                storyTypeId: config.storyTypeId,
-                authorStyleId: config.authorStyleId,
-                characterDataCount: config.characterData.length,
-                personaDataCount: config.personaData.length,
-                messageTarget: config.messageTarget
-            });
-            // Call buildBlueprintRequest to get the proper request structure
-            const request = BlueprintModule.buildBlueprintRequest(config);
-
-            // Call BlueprintModule.generateBlueprint() with properly structured request
-            // (standard single-pass mode - wizard mode returns early and launches its own modal)
-            const result = await BlueprintModule.generateBlueprint(request, storyTypes, authorStyles);
-
-            if (result.success) {
-                // Sync blueprint settings to chat state with confirmation dialog
-                const syncResult = await BlueprintModule.syncBlueprintSettings(result.blueprint, true);
-
-                // Check if user cancelled the sync
-                if (!syncResult.confirmed) {
-                    console.log('[Story Mode] User cancelled blueprint sync, blueprint not saved');
-                    toastr.warning('Blueprint generated but not saved. Settings sync was cancelled.');
-                    content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
-                    return;
-                }
-
-                // Save the blueprint to blueprint state
-                console.log('[Story Mode] Saving blueprint to blueprint state...');
-                const blueprintState = BlueprintModule.getBlueprintState();
-                blueprintState.blueprint = result.blueprint;
-                blueprintState.useBlueprint = true;
-                blueprintState.currentSceneIndex = 0;
-                blueprintState.sceneMode = 'auto';
-                await BlueprintModule.saveBlueprintState(blueprintState);
-                console.log('[Story Mode] Blueprint saved to blueprint state');
-
-                // Auto-generate cover if enabled
-                const coverGenSettings = extension_settings[MODULE_NAME]?.blueprintSettings?.coverGeneration;
-                if (!coverGenSettings?.autoGenerate) {
-                    toastr.success('Blueprint generated and settings synced');
-                    return;
-                }
-
-                console.log('[Story Mode] Auto-generating cover for new blueprint...');
-                LoadingIndicator.show('Generating cover image...');
-
-                try {
-                    const coverResult = await generateCoverFromSD(result.blueprint);
-
-                    if (!coverResult.success) {
-                        console.warn('[Story Mode] Auto cover generation failed:', coverResult.error);
-                        toastr.warning(
-                            `Blueprint saved! Cover generation failed: ${coverResult.error}. You can try again in the Blueprint Editor.`,
-                            'Cover Skipped',
-                            { timeOut: 8000 }
-                        );
-                        return;
-                    }
-
-                    // Add to gallery if enabled (default: true)
-                    if (coverGenSettings?.addToGallery !== false) {
-                        await addCoverToGallery(result.blueprint, coverResult.imageUrl, result.blueprint.metadata?.coverPrompt);
-                    }
-
-                    // Set cover URLs using helper
-                    setCoverImageUrl(result.blueprint, coverResult.imageUrl);
-
-                    // Update and re-save blueprint state
-                    blueprintState.blueprint = result.blueprint;
-                    await BlueprintModule.saveBlueprintState(blueprintState);
-
-                    console.log('[Story Mode] Auto-generated cover saved:', coverResult.imageUrl);
-                    toastr.success(
-                        "Cover auto-generated! Don't like it? Generate more in the Blueprint Editor (Cover tab).",
-                        'Blueprint Ready',
-                        { timeOut: 6000 }
-                    );
-                } catch (error) {
-                    console.warn('[Story Mode] Auto cover generation error:', error);
-                    toastr.warning(
-                        'Blueprint saved! Cover generation encountered an error. You can generate a cover in the Blueprint Editor.',
-                        'Cover Skipped',
-                        { timeOut: 6000 }
-                    );
-                } finally {
-                    LoadingIndicator.hide();
-                }
-
-                content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
-                refreshSidebar(content);
-                updateStatusDisplay();
-            } else {
-                // Hide wizard containers on error
-                if (wizardEnabled) {
-                    content.find('#storymode-wizard-progress-container').hide();
-                    content.find('#storymode-wizard-preview-container').hide();
-                    content.find('#storymode-resolution-selection-container').hide();
-                }
-
-                // Extract error message from either string or array
-                const errorMessage = result.error || result.errors?.join(', ') || 'Unknown error';
-                toastr.error(`Failed to generate blueprint: ${errorMessage}`);
-
-                if (result.isLikelyTruncated) {
-                    console.warn('[Story Mode] Blueprint response was truncated. Consider increasing the token limit.');
-                }
-            }
-        } catch (error) {
-            console.error('[Story Mode] Error generating blueprint:', error);
-            toastr.error(`Failed to generate blueprint: ${error.message}`);
-
-            // Hide wizard containers on error
-            if (wizardEnabled) {
-                content.find('#storymode-wizard-progress-container').hide();
-                content.find('#storymode-wizard-preview-container').hide();
-                content.find('#storymode-resolution-selection-container').hide();
-            }
-        } finally {
-            // Restore button state
-            LoadingIndicator.hide();
-            btn.prop('disabled', false);
-            btn.html(originalText);
-        }
-    });
-    // Load blueprint button (Generate Blueprint subtab)
-    content.on('click', '#blueprint_import_btn', function () {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.json';
-        input.onchange = async (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                try {
-                    const reader = new FileReader();
-                    reader.onload = async (event) => {
-                        try {
-                            const blueprint = JSON.parse(event.target.result);
-                            // Validate blueprint
-                            const validation = BlueprintModule.validateBlueprint(blueprint);
-                            if (!validation.valid) {
-                                toastr.error('Invalid blueprint: ' + validation.errors.join(', '));
-                                return;
-                            }
-                            const blueprintState = BlueprintModule.getBlueprintState();
-                            blueprintState.blueprint = blueprint;
-                            blueprintState.useBlueprint = true;
-                            blueprintState.currentSceneIndex = 0;
-                            blueprintState.sceneMode = 'auto';
-                            await BlueprintModule.saveBlueprintState(blueprintState);
-                            // Sync blueprint settings to chat state with confirmation dialog
-                            await BlueprintModule.syncBlueprintSettings(blueprint, true);
-                            toastr.success('Blueprint loaded and settings synced');
-                            // Switch to Overview tab
-                            content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
-                            // Refresh sidebar
-                            refreshSidebar(content);
-                            updateStatusDisplay();
-                        } catch (parseError) {
-                            console.error('[Story Mode] Error parsing blueprint JSON:', parseError);
-                            toastr.error('Invalid blueprint JSON');
-                        }
-                    };
-                    reader.readAsText(file);
-                } catch (error) {
-                    console.error('[Story Mode] Error reading blueprint file:', error);
-                    toastr.error('Failed to read file');
-                }
-            }
-        };
-        input.click();
     });
     // Wizard mode toggle change handler - save setting
     content.on('change', '#storymode_wizard_disabled', function () {
@@ -1094,31 +873,6 @@ function setupUnifiedDialogEventListeners(content) {
         $('.storymode-resolution-item').removeClass('selected');
         $(this).addClass('selected');
     });
-    // Generate opening message button (Blueprint Overview subtab)
-    content.on('click', '#generate_opening_message_btn', async function () {
-        const btn = $(this);
-        btn.prop('disabled', true);
-        LoadingIndicator.show('Crafting opening message...');
-        try {
-            const result = await BlueprintModule.generateOpeningMessage();
-            if (result.success) {
-                // Create and add the system message directly
-                await pushStoryMessage(result.opening);
-                await saveChatConditional();
-                toastr.success('Opening message generated and added to chat');
-            } else {
-                toastr.error(`Failed to generate opening: ${result.error || 'Unknown error'}`);
-                btn.prop('disabled', false);
-            }
-        } catch (error) {
-            console.error('[Story Mode] Error generating opening message:', error);
-            toastr.error(`Failed to generate opening: ${error.message}`);
-            btn.prop('disabled', false);
-        } finally {
-            LoadingIndicator.hide();
-            btn.prop('disabled', false);
-        }
-    });
     // Import blueprint button - supports both JSON and PNG
     content.find('#import_blueprint_btn').on('click', function () {
         const input = document.createElement('input');
@@ -1128,7 +882,6 @@ function setupUnifiedDialogEventListeners(content) {
             const file = e.target.files[0];
             if (!file) return;
 
-            LoadingIndicator.show('Importing blueprint...');
 
             try {
                 let blueprint;
@@ -1156,13 +909,9 @@ function setupUnifiedDialogEventListeners(content) {
                     return;
                 }
 
-                // Load into state
-                const blueprintState = BlueprintModule.getBlueprintState();
-                blueprintState.blueprint = blueprint;
-                blueprintState.useBlueprint = true;
-                blueprintState.currentSceneIndex = 0;
-                blueprintState.sceneMode = 'auto';
-                await BlueprintModule.saveBlueprintState(blueprintState);
+                // Create run copy for imported blueprint
+                const runState = BlueprintModule.createRunCopy(blueprint, 'import');
+                await BlueprintModule.saveBlueprintState(runState);
 
                 // Sync blueprint settings to chat state with confirmation dialog
                 await BlueprintModule.syncBlueprintSettings(blueprint, true);
@@ -1178,7 +927,6 @@ function setupUnifiedDialogEventListeners(content) {
                 console.error('[Story Mode] Import error:', error);
                 toastr.error('Failed to import: ' + error.message);
             } finally {
-                LoadingIndicator.hide();
             }
         };
         input.click();
@@ -1196,7 +944,6 @@ function setupUnifiedDialogEventListeners(content) {
         const originalText = btn.html();
         btn.prop('disabled', true);
         btn.html('<i class="fa-solid fa-spinner fa-spin"></i> Exporting...');
-        LoadingIndicator.show('Exporting blueprint as JSON...');
 
         try {
             // Use the simple JSON export function from blueprint-module.js
@@ -1206,7 +953,6 @@ function setupUnifiedDialogEventListeners(content) {
             console.error('[Story Mode] Error exporting blueprint:', error);
             toastr.error('Failed to export: ' + error.message);
         } finally {
-            LoadingIndicator.hide();
             btn.prop('disabled', false);
             btn.html(originalText);
         }
@@ -1255,7 +1001,7 @@ function setupUnifiedDialogEventListeners(content) {
         const blueprintState = BlueprintModule.getBlueprintState();
         blueprintState.blueprint = null;
         blueprintState.useBlueprint = false;
-        blueprintState.currentSceneIndex = 0;
+        setCurrentSceneIndex(0);
         await BlueprintModule.saveBlueprintState(blueprintState);
         // Refresh tabs
         content.find('#tab_blueprint').html(buildBlueprintTabContent());
@@ -1289,7 +1035,7 @@ function setupUnifiedDialogEventListeners(content) {
                     chatState.currentStep,
                     chatState.arcLength,
                     blueprintState.sceneMode,
-                    blueprintState.currentSceneIndex
+                    getCurrentSceneIndex()
                 );
                 content.find('#blueprint_subtab_content').html(renderBlueprintOverviewSubtab(blueprint, currentScene));
             }
@@ -1322,7 +1068,7 @@ function setupUnifiedDialogEventListeners(content) {
                     chatState.currentStep,
                     chatState.arcLength,
                     blueprintState.sceneMode,
-                    blueprintState.currentSceneIndex
+                    getCurrentSceneIndex()
                 );
                 content.find('#blueprint_subtab_content').html(renderBlueprintOverviewSubtab(blueprint, currentScene));
             }
@@ -1403,7 +1149,7 @@ function setupUnifiedDialogEventListeners(content) {
         }
     });
 
-    // Library card click (load blueprint as current and auto-switch to Blueprint tab)
+    // Library card click - opens editor (same as edit button)
     content.on('click', '.storymode-blueprint-card', async function (e) {
         const $target = $(e.target);
         // Ignore if clicking on action buttons or favorite icon
@@ -1414,22 +1160,23 @@ function setupUnifiedDialogEventListeners(content) {
         const blueprintId = $(this).data('blueprintId');
         if (!blueprintId) return;
 
-        // Load blueprint (replaces current blueprint)
-        await loadBlueprintFromLibrary(content, blueprintId);
-
-        // Auto-switch to Blueprint tab to show loaded blueprint
-        $tabs.removeClass('active');
-        $tabs.filter('[data-tab="blueprint"]').addClass('active');
-        $tabPanes.removeClass('active');
-        $tabPanes.filter('#tab_blueprint').addClass('active');
+        // Open the editor for this blueprint
+        await editBlueprintFromLibrary(content, blueprintId);
     });
 
-    // View toggle (grid/list)
-    content.on('click', '#library_view_grid, #library_view_list', function () {
-        const viewType = $(this).attr('id') === 'library_view_grid' ? 'grid' : 'list';
-        content.find('.storymode-view-toggle .menu_button').removeClass('active');
-        $(this).addClass('active');
-        content.find('.storymode-library-grid').toggleClass('list-view', viewType === 'list');
+    // View toggle (grid/list) - single button toggles between views
+    content.on('click', '#library_view_toggle', function () {
+        const btn = $(this);
+        const currentView = btn.data('view');
+        const newView = currentView === 'grid' ? 'list' : 'grid';
+
+        // Update button state
+        btn.data('view', newView);
+        btn.attr('title', newView === 'grid' ? 'Switch to list view' : 'Switch to grid view');
+        btn.find('i').toggleClass('fa-list', newView === 'grid').toggleClass('fa-grid-2', newView === 'list');
+
+        // Toggle grid class
+        content.find('.storymode-library-grid').toggleClass('list-view', newView === 'list');
     });
 
     // Sort selection
@@ -1448,7 +1195,6 @@ function setupUnifiedDialogEventListeners(content) {
             const files = Array.from(e.target.files);
             if (files.length === 0) return;
 
-            LoadingIndicator.show(`Importing ${files.length} blueprint(s)...`);
             let imported = 0;
             let failed = 0;
 
@@ -1485,7 +1231,6 @@ function setupUnifiedDialogEventListeners(content) {
                 }
             }
 
-            LoadingIndicator.hide();
             await refreshLibraryView(content);
 
             if (imported > 0 && failed === 0) {
@@ -1637,11 +1382,9 @@ async function loadBlueprintFromLibrary(content, blueprintId) {
             return;
         }
 
-        // Load into current blueprint state
-        const blueprintState = BlueprintModule.getBlueprintState();
-        blueprintState.blueprint = blueprint;
-        blueprintState.useBlueprint = true;
-        await BlueprintModule.saveBlueprintState(blueprintState);
+        // Create a run copy (deep clone) so library blueprint stays pristine
+        const runState = BlueprintModule.createRunCopy(blueprint, 'library');
+        await BlueprintModule.saveBlueprintState(runState);
 
         // Update play stats
         await library.stats.recordPlayStart(blueprintId);
@@ -1659,7 +1402,7 @@ async function loadBlueprintFromLibrary(content, blueprintId) {
 }
 
 /**
- * Play blueprint from library - load and immediately start the story
+ * Play blueprint from library - load the blueprint into the current chat
  */
 async function playBlueprintFromLibrary(content, blueprintId) {
     try {
@@ -1671,41 +1414,47 @@ async function playBlueprintFromLibrary(content, blueprintId) {
             return;
         }
 
-        // Load into current blueprint state
-        const blueprintState = BlueprintModule.getBlueprintState();
-        blueprintState.blueprint = blueprint;
-        blueprintState.useBlueprint = true;
-        await BlueprintModule.saveBlueprintState(blueprintState);
+        // Sync blueprint settings to chat state (with confirmation if needed)
+        const syncResult = await BlueprintModule.syncBlueprintSettings(blueprint, true);
+
+        if (!syncResult.confirmed && syncResult.changes.length > 0) {
+            // User declined to overwrite current blueprint settings
+            // Offer to create a new chat instead
+            const createNewChat = await callGenericPopup(
+                `Would you like to create a new chat to load this blueprint? This will preserve your current conversation.`,
+                POPUP_TYPE.CONFIRM
+            );
+
+            if (createNewChat !== POPUP_RESULT.AFFIRMATIVE) {
+                // User declined new chat too - do nothing
+                return;
+            }
+
+            // Create new chat
+            await doNewChat();
+            // Wait a moment for chat to be created
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        // Create a run copy (deep clone) so library blueprint stays pristine
+        const runState = BlueprintModule.createRunCopy(blueprint, 'library');
+        await BlueprintModule.saveBlueprintState(runState);
 
         // Update play stats
         await library.stats.recordPlayStart(blueprintId);
 
-        // Start the story from the blueprint
-        const result = await BlueprintModule.startStoryFromBlueprint(blueprint);
+        // Sync blueprint settings again (now without confirmation since we're in a fresh chat)
+        await BlueprintModule.syncBlueprintSettings(blueprint, false);
 
-        if (result.success) {
-            if (result.warnings?.length > 0) {
-                const warningHtml = `
-                    <h3>Story Started with Warnings</h3>
-                    <ul style="text-align: left;">
-                        ${result.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('')}
-                    </ul>
-                `;
-                await callGenericPopup(warningHtml, POPUP_TYPE.TEXT, null, { wide: true });
-            }
-            // Close settings dialog and trigger opening message
-            $('#story_mode_settings_dialog').find('.pop-button-ok').trigger('click');
-        } else {
-            await callGenericPopup(
-                `<h3>Failed to Start Story</h3><p>${escapeHtml(result.error)}</p>`,
-                POPUP_TYPE.TEXT,
-                null,
-                { wide: true }
-            );
-        }
+        // Refresh UI
+        content.find('#tab_blueprint').html(buildBlueprintTabContent());
+        refreshBlueprintPreview();
+        updateStatusDisplay();
+
+        toastr.success('Blueprint loaded!');
     } catch (error) {
-        console.error('[Story Mode] Error playing blueprint:', error);
-        toastr.error('Failed to play blueprint');
+        console.error('[Story Mode] Error loading blueprint:', error);
+        toastr.error('Failed to load blueprint');
     }
 }
 
@@ -1777,7 +1526,7 @@ async function deleteBlueprintFromLibrary(content, blueprintId) {
 }
 
 /**
- * Export blueprint from library as PNG
+ * Export blueprint from library as PNG (extended format with embedded resources)
  */
 async function exportBlueprintFromLibrary(blueprintId) {
     try {
@@ -1789,28 +1538,17 @@ async function exportBlueprintFromLibrary(blueprintId) {
             return;
         }
 
-        LoadingIndicator.show('Exporting blueprint...');
+        // Use new extended PNG export (handles cover, characters, etc.)
+        const result = await exportBlueprintAsPNG(blueprint);
 
-        // Export as PNG with embedded metadata
-        const pngBlob = await encodeBlueprintAsPNG(blueprint);
-        const filename = `${(blueprint.userMetadata?.title || 'blueprint').replace(/[^a-z0-9]/gi, '_').toLowerCase()}.png`;
-
-        // Trigger download
-        const url = URL.createObjectURL(pngBlob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        toastr.success('Blueprint exported as PNG');
+        if (result.success) {
+            toastr.success(`Blueprint exported: ${result.filename}`);
+        } else {
+            toastr.error('Export failed: ' + result.error);
+        }
     } catch (error) {
         console.error('[Story Mode] Error exporting blueprint:', error);
         toastr.error('Failed to export blueprint: ' + error.message);
-    } finally {
-        LoadingIndicator.hide();
     }
 }
 
@@ -1857,85 +1595,6 @@ function setupEventListeners() {
     });
     // Open settings dialog
     $('#open_story_mode_settings').on('click', showSettingsDialog);
-    // Generate opening message button
-    $(document).on('click', '#generate_opening_btn', async function () {
-        const btn = $(this);
-        const statusDiv = $('#generate_opening_status');
-        const originalText = btn.html();
-        // Check if save to blueprint is enabled
-        const saveToBlueprint = $('#save_opening_to_blueprint').is(':checked');
-        // Set loading state
-        btn.prop('disabled', true);
-        btn.html('<i class="fa-solid fa-circle-notch fa-spin"></i> Generating...');
-        statusDiv.text('Generating opening message...').show();
-        LoadingIndicator.show('Generating opening message...');
-        try {
-            const result = await BlueprintModule.generateOpeningMessage({ saveToBlueprint });
-            if (result.success) {
-                // Note: We no longer auto-push the opening message to chat
-                // The user can use "Start Story" which will prompt for saved opening message
-                const statusText = saveToBlueprint
-                    ? 'Opening message generated and saved to blueprint! Use "Start Story" to add it to chat.'
-                    : 'Opening message generated! (not saved)';
-                statusDiv.text(statusText).css('color', 'var(--SmartThemeQuoteColor)');
-                toastr.success(statusText, 'Blueprint');
-                // Refresh the blueprint tab UI to show the stored message
-                if (saveToBlueprint) {
-                    const blueprintState = BlueprintModule.getBlueprintState();
-                    if (blueprintState.blueprint) {
-                        // Refresh the blueprint tab to show the updated opening message
-                        const chatState = getChatStoryState();
-                        const blueprint = blueprintState.blueprint;
-                        const currentScene = BlueprintModule.getCurrentScene(
-                            blueprint,
-                            chatState.currentStep,
-                            chatState.arcLength,
-                            blueprintState.sceneMode,
-                            blueprintState.currentSceneIndex
-                        );
-                        $('#blueprint_subtab_content').html(renderBlueprintOverviewSubtab(blueprint, currentScene));
-                        // Also refresh the main panel preview if visible
-                        refreshBlueprintPreview();
-                    }
-                }
-            } else {
-                // Show error
-                statusDiv.text(`Error: ${result.error}`).css('color', 'var(--corruption)');
-                toastr.error(`Failed to generate opening: ${result.error}`, 'Blueprint Error');
-            }
-        } catch (error) {
-            console.error('[Story Mode] Error generating opening message:', error);
-            statusDiv.text('Error generating opening').css('color', 'var(--corruption)');
-            toastr.error(`Failed to generate opening: ${error.message}`, 'Blueprint Error');
-        } finally {
-            // Restore button state
-            btn.prop('disabled', false);
-            btn.html(originalText);
-            LoadingIndicator.hide();
-        }
-    });
-    /**
-     * Helper function to generate and push an opening message.
-     * Reduces duplication in start_story_from_blueprint_btn handler.
-     * @param {jQuery} btn - The button element to show loading state on
-     * @param {string} successMessage - Success message for toast notification
-     * @returns {Promise<boolean>} - True if successful, false otherwise
-     */
-    async function generateAndPushOpening(btn, successMessage) {
-        btn.html('<i class="fa-solid fa-circle-notch fa-spin"></i> Generating opening...');
-        const openingResult = await BlueprintModule.generateOpeningMessage({ saveToBlueprint: true });
-
-        if (!openingResult.success) {
-            toastr.error(`Failed to generate opening: ${openingResult.error}`, 'Blueprint Error');
-            toastr.info('Story started successfully, but opening generation failed', 'Story Mode');
-            return false;
-        }
-
-        await pushStoryMessage(openingResult.opening);
-        await saveChatConditional();
-        toastr.success(successMessage, 'Story Mode');
-        return true;
-    }
 
     // Start Story from Blueprint button (in settings dialog)
     $(document).on('click', '#start_story_from_blueprint_btn', async function () {
@@ -1951,7 +1610,6 @@ function setupEventListeners() {
         // Set loading state
         btn.prop('disabled', true);
         btn.html('<i class="fa-solid fa-circle-notch fa-spin"></i> Starting...');
-        LoadingIndicator.show('Starting story from blueprint...');
 
         try {
             // Start the story from blueprint (syncs settings, enables features)
@@ -1965,48 +1623,27 @@ function setupEventListeners() {
             // Show any warnings
             result.warnings?.forEach(w => toastr.warning(w, 'Blueprint Warning'));
 
-            // Handle opening message logic
+            // Handle opening message logic (simplified - no generation option)
             const savedOpening = blueprintState.blueprint?.opening_message;
-            let shouldGenerateOpening = false;
-            let openingUsed = false;
 
             if (savedOpening) {
                 // Ask if user wants to use the saved opening message
                 const useSaved = await callGenericPopup(
-                    `This blueprint has a saved opening message:\n\n"${savedOpening.substring(0, 100)}${savedOpening.length > 100 ? '...' : ''}"\n\nWould you like to use this saved opening message?`,
+                    `This blueprint has a saved opening message:\n\n"${savedOpening.substring(0, 150)}${savedOpening.length > 150 ? '...' : ''}"\n\nWould you like to use it to start the story?`,
                     POPUP_TYPE.CONFIRM
                 );
 
                 if (useSaved === POPUP_RESULT.AFFIRMATIVE) {
                     await pushStoryMessage(savedOpening);
                     await saveChatConditional();
-                    toastr.success('Story started with saved opening message!', 'Story Mode');
-                    openingUsed = true;
+                    toastr.success('Story started with opening message!', 'Story Mode');
                 } else {
-                    // Ask if they want to generate a new one instead
-                    const generateNew = await callGenericPopup(
-                        'Would you like to generate a new opening message instead?',
-                        POPUP_TYPE.CONFIRM
-                    );
-                    shouldGenerateOpening = (generateNew === POPUP_RESULT.AFFIRMATIVE);
+                    toastr.success('Story started from blueprint!', 'Story Mode');
                 }
             } else {
-                // No saved opening - ask if user wants to generate one
-                const generateOpening = await callGenericPopup(
-                    'Would you like to generate an opening message for Scene 1?',
-                    POPUP_TYPE.CONFIRM
-                );
-                shouldGenerateOpening = (generateOpening === POPUP_RESULT.AFFIRMATIVE);
-            }
-
-            // Generate opening if requested (using the same code path for both cases)
-            if (shouldGenerateOpening) {
-                await generateAndPushOpening(btn, savedOpening
-                    ? 'Story started with new opening message!'
-                    : 'Story started with opening message!');
-                openingUsed = true;
-            } else if (!openingUsed) {
+                // Legacy blueprint without opening message
                 toastr.success('Story started from blueprint!', 'Story Mode');
+                toastr.info('This blueprint has no opening message. You can write your own first message.', 'Story Mode', { timeOut: 5000 });
             }
 
             // Close the settings dialog (try multiple methods for reliability)
@@ -2027,7 +1664,6 @@ function setupEventListeners() {
             console.error('[Story Mode] Error starting story from blueprint:', error);
             toastr.error(`Failed to start story: ${error.message}`, 'Blueprint Error');
         } finally {
-            LoadingIndicator.hide();
             btn.prop('disabled', false);
             btn.html(originalText);
         }
@@ -2288,7 +1924,7 @@ function updateStatusDisplay() {
                     chatState.currentStep,
                     chatState.arcLength,
                     blueprintState.sceneMode,
-                    blueprintState.currentSceneIndex
+                    getCurrentSceneIndex()
                 );
                 if (currentScene) {
                     statusText += ` | <span class="storymode-blueprint-indicator"><i class="fa-solid fa-scroll"></i> Blueprint: Scene ${currentScene.index + 1}/${blueprintState.blueprint.scene_plan.length}</span>`;
@@ -2314,243 +1950,13 @@ function updateStatusDisplay() {
         }
     }
 
-    // Update Floating Debug Panel
-    updateFloatingDebugPanel();
+    // Update Story Controller Panel
+    updateControllerPanel();
 }
 
-/**
- * Render or update the floating debug panel based on current settings and state.
- */
-function updateFloatingDebugPanel() {
-    const settings = extension_settings[MODULE_NAME];
-    const panelHtml = renderDebugPanel();
-    let panel = $('#storymode-debug-panel');
 
-    if (!settings.debugPanelEnabled) {
-        panel.remove();
-        return;
-    }
 
-    if (panelHtml) {
-        if (panel.length > 0) {
-            // Update existing panel content
-            const newContent = $(panelHtml).find('.storymode-debug-content').html();
-            panel.find('.storymode-debug-content').html(newContent);
 
-            // Re-apply rolled up state if needed
-            if (settings.debugPanelRolledUp) {
-                panel.addClass('sm-rolled-up');
-            } else {
-                panel.removeClass('sm-rolled-up');
-            }
-        } else {
-            // Create new panel
-            panel = $(panelHtml);
-            $('body').append(panel);
-
-            // Apply initial rolled up state
-            if (settings.debugPanelRolledUp) {
-                panel.addClass('sm-rolled-up');
-            }
-
-            // Add double-click handler for roll-up
-            panel.find('.storymode-debug-header').on('dblclick', function () {
-                const isRolledUp = panel.hasClass('sm-rolled-up');
-                if (isRolledUp) {
-                    panel.removeClass('sm-rolled-up');
-                    extension_settings[MODULE_NAME].debugPanelRolledUp = false;
-                } else {
-                    panel.addClass('sm-rolled-up');
-                    extension_settings[MODULE_NAME].debugPanelRolledUp = true;
-                }
-                saveSettingsDebounced();
-            });
-
-            // Add click handlers for detail popups
-            panel.on('click', '#storymode-debug-scene-link', () => showDebugDetailPopup('scene'));
-            panel.on('click', '#storymode-debug-beats-link', () => showDebugDetailPopup('beats'));
-
-            // Restore saved position if available
-            if (settings.debugPanelPosition) {
-                panel.css({
-                    top: settings.debugPanelPosition.top,
-                    bottom: 'auto',
-                    left: settings.debugPanelPosition.left,
-                    right: 'auto'
-                });
-            }
-
-            // Add close button handler
-            panel.find('#storymode-debug-close').on('click', () => {
-                extension_settings[MODULE_NAME].debugPanelEnabled = false;
-                saveSettingsDebounced();
-                panel.remove();
-                // Sync settings dialog if open
-                $('#debug_panel_enabled').prop('checked', false);
-            });
-
-            // Add drag functionality
-            let isDragging = false;
-            let dragStartX = 0;
-            let dragStartY = 0;
-            let panelStartX = 0;
-            let panelStartY = 0;
-
-            const header = panel.find('.storymode-debug-header');
-
-            header.on('mousedown', function (e) {
-                // Only start drag on left click and not on close button
-                if (e.button !== 0 || $(e.target).closest('#storymode-debug-close').length) {
-                    return;
-                }
-
-                isDragging = true;
-                dragStartX = e.clientX;
-                dragStartY = e.clientY;
-
-                const rect = panel[0].getBoundingClientRect();
-                panelStartX = rect.left;
-                panelStartY = rect.top;
-
-                panel.addClass('dragging');
-                e.preventDefault();
-            });
-
-            $(document).on('mousemove.debugPanelDrag', function (e) {
-                if (!isDragging) return;
-
-                const deltaX = e.clientX - dragStartX;
-                const deltaY = e.clientY - dragStartY;
-
-                let newLeft = panelStartX + deltaX;
-                let newTop = panelStartY + deltaY;
-
-                // Constrain to viewport
-                const panelWidth = panel.outerWidth();
-                const panelHeight = panel.outerHeight();
-                const viewportWidth = window.innerWidth;
-                const viewportHeight = window.innerHeight;
-
-                newLeft = Math.max(0, Math.min(newLeft, viewportWidth - panelWidth));
-                newTop = Math.max(0, Math.min(newTop, viewportHeight - panelHeight));
-
-                panel.css({
-                    left: newLeft + 'px',
-                    top: newTop + 'px',
-                    right: 'auto',
-                    bottom: 'auto'
-                });
-            });
-
-            $(document).on('mouseup.debugPanelDrag', function () {
-                if (!isDragging) return;
-
-                isDragging = false;
-                panel.removeClass('dragging');
-
-                // Save position
-                const rect = panel[0].getBoundingClientRect();
-                extension_settings[MODULE_NAME].debugPanelPosition = {
-                    left: rect.left + 'px',
-                    top: rect.top + 'px'
-                };
-                saveSettingsDebounced();
-            });
-        }
-    } else {
-        panel.remove();
-    }
-}
-
-/**
- * Show a detailed popup for the debug panel (scene or beats)
- * @param {'scene'|'beats'} type - The type of popup to show
- */
-function showDebugDetailPopup(type) {
-    const chatState = getChatStoryState();
-    const blueprintState = BlueprintModule.getBlueprintState();
-
-    if (!blueprintState?.blueprint) {
-        toastr.info('No active blueprint to show details for.');
-        return;
-    }
-
-    const blueprint = blueprintState.blueprint;
-    const scene = BlueprintModule.getCurrentScene(
-        blueprint,
-        chatState.currentStep,
-        chatState.arcLength,
-        blueprintState.sceneMode || 'auto',
-        blueprintState.currentSceneIndex || 0
-    );
-
-    if (!scene) {
-        toastr.info('Current scene not found.');
-        return;
-    }
-
-    let title = '';
-    let contentHtml = '';
-
-    if (type === 'scene') {
-        title = `Scene ${scene.index + 1}: ${scene.title}`;
-        contentHtml = `
-            <div class="storymode-popup-details">
-                <div class="storymode-detail-section">
-                    <h4><i class="fa-solid fa-scroll"></i> Plot Summary</h4>
-                    <p>${escapeHtml(scene.plot_summary || 'No summary available.')}</p>
-                </div>
-                <div class="storymode-detail-section">
-                    <h4><i class="fa-solid fa-bullseye"></i> Scene Purpose</h4>
-                    <p>${escapeHtml(scene.purpose || 'No purpose defined.')}</p>
-                </div>
-                <div class="storymode-detail-section">
-                    <h4><i class="fa-solid fa-bolt"></i> Key Events</h4>
-                    <ul>
-                        ${(scene.key_events_if_unchallenged || []).map(e => `<li>${escapeHtml(e)}</li>`).join('')}
-                    </ul>
-                </div>
-                <div class="storymode-detail-section">
-                    <h4><i class="fa-solid fa-users"></i> Characters</h4>
-                    <p>${escapeHtml((scene.characters || []).join(', ') || 'None specified.')}</p>
-                </div>
-                <div class="storymode-detail-row">
-                    <div><strong>Phase:</strong> ${scene.phase}</div>
-                    <div><strong>Tone:</strong> ${scene.tone || 'Neutral'}</div>
-                </div>
-            </div>
-        `;
-    } else if (type === 'beats') {
-        title = `Beats: ${scene.title}`;
-        const completedBeats = BlueprintModule.getCompletedBeats(scene.index);
-
-        contentHtml = `
-            <div class="storymode-popup-details">
-                <div class="storymode-beat-checklist">
-                    ${(scene.beats || []).map((beat, idx) => {
-            const isDone = completedBeats.includes(idx);
-            const isCurrent = idx === Math.min(completedBeats.length, scene.beats.length - 1) && !isDone;
-            return `
-                            <div class="storymode-beat-item ${isDone ? 'done' : ''} ${isCurrent ? 'current' : ''}">
-                                <div class="storymode-beat-status">
-                                    ${isDone ? '<i class="fa-solid fa-circle-check"></i>' : (isCurrent ? '<i class="fa-solid fa-arrow-right"></i>' : '<i class="fa-regular fa-circle"></i>')}
-                                </div>
-                                <div class="storymode-beat-text">
-                                    <strong>Beat ${idx + 1}:</strong> ${escapeHtml(typeof beat === 'object' ? (beat.description || beat.title || JSON.stringify(beat)) : beat)}
-                                </div>
-                            </div>
-                        `;
-        }).join('')}
-                </div>
-                <p class="storymode-form-hint" style="margin-top: 15px;">
-                    <i class="fa-solid fa-info-circle"></i> LLM marks beats complete automatically when it outputs <code>@@BEAT:${completedBeats.length + 1}@@</code>
-                </p>
-            </div>
-        `;
-    }
-
-    callGenericPopup(contentHtml, POPUP_TYPE.TEXT, title, { wide: true, okButton: 'Close' });
-}
 
 /**
 * Refresh the blueprint preview section in the main panel.
@@ -2837,11 +2243,26 @@ jQuery(async function () {
     console.log('[Story Mode] Blueprint module initialized');
 
     // Initialize Loading Indicator module
-    LoadingIndicator.init();
     console.log('[Story Mode] Loading Indicator module initialized');
+
+    // Initialize Scene Image Storage (with graceful degradation)
+    try {
+        SceneImageStorage.initializeStorage();
+        console.log('[Story Mode] Scene Image Storage initialized');
+    } catch (error) {
+        console.warn('[Story Mode] Scene Image Storage initialization failed, disabling feature:', error);
+        // Disable image generation if storage initialization fails
+        const settings = extension_settings[MODULE_NAME];
+        if (settings.imageGeneration) {
+            settings.imageGeneration.enabled = false;
+        }
+    }
 
     // Add UI
     await addUI();
+
+    // Initialize controller panel
+    updateControllerPanel();
 
     // Register wand menu entry
     registerWandMenuEntry();
@@ -3588,12 +3009,7 @@ async function launchWizardModal(content) {
                     return;
                 }
 
-                // Save the blueprint to blueprint state
-                const blueprintState = BlueprintModule.getBlueprintState();
-                blueprintState.blueprint = result.blueprint;
-                await BlueprintModule.saveBlueprintState(blueprintState);
-
-                // Auto-save to library
+                // Save to library first (doesn't affect current chat state)
                 try {
                     await saveCurrentBlueprintToLibrary({
                         title: result.blueprint.blueprint_title || result.blueprint.core_premise?.substring(0, 50),
@@ -3603,19 +3019,46 @@ async function launchWizardModal(content) {
                     console.log('[Story Mode] Blueprint auto-saved to library');
                 } catch (libError) {
                     console.error('[Story Mode] Failed to auto-save to library:', libError);
-                    // Don't block the save if library save fails
+                    toastr.warning('Blueprint generated but could not be saved to library');
                 }
 
-                // Return to library if from library context, otherwise go to overview
-                if (returnToLibraryIfNeeded()) {
+                // Ask user if they want to start the story now
+                const startNowHtml = `
+                    <h3>Blueprint Generated Successfully!</h3>
+                    <p>Your blueprint has been saved to the library.</p>
+                    <p><strong>Would you like to start the story now?</strong></p>
+                `;
+
+                const startNow = await callGenericPopup(startNowHtml, POPUP_TYPE.CONFIRM, '', {
+                    okButton: 'Start Story Now',
+                    cancelButton: 'View in Library',
+                });
+
+                if (startNow === POPUP_RESULT.AFFIRMATIVE) {
+                    // Create run copy and start story
+                    const runState = BlueprintModule.createRunCopy(result.blueprint, 'wizard');
+                    await BlueprintModule.saveBlueprintState(runState);
+
+                    // Handle opening message if present
+                    if (result.blueprint.opening_message) {
+                        const useSaved = await callGenericPopup(
+                            `This blueprint has an opening message:\n\n"${result.blueprint.opening_message.substring(0, 150)}${result.blueprint.opening_message.length > 150 ? '...' : ''}"\n\nWould you like to use it to start the story?`,
+                            POPUP_TYPE.CONFIRM
+                        );
+                        if (useSaved === POPUP_RESULT.AFFIRMATIVE) {
+                            await pushStoryMessage(result.blueprint.opening_message);
+                            await saveChatConditional();
+                        }
+                    }
+
+                    toastr.success('Story started from blueprint!', 'Story Mode');
+                } else {
+                    // Just return to library view
+                    returnToLibraryIfNeeded();
                     // Refresh the library grid to show the new blueprint
                     const activeFolder = content.find('.storymode-folder-item.active').data('folder') || 'all';
                     await loadBlueprintsForFolder(content, activeFolder);
                     toastr.success('Blueprint saved to library!');
-                } else {
-                    // Normal flow - update the blueprint UI
-                    content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
-                    toastr.success('Blueprint saved successfully!');
                 }
             }
 

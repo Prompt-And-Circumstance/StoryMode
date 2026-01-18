@@ -3,14 +3,12 @@
    "Literary Theatre" - Elegant storytelling meets stage drama
    ============================================================================ */
 
-/* Import Loading Indicator module styles */
-@import url('./lib/loading-indicator.css');
-
 /* Import Blueprint module styles */
 @import url('./lib/blueprint-base.css');
 @import url('./lib/blueprint-editor.css');
 @import url('./lib/blueprint-storage.css');
 @import url('./lib/blueprint-library.css');
+@import url('./lib/blueprint-import-ui.css');
 
 /* CSS Custom Properties - Rich, sophisticated palette */
 :root {
@@ -271,24 +269,6 @@
     background: var(--black50a) !important;
     border-radius: var(--sm-radius-sm) !important;
     border-left: 3px solid var(--sm-accent) !important;
-}
-
-/* Generate opening button */
-#generate_opening_btn {
-    margin-top: 8px;
-    padding: 10px 14px;
-    background: var(--sm-phase-setup);
-    border: none;
-    border-radius: var(--sm-radius-sm);
-    color: white;
-    font-weight: 500;
-    font-size: 0.85em;
-    transition: var(--sm-transition);
-}
-
-#generate_opening_btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(102, 187, 106, 0.3);
 }
 
 #view_blueprint_details_btn {
@@ -3153,10 +3133,10 @@ details.storymode-advanced-options[open] summary {
     bottom: 20px;
     right: 20px;
     width: 280px;
-    background: rgba(0, 0, 0, 0.85);
-    border: 1px solid var(--sm-accent);
+    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 90%, black);
+    border: 1px solid var(--SmartThemeBorderColor);
     border-radius: var(--sm-radius-md);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     z-index: 10000;
     font-size: 0.85em;
     backdrop-filter: blur(8px);
@@ -3218,23 +3198,76 @@ details.storymode-advanced-options[open] summary {
     font-size: 0.9em;
 }
 
-.storymode-debug-close {
+.storymode-debug-prompt-btn {
     margin-left: auto;
-    background: transparent;
+    background: rgba(255, 255, 255, 0.15);
     border: none;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.8);
     cursor: pointer;
-    padding: 4px;
-    font-size: 0.9em;
+    padding: 4px 8px;
+    font-size: 0.85em;
+    border-radius: 4px;
     transition: var(--sm-transition-fast);
 }
 
-.storymode-debug-close:hover {
+.storymode-header-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.storymode-debug-close,
+.storymode-debug-dock-btn,
+.storymode-debug-prompt-btn {
+    background: rgba(0, 0, 0, 0.2);
+    border: none;
     color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.storymode-debug-close:hover,
+.storymode-debug-dock-btn:hover,
+.storymode-debug-prompt-btn:hover {
+    background: rgba(0, 0, 0, 0.4);
 }
 
 .storymode-debug-content {
-    padding: 12px 14px;
+    padding: 14px;
+}
+
+/* Docked Drawer Styles */
+#storymode-controller-drawer .storymode-drawer-content-inner {
+    padding: 10px;
+    height: calc(100% - 40px);
+    overflow-y: auto;
+}
+
+#storymode-controller-drawer .storymode-debug-section {
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    padding-bottom: 12px;
+}
+
+#storymode-controller-drawer .storymode-debug-section:last-child {
+    border-bottom: none;
+}
+
+.storymode-drawer-actions {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 8px;
+    background: var(--black30a);
+    border-top: 1px solid var(--SmartThemeBorderColor);
+    display: flex;
+    justify-content: center;
 }
 
 .storymode-debug-section {
@@ -3254,7 +3287,7 @@ details.storymode-advanced-options[open] summary {
 }
 
 .storymode-debug-value {
-    color: white;
+    color: var(--SmartThemeBodyColor);
     font-weight: 500;
     font-size: 1em;
 }
@@ -3266,13 +3299,13 @@ details.storymode-advanced-options[open] summary {
 
 .storymode-debug-meta {
     font-size: 0.8em;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--SmartThemeQuoteColor);
     margin-top: 2px;
 }
 
 .storymode-debug-bar {
     height: 4px;
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--black30a);
     border-radius: 2px;
     margin-top: 6px;
     overflow: hidden;
@@ -3303,7 +3336,7 @@ details.storymode-advanced-options[open] summary {
 }
 
 .storymode-debug-beats .beat-pending {
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--SmartThemeQuoteColor);
 }
 
 @keyframes beatPulse {
@@ -3328,7 +3361,7 @@ details.storymode-advanced-options[open] summary {
 }
 
 .storymode-debug-interactable:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--black30a);
 }
 
 .storymode-debug-interactable .storymode-debug-label {
@@ -3354,7 +3387,7 @@ details.storymode-advanced-options[open] summary {
     align-items: center;
     gap: 8px;
     font-size: 1.1em;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
     padding-bottom: 4px;
 }
 
@@ -3377,7 +3410,7 @@ details.storymode-advanced-options[open] summary {
     display: flex;
     gap: 20px;
     padding-top: 10px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid var(--SmartThemeBorderColor);
 }
 
 .storymode-beat-checklist {
@@ -3390,7 +3423,7 @@ details.storymode-advanced-options[open] summary {
     display: flex;
     gap: 12px;
     padding: 10px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--black30a);
     border-radius: var(--sm-radius-md);
     border-left: 4px solid transparent;
 }
@@ -3420,7 +3453,7 @@ details.storymode-advanced-options[open] summary {
 }
 
 .storymode-beat-status .fa-circle {
-    color: rgba(255, 255, 255, 0.2);
+    color: var(--SmartThemeQuoteColor);
 }
 
 .storymode-beat-text {
@@ -3439,6 +3472,330 @@ details.storymode-advanced-options[open] summary {
     }
 }
 
+/* Scene Popout Panel - Anchored slide-out */
+.storymode-scene-popout {
+    position: fixed;
+    bottom: 20px;
+    right: 310px;
+    width: 360px;
+    max-height: 80vh;
+    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 92%, black);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-md);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    z-index: 10001;
+    font-size: 0.85em;
+    backdrop-filter: blur(12px);
+    animation: scenePopoutSlideIn 0.25s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+@keyframes scenePopoutSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.storymode-scene-popout.dragging {
+    opacity: 0.9;
+    transition: none;
+}
+
+.storymode-scene-popout.dragging .storymode-scene-popout-header {
+    cursor: grabbing;
+}
+
+.storymode-scene-popout-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--sm-accent);
+    color: white;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.storymode-scene-popout-header i {
+    font-size: 0.9em;
+}
+
+.storymode-scene-popout-close {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    padding: 4px 6px;
+    font-size: 1em;
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-scene-popout-close:hover {
+    color: white;
+}
+
+.storymode-scene-popout-body {
+    padding: 16px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.storymode-popout-section {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-popout-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.storymode-popout-section h4 {
+    margin: 0 0 8px 0;
+    color: var(--sm-accent);
+    font-size: 0.8em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.storymode-popout-section p {
+    margin: 0;
+    line-height: 1.5;
+    color: var(--SmartThemeEmColor);
+}
+
+.storymode-popout-section ul {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-popout-section li {
+    margin-bottom: 4px;
+}
+
+.storymode-popout-meta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.storymode-popout-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.storymode-popout-meta-label {
+    font-size: 0.7em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.storymode-popout-meta-value {
+    font-weight: 500;
+    color: white;
+}
+
+/* Checklist styling */
+.storymode-popout-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.storymode-popout-checklist-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--sm-radius-sm);
+    border-left: 3px solid transparent;
+}
+
+.storymode-popout-checklist-item.complete {
+    border-left-color: var(--sm-phase-setup);
+    opacity: 0.7;
+}
+
+.storymode-popout-checklist-item.pending {
+    border-left-color: var(--sm-warm);
+}
+
+.storymode-popout-checklist-icon {
+    font-size: 0.9em;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.storymode-popout-checklist-icon.complete {
+    color: var(--sm-phase-setup);
+}
+
+.storymode-popout-checklist-icon.pending {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.storymode-popout-checklist-text {
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Next scene preview */
+.storymode-next-scene-preview {
+    background: rgba(var(--sm-accent-rgb), 0.1);
+    border: 1px solid rgba(var(--sm-accent-rgb), 0.3);
+    border-radius: var(--sm-radius-sm);
+    padding: 12px;
+}
+
+.storymode-next-scene-preview h5 {
+    margin: 0 0 6px 0;
+    color: var(--sm-accent);
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.storymode-next-scene-preview p {
+    margin: 0;
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.4;
+}
+
+/* Prompt Inspector Panel */
+.storymode-prompt-inspector {
+    position: fixed;
+    bottom: 20px;
+    right: 310px;
+    width: 500px;
+    max-height: 85vh;
+    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, black);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-md);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    z-index: 10002;
+    font-size: 0.85em;
+    backdrop-filter: blur(12px);
+    animation: scenePopoutSlideIn 0.25s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.storymode-prompt-inspector-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--sm-accent);
+    color: white;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.storymode-prompt-inspector-close {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    padding: 4px 6px;
+    font-size: 1em;
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-prompt-inspector-close:hover {
+    color: white;
+}
+
+.storymode-prompt-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    flex-shrink: 0;
+}
+
+.storymode-prompt-tab {
+    flex: 1;
+    padding: 10px 16px;
+    background: transparent;
+    border: none;
+    color: var(--SmartThemeQuoteColor);
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 500;
+    transition: var(--sm-transition-fast);
+    border-bottom: 2px solid transparent;
+}
+
+.storymode-prompt-tab:hover {
+    color: var(--SmartThemeBodyColor);
+    background: var(--black30a);
+}
+
+.storymode-prompt-tab.active {
+    color: var(--SmartThemeBodyColor);
+    border-bottom-color: var(--sm-accent);
+    background: var(--black30a);
+}
+
+.storymode-prompt-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.storymode-prompt-code {
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+    font-size: 0.85em;
+    line-height: 1.5;
+    background: var(--black30a);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    padding: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--SmartThemeEmColor);
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.storymode-prompt-code .xml-tag {
+    color: #7ec8e3;
+}
+
+.storymode-prompt-code .xml-attr {
+    color: #f9ae58;
+}
+
+.storymode-prompt-code .xml-value {
+    color: #a8d08d;
+}
+
+.storymode-prompt-empty {
+    text-align: center;
+    color: var(--SmartThemeQuoteColor);
+    padding: 40px;
+    font-style: italic;
+}
+
 /* ============================================================================
    EDITOR PANELS (Story Types / Author Styles)
    Left-aligned, clean, horizontal buttons
@@ -3447,7 +3804,7 @@ details.storymode-advanced-options[open] summary {
 /* Editor container */
 .storymode-editor {
     text-align: left;
-    padding: 16px;
+    padding: 12px;
 }
 
 /* Controls bar - horizontal button layout */
@@ -3455,7 +3812,7 @@ details.storymode-advanced-options[open] summary {
     display: flex;
     flex-direction: row;
     gap: 10px;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
     flex-wrap: wrap;
 }
 
@@ -3463,75 +3820,131 @@ details.storymode-advanced-options[open] summary {
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    padding: 8px 14px;
+    background: var(--black40a);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    color: var(--SmartThemeBodyColor);
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-editor-controls .menu_button:hover {
+    background: var(--sm-accent);
+    border-color: var(--sm-accent);
+    color: white;
+    box-shadow: 0 2px 8px var(--sm-accent-glow);
 }
 
 /* Search field */
 .storymode-editor .storymode-field {
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 .storymode-editor .text_pole {
     width: 100%;
     box-sizing: border-box;
+    padding: 10px 14px;
+    background: var(--black30a);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    color: var(--SmartThemeBodyColor);
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-editor .text_pole:focus {
+    outline: none;
+    border-color: var(--sm-accent);
+    box-shadow: 0 0 0 2px var(--sm-accent-subtle);
 }
 
 /* Editor list container */
 .storymode-editor-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 0;
     max-height: 400px;
     overflow-y: auto;
 }
 
-/* Individual list item */
+/* Individual list item - flat modern design */
 .storymode-editor-item {
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: var(--sm-radius-sm);
-    padding: 12px;
-    background: rgba(0, 0, 0, 0.2);
-    transition: background-color var(--sm-transition);
+    border: none;
+    border-left: 3px solid transparent;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 0;
+    padding: 16px 18px;
+    background: transparent;
+    transition: all var(--sm-transition-fast);
+}
+
+.storymode-editor-item:last-child {
+    border-bottom: none;
 }
 
 .storymode-editor-item:hover {
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+    border-left-color: var(--sm-accent);
 }
 
 /* Item header - name and category */
 .storymode-editor-item-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     gap: 12px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     text-align: left;
 }
 
 .storymode-editor-item-header strong {
     font-size: 1rem;
-    color: var(--sm-accent);
+    font-weight: 600;
+    color: var(--SmartThemeBodyColor);
+    letter-spacing: 0.2px;
 }
 
 .storymode-editor-category {
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.75rem;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
     white-space: nowrap;
+    padding: 4px 10px;
+    background: var(--black50a);
+    border-radius: 12px;
 }
 
 /* Item content - description */
 .storymode-editor-item-content {
     text-align: left;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 .storymode-editor-item-content p {
     margin: 0;
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.9rem;
-    line-height: 1.4;
-    max-height: 3.6em;
+    color: var(--SmartThemeEmColor);
+    font-size: 0.88rem;
+    line-height: 1.5;
+    max-height: 4.5em;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* NSFW indicator styling - matches NSFW panel, now as sibling of content */
+.storymode-editor-item .storymode-nsfw-text {
+    padding: 10px 12px;
+    margin: 8px 0 12px 0;
+    background: var(--black50a);
+    color: var(--SmartThemeBodyColor);
+    border-left: 3px solid var(--sm-warm);
+    border-radius: var(--sm-radius-sm);
+    font-size: 0.85em;
+    line-height: 1.5;
+}
+
+.storymode-editor-item .storymode-nsfw-text strong {
+    color: var(--sm-warm);
 }
 
 /* Action buttons - horizontal layout */
@@ -3543,5 +3956,650 @@ details.storymode-advanced-options[open] summary {
 }
 
 .storymode-editor-item-actions .menu_button {
-    padding: 6px 10px;
+    padding: 6px 12px;
+    font-size: 0.82em;
+    background: transparent;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    color: var(--SmartThemeBodyColor);
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-editor-item-actions .menu_button:hover {
+    background: var(--sm-accent);
+    border-color: var(--sm-accent);
+    color: white;
+}
+
+/* ============================================================================
+   EDIT FORM - FLAT CARD DESIGN
+   Reuses .storymode-form-grid and .storymode-form-section from blueprint-editor.css
+   ============================================================================ */
+
+/* Form container */
+.storymode-edit-form {
+    width: 100%;
+}
+
+/* Column within the grid */
+.storymode-form-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Card section - simple form section with label header */
+.storymode-form-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.storymode-form-card-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 0 6px 0;
+}
+
+.storymode-form-card-header i {
+    color: var(--sm-accent);
+    font-size: 0.8em;
+}
+
+.storymode-form-card-header h4 {
+    margin: 0;
+    font-size: 0.8em;
+    font-weight: 600;
+    color: var(--SmartThemeBodyColor);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.storymode-form-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Form field styling within cards */
+.storymode-form-card .storymode-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.storymode-form-card .storymode-field label {
+    font-weight: 500;
+    color: var(--SmartThemeEmColor);
+    font-size: 0.85em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.storymode-form-card .storymode-field .text_pole {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    background: var(--SmartThemeBlurTintColor);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    color: var(--SmartThemeBodyColor);
+    font-size: 0.9em;
+    transition: border-color 0.2s ease;
+}
+
+.storymode-form-card .storymode-field .text_pole:focus {
+    outline: none;
+    border-color: var(--sm-accent);
+}
+
+.storymode-form-card .storymode-field textarea.text_pole {
+    resize: vertical;
+    min-height: 60px;
+    max-height: 300px;
+    line-height: 1.4;
+}
+
+.storymode-form-card .storymode-field .notes {
+    font-size: 0.75em;
+    color: var(--SmartThemeQuoteColor);
+    margin-top: 2px;
+    line-height: 1.3;
+}
+
+/* Two-column layout for fields within a single card */
+.storymode-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+@media (max-width: 500px) {
+    .storymode-form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Revert button styling */
+.storymode-form-card .storymode-revert-btn {
+    margin-top: 8px;
+    padding: 8px 14px;
+    font-size: 0.85em;
+    background: transparent;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    color: var(--SmartThemeBodyColor);
+    cursor: pointer;
+    transition: var(--sm-transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.storymode-form-card .storymode-revert-btn:hover {
+    background: var(--black50a);
+    border-color: var(--sm-accent);
+    color: var(--sm-accent);
+}
+
+/* Checkbox styling in forms */
+.storymode-form-card .checkbox_label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--black40a);
+    border-radius: var(--sm-radius-sm);
+    cursor: pointer;
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-form-card .checkbox_label:hover {
+    background: var(--black50a);
+}
+
+.storymode-form-card .checkbox_label span {
+    font-size: 0.9em;
+}
+
+/* ============================================================================
+   SCENE IMAGE GENERATION STYLES
+   ============================================================================ */
+
+/* Scene image section in controller panel */
+.storymode-debug-thumb {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    /* Cap height to avoid taking up full panel */
+    overflow: hidden;
+    border-radius: 4px;
+    margin: 4px 0;
+    border: 1px solid var(--black30a);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    background: var(--black50a);
+}
+
+.storymode-debug-thumb img {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: contain;
+    /* Ensure full image is visible */
+    transition: transform 0.2s;
+}
+
+.storymode-debug-thumb:hover img {
+    transform: scale(1.05);
+}
+
+.storymode-small-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+    background: var(--black30a);
+    border: 1px solid var(--black50a);
+    border-radius: 4px;
+    color: var(--white);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.storymode-small-btn:hover:not(:disabled) {
+    background: var(--sm-accent);
+    border-color: var(--sm-accent);
+}
+
+.storymode-small-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Image preview popup */
+.storymode-image-preview {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, black);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-md);
+    max-width: 90vw;
+    max-height: 90vh;
+    z-index: 100001;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 9999px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(12px);
+}
+
+.storymode-image-preview-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--sm-accent);
+    border-radius: var(--sm-radius-md) var(--sm-radius-md) 0 0;
+    color: white;
+}
+
+.storymode-preview-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: inherit;
+}
+
+.storymode-preview-close {
+    background: transparent;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 4px;
+    transition: background 0.2s;
+    opacity: 0.8;
+}
+
+.storymode-preview-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    opacity: 1;
+}
+
+.storymode-image-preview-body {
+    padding: 16px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.storymode-image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--black30a);
+    border-radius: var(--sm-radius-sm);
+    padding: 8px;
+}
+
+.storymode-image-preview-img {
+    max-width: 100%;
+    max-height: 60vh;
+    border-radius: 4px;
+    object-fit: contain;
+}
+
+.storymode-image-prompt {
+    padding: 0;
+}
+
+.storymode-prompt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-prompt-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.storymode-edit-prompt-btn,
+.storymode-copy-prompt-btn {
+    background: transparent;
+    border: 1px solid var(--black50a);
+    color: var(--SmartThemeBodyColor);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.storymode-edit-prompt-btn:hover,
+.storymode-copy-prompt-btn:hover {
+    background: var(--sm-accent);
+    border-color: var(--sm-accent);
+}
+
+.storymode-prompt-text {
+    color: var(--SmartThemeEmColor);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    word-break: break-word;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: var(--sm-radius-sm);
+    border: 1px dashed transparent;
+    transition: all 0.15s;
+}
+
+.storymode-prompt-text:hover {
+    border-color: var(--SmartThemeBorderColor);
+    background: var(--black30a);
+}
+
+.storymode-prompt-edit {
+    width: 100%;
+    min-height: 80px;
+    padding: 8px;
+    border: 1px solid var(--sm-accent);
+    border-radius: var(--sm-radius-sm);
+    background: var(--SmartThemeBlurTintColor);
+    color: var(--SmartThemeBodyColor);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.storymode-prompt-edit:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sm-accent-glow);
+}
+
+.storymode-prompt-edit-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    justify-content: flex-end;
+}
+
+.storymode-prompt-text.hidden,
+.storymode-prompt-edit.hidden,
+.storymode-prompt-edit-actions.hidden {
+    display: none;
+}
+
+.storymode-image-meta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.storymode-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85rem;
+    color: var(--SmartThemeQuoteColor);
+}
+
+.storymode-image-preview-actions {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--SmartThemeBorderColor);
+    flex-wrap: wrap;
+    background: var(--black30a);
+    border-radius: 0 0 var(--sm-radius-md) var(--sm-radius-md);
+}
+
+.storymode-add-to-gallery {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+    min-width: 200px;
+}
+
+.storymode-gallery-select {
+    flex: 1;
+    padding: 6px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--black50a);
+    background: var(--black30a);
+    color: var(--SmartThemeBodyColor);
+    cursor: pointer;
+}
+
+.storymode-add-gallery-btn,
+.storymode-add-to-chat-btn,
+.storymode-download-btn,
+.storymode-regenerate-btn,
+.storymode-delete-btn {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--black50a);
+    background: var(--black30a);
+    color: var(--SmartThemeBodyColor);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.storymode-download-btn:hover {
+    background: var(--sm-accent);
+    border-color: var(--sm-accent);
+}
+
+.storymode-regenerate-btn:hover {
+    background: var(--sm-warm);
+    border-color: var(--sm-warm);
+}
+
+.storymode-delete-btn:hover {
+    background: var(--sm-phase-resolution);
+    border-color: var(--sm-phase-resolution);
+}
+
+.storymode-add-to-chat-btn:hover {
+    background: var(--sm-phase-setup);
+    border-color: var(--sm-phase-setup);
+}
+
+.storymode-add-gallery-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Story mode textarea class */
+.storymode-textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--black50a);
+    border-radius: 4px;
+    background: var(--black30a);
+    color: var(--SmartThemeBodyColor);
+    font-family: inherit;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    resize: vertical;
+    min-height: 60px;
+}
+
+.storymode-textarea:focus {
+    outline: none;
+    border-color: var(--sm-accent);
+}
+
+/* Scene Image Thumbnail Gallery */
+.storymode-scene-gallery {
+    padding: 12px 0 0 0;
+    margin-top: 8px;
+    border-top: 1px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-scene-gallery-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: 0.85rem;
+    color: var(--SmartThemeQuoteColor);
+    font-weight: 500;
+}
+
+.storymode-scene-gallery-header i {
+    color: var(--sm-accent);
+}
+
+.storymode-scene-gallery-track {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--sm-accent) transparent;
+}
+
+.storymode-scene-gallery-track::-webkit-scrollbar {
+    height: 6px;
+}
+
+.storymode-scene-gallery-track::-webkit-scrollbar-track {
+    background: var(--black30a);
+    border-radius: 3px;
+}
+
+.storymode-scene-gallery-track::-webkit-scrollbar-thumb {
+    background: var(--sm-accent);
+    border-radius: 3px;
+}
+
+.storymode-scene-thumb {
+    position: relative;
+    flex-shrink: 0;
+    width: 80px;
+    height: 60px;
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.storymode-scene-thumb:hover {
+    border-color: var(--SmartThemeBorderColor);
+    transform: scale(1.05);
+}
+
+.storymode-scene-thumb.active {
+    border-color: var(--sm-accent);
+    box-shadow: 0 0 8px var(--sm-accent-glow);
+}
+
+.storymode-scene-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.storymode-scene-thumb-label {
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+
+/* ============================================================================
+   PACING MODE TOGGLE
+   ============================================================================ */
+
+.storymode-mode-toggle {
+    border-top: 1px solid var(--SmartThemeBorderColor);
+    padding-top: 8px;
+    margin-top: 4px;
+}
+
+.storymode-toggle-buttons {
+    display: flex;
+    gap: 4px;
+    margin: 4px 0;
+}
+
+.storymode-mode-btn {
+    flex: 1;
+    padding: 4px 8px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 4px;
+    background: var(--SmartThemeBlurTintColor);
+    color: var(--SmartThemeBodyColor);
+    cursor: pointer;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+}
+
+.storymode-mode-btn:hover {
+    background: var(--SmartThemeQuoteColor);
+}
+
+.storymode-mode-btn.active {
+    background: var(--SmartThemeChatTintColor);
+    border-color: var(--SmartThemeQuoteColor);
+    font-weight: bold;
+}
+
+.storymode-mode-btn i {
+    font-size: 10px;
+}
+
+/* Docked Drawer Header */
+.storymode-docked-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--sm-accent);
+    /* Match floating panel teal */
+    color: white;
+    font-weight: 600;
+    border-bottom: 1px solid var(--black30a);
+    flex: 0 0 auto;
+}
+
+.storymode-docked-header h3 {
+    margin: 0;
+    font-size: 1em;
+    font-weight: 600;
+    color: white;
+}
+
+/* Ensure inner content scrolls independently */
+.storymode-drawer-content-inner {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
 }

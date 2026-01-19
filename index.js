@@ -2534,6 +2534,16 @@ async function attemptAutoCoverGeneration(blueprint, statusElement, previewConta
 }
 
 /**
+ * Helper to return to the library tab if appropriate
+ * @returns {boolean} True if returned to library, false otherwise
+ */
+function returnToLibraryIfNeeded() {
+    // Currently defaulting to false to fall back to overview
+    // Future improvement: track where the wizard was launched from
+    return false;
+}
+
+/**
  * Launch the wizard modal for phased blueprint generation
  * This creates a dedicated modal window for the wizard UI instead of embedding it in the settings dialog
  * @param {jQuery} content - The settings dialog content element

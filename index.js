@@ -34,7 +34,7 @@ import { Popper } from '/lib.js';
 import * as BlueprintModule from './lib/blueprint/module.js';
 
 // Import Blueprint Editor module
-import { openBlueprintEditor, generateCoverFromSD, addCoverToGallery, setCoverImageUrl } from './lib/blueprint-editor.js';
+import { openBlueprintEditor, generateCoverFromSD, addCoverToGallery, setCoverImageUrl } from './lib/editor/blueprint-editor.js';
 
 // Import Blueprint Integration module (Library API + PNG Storage)
 import {
@@ -159,7 +159,7 @@ import {
     exportAuthorStyles,
     refreshStoryTypesList,
     refreshAuthorStylesList,
-} from './lib/type-editors.js';
+} from './lib/editor/type-editors.js';
 
 // Import Event Handlers module
 import {

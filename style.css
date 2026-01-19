@@ -4,11 +4,11 @@
    ============================================================================ */
 
 /* Import Blueprint module styles */
-@import url('./lib/blueprint-base.css');
-@import url('./lib/blueprint-editor.css');
-@import url('./lib/blueprint-storage.css');
-@import url('./lib/blueprint-library.css');
-@import url('./lib/blueprint-import-ui.css');
+@import url('./lib/css/blueprint-base.css');
+@import url('./lib/css/blueprint-editor.css');
+@import url('./lib/css/blueprint-storage.css');
+@import url('./lib/css/blueprint-library.css');
+@import url('./lib/css/blueprint-import-ui.css');
 
 /* CSS Custom Properties - Rich, sophisticated palette */
 :root {

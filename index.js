@@ -178,6 +178,24 @@ import {
     updateWizardPreview,
 } from './lib/dialog/wizard.js';
 
+// Import Library View module
+import {
+    debounce,
+    refreshLibraryView,
+    loadBlueprintsForFolder,
+    sortLibraryBlueprints,
+    searchLibraryBlueprints,
+    renderBlueprintGrid,
+    loadBlueprintFromLibrary,
+    playBlueprintFromLibrary,
+    editBlueprintFromLibrary,
+    toggleBlueprintFavorite,
+    deleteBlueprintFromLibrary,
+    exportBlueprintFromLibrary,
+    refreshSidebar,
+    returnToLibraryIfNeeded,
+} from './lib/dialog/library-view.js';
+
 // Local aliases for backward compatibility with existing code
 // These will be replaced as we extract more modules
 const getStoryTypesLocal = () => getStoryTypes();
@@ -843,8 +861,8 @@ function setupUnifiedDialogEventListeners(content) {
         // If wizard mode is enabled, launch the wizard modal
         if (wizardEnabled) {
             await launchWizardModal(content, {
-                returnToLibraryIfNeeded,
-                loadBlueprintsForFolder
+                returnToLibraryIfNeeded: (c) => returnToLibraryIfNeeded(c, { showLibraryGridView }),
+                loadBlueprintsForFolder: (c, folderId) => loadBlueprintsForFolder(c, folderId, libraryCallbacks)
             });
             return;
         }
@@ -1105,7 +1123,7 @@ function setupUnifiedDialogEventListeners(content) {
 
     // Initialize library when Library tab is clicked
     content.on('click', '.storymode-tab[data-tab="library"]', async function () {
-        await refreshLibraryView(content);
+        await refreshLibraryView(content, libraryCallbacks);
     });
 
     // Folder selection
@@ -1113,7 +1131,7 @@ function setupUnifiedDialogEventListeners(content) {
         const folderId = $(this).data('folder');
         content.find('.storymode-folder-item').removeClass('active');
         $(this).addClass('active');
-        await loadBlueprintsForFolder(content, folderId);
+        await loadBlueprintsForFolder(content, folderId, libraryCallbacks);
     });
 
     // Search input
@@ -1123,7 +1141,7 @@ function setupUnifiedDialogEventListeners(content) {
             await searchLibraryBlueprints(content, query);
         } else if (query.length === 0) {
             const activeFolder = content.find('.storymode-folder-item.active').data('folder') || 'all';
-            await loadBlueprintsForFolder(content, activeFolder);
+            await loadBlueprintsForFolder(content, activeFolder, libraryCallbacks);
         }
     }, 300));
 
@@ -1151,19 +1169,19 @@ function setupUnifiedDialogEventListeners(content) {
 
         switch (action) {
             case 'load':
-                await loadBlueprintFromLibrary(content, blueprintId);
+                await loadBlueprintFromLibrary(content, blueprintId, libraryCallbacks);
                 break;
             case 'play':
-                await playBlueprintFromLibrary(content, blueprintId);
+                await playBlueprintFromLibrary(content, blueprintId, libraryCallbacks);
                 break;
             case 'edit':
-                await editBlueprintFromLibrary(content, blueprintId);
+                await editBlueprintFromLibrary(content, blueprintId, libraryCallbacks);
                 break;
             case 'favorite':
-                await toggleBlueprintFavorite(content, blueprintId, $(this));
+                await toggleBlueprintFavorite(content, blueprintId, $(this), libraryCallbacks);
                 break;
             case 'delete':
-                await deleteBlueprintFromLibrary(content, blueprintId);
+                await deleteBlueprintFromLibrary(content, blueprintId, libraryCallbacks);
                 break;
             case 'export':
                 await exportBlueprintFromLibrary(blueprintId);
@@ -1183,7 +1201,7 @@ function setupUnifiedDialogEventListeners(content) {
         if (!blueprintId) return;
 
         // Open the editor for this blueprint
-        await editBlueprintFromLibrary(content, blueprintId);
+        await editBlueprintFromLibrary(content, blueprintId, libraryCallbacks);
     });
 
     // View toggle (grid/list) - single button toggles between views
@@ -1204,7 +1222,7 @@ function setupUnifiedDialogEventListeners(content) {
     // Sort selection
     content.on('change', '#library_sort_select', async function () {
         const activeFolder = content.find('.storymode-folder-item.active').data('folder') || 'all';
-        await loadBlueprintsForFolder(content, activeFolder);
+        await loadBlueprintsForFolder(content, activeFolder, libraryCallbacks);
     });
 
     // Library import button - import PNG/JSON directly to library
@@ -1253,7 +1271,7 @@ function setupUnifiedDialogEventListeners(content) {
                 }
             }
 
-            await refreshLibraryView(content);
+            await refreshLibraryView(content, libraryCallbacks);
 
             if (imported > 0 && failed === 0) {
                 toastr.success(`Imported ${imported} blueprint(s)`);
@@ -1268,318 +1286,17 @@ function setupUnifiedDialogEventListeners(content) {
 }
 
 // ============================================================================
-// LIBRARY HELPER FUNCTIONS
+// LIBRARY HELPER FUNCTIONS (moved to lib/dialog/library-view.js)
 // ============================================================================
 
-/**
- * Simple debounce function for search input
- */
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func.apply(this, args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-/**
- * Refresh the entire library view
- */
-async function refreshLibraryView(content) {
-    try {
-        const library = await getLibrary();
-        const allBlueprints = await library.getAllBlueprints();
-
-        // Update folder counts
-        content.find('#folder_count_all').text(allBlueprints.length);
-        content.find('#folder_count_favorites').text(
-            allBlueprints.filter(bp => bp.userMetadata?.favorite).length
-        );
-
-        // Load blueprints for active folder
-        const activeFolder = content.find('.storymode-folder-item.active').data('folder') || 'all';
-        await loadBlueprintsForFolder(content, activeFolder);
-
-        // Update stats
-        content.find('#library_total_count').text(`${allBlueprints.length} blueprint${allBlueprints.length !== 1 ? 's' : ''}`);
-    } catch (error) {
-        console.error('[Story Mode] Error refreshing library:', error);
-    }
-}
-
-/**
- * Load blueprints for a specific folder
- */
-async function loadBlueprintsForFolder(content, folderId) {
-    try {
-        const library = await getLibrary();
-        let blueprints;
-
-        if (folderId === 'favorites') {
-            const all = await library.getAllBlueprints();
-            blueprints = all.filter(bp => bp.userMetadata?.favorite);
-        } else if (folderId === 'recent') {
-            blueprints = await library.stats.getRecentlyPlayed(20);
-        } else {
-            blueprints = await library.getAllBlueprints();
-        }
-
-        // Apply sort
-        const sortValue = content.find('#library_sort_select').val() || 'created-desc';
-        const [sortBy, sortOrder] = sortValue.split('-');
-        blueprints = sortLibraryBlueprints(blueprints, sortBy, sortOrder);
-
-        renderBlueprintGrid(content, blueprints);
-    } catch (error) {
-        console.error('[Story Mode] Error loading blueprints:', error);
-    }
-}
-
-/**
- * Sort blueprints
- */
-function sortLibraryBlueprints(blueprints, sortBy, sortOrder) {
-    return [...blueprints].sort((a, b) => {
-        let comparison = 0;
-        switch (sortBy) {
-            case 'title':
-                const titleA = a.userMetadata?.title || a.core_premise || '';
-                const titleB = b.userMetadata?.title || b.core_premise || '';
-                comparison = titleA.localeCompare(titleB);
-                break;
-            case 'created':
-                comparison = new Date(a.libraryData?.dateAdded || 0) - new Date(b.libraryData?.dateAdded || 0);
-                break;
-            case 'played':
-                comparison = (a.libraryData?.accessCount || 0) - (b.libraryData?.accessCount || 0);
-                break;
-        }
-        return sortOrder === 'desc' ? -comparison : comparison;
-    });
-}
-
-/**
- * Search library blueprints
- */
-async function searchLibraryBlueprints(content, query) {
-    try {
-        const results = await searchBlueprints(query);
-        renderBlueprintGrid(content, results);
-    } catch (error) {
-        console.error('[Story Mode] Error searching blueprints:', error);
-    }
-}
-
-/**
- * Render blueprint grid
- */
-function renderBlueprintGrid(content, blueprints) {
-    const grid = content.find('#library_blueprint_grid');
-    const emptyState = content.find('#library_empty_state');
-
-    if (blueprints.length === 0) {
-        grid.find('.storymode-blueprint-card').remove();
-        emptyState.show();
-    } else {
-        emptyState.hide();
-        const cardsHtml = blueprints.map(bp => renderBlueprintCard(bp)).join('');
-        grid.html(cardsHtml);
-    }
-}
-
-/**
- * Load blueprint from library into current chat
- */
-async function loadBlueprintFromLibrary(content, blueprintId) {
-    try {
-        const library = await getLibrary();
-        const blueprint = await library.getBlueprint(blueprintId);
-
-        if (!blueprint) {
-            toastr.error('Blueprint not found');
-            return;
-        }
-
-        // Create a run copy (deep clone) so library blueprint stays pristine
-        const runState = BlueprintModule.createRunCopy(blueprint, 'library');
-        await BlueprintModule.saveBlueprintState(runState);
-
-        // Update play stats
-        await library.stats.recordPlayStart(blueprintId);
-
-        // Refresh UI
-        content.find('#tab_blueprint').html(buildBlueprintTabContent());
-        refreshBlueprintPreview();
-        updateStatusDisplay();
-
-        toastr.success('Blueprint loaded!');
-    } catch (error) {
-        console.error('[Story Mode] Error loading blueprint:', error);
-        toastr.error('Failed to load blueprint');
-    }
-}
-
-/**
- * Play blueprint from library - load the blueprint into the current chat
- */
-async function playBlueprintFromLibrary(content, blueprintId) {
-    try {
-        const library = await getLibrary();
-        const blueprint = await library.getBlueprint(blueprintId);
-
-        if (!blueprint) {
-            toastr.error('Blueprint not found');
-            return;
-        }
-
-        // Sync blueprint settings to chat state (with confirmation if needed)
-        const syncResult = await BlueprintModule.syncBlueprintSettings(blueprint, true);
-
-        if (!syncResult.confirmed && syncResult.changes.length > 0) {
-            // User declined to overwrite current blueprint settings
-            // Offer to create a new chat instead
-            const createNewChat = await callGenericPopup(
-                `Would you like to create a new chat to load this blueprint? This will preserve your current conversation.`,
-                POPUP_TYPE.CONFIRM
-            );
-
-            if (createNewChat !== POPUP_RESULT.AFFIRMATIVE) {
-                // User declined new chat too - do nothing
-                return;
-            }
-
-            // Create new chat
-            await doNewChat();
-            // Wait a moment for chat to be created
-            await new Promise(resolve => setTimeout(resolve, 500));
-        }
-
-        // Create a run copy (deep clone) so library blueprint stays pristine
-        const runState = BlueprintModule.createRunCopy(blueprint, 'library');
-        await BlueprintModule.saveBlueprintState(runState);
-
-        // Update play stats
-        await library.stats.recordPlayStart(blueprintId);
-
-        // Sync blueprint settings again (now without confirmation since we're in a fresh chat)
-        await BlueprintModule.syncBlueprintSettings(blueprint, false);
-
-        // Refresh UI
-        content.find('#tab_blueprint').html(buildBlueprintTabContent());
-        refreshBlueprintPreview();
-        updateStatusDisplay();
-
-        toastr.success('Blueprint loaded!');
-    } catch (error) {
-        console.error('[Story Mode] Error loading blueprint:', error);
-        toastr.error('Failed to load blueprint');
-    }
-}
-
-/**
- * Edit blueprint from library
- */
-async function editBlueprintFromLibrary(content, blueprintId) {
-    try {
-        const library = await getLibrary();
-        const blueprint = await library.getBlueprint(blueprintId);
-
-        if (!blueprint) {
-            toastr.error('Blueprint not found');
-            return;
-        }
-
-        const edited = await openBlueprintEditor(blueprint);
-        if (edited) {
-            await library.saveBlueprint(edited);
-            toastr.success('Blueprint updated!');
-            await refreshLibraryView(content);
-        }
-    } catch (error) {
-        console.error('[Story Mode] Error editing blueprint:', error);
-        toastr.error('Failed to edit blueprint');
-    }
-}
-
-/**
- * Toggle blueprint favorite status
- */
-async function toggleBlueprintFavorite(content, blueprintId, button) {
-    try {
-        const library = await getLibrary();
-        const blueprint = await library.getBlueprint(blueprintId);
-
-        if (!blueprint) return;
-
-        const currentFavorite = blueprint.userMetadata?.favorite || false;
-        await setBlueprintFavorite(blueprintId, !currentFavorite);
-
-        // Update button appearance
-        button.toggleClass('active');
-        button.find('i').toggleClass('fa-solid fa-regular');
-
-        // Update folder counts
-        await refreshLibraryView(content);
-    } catch (error) {
-        console.error('[Story Mode] Error toggling favorite:', error);
-    }
-}
-
-/**
- * Delete blueprint from library
- */
-async function deleteBlueprintFromLibrary(content, blueprintId) {
-    if (!confirm('Delete this blueprint from your library? This cannot be undone.')) {
-        return;
-    }
-
-    try {
-        await deleteLibraryBlueprint(blueprintId);
-        toastr.success('Blueprint deleted');
-        await refreshLibraryView(content);
-    } catch (error) {
-        console.error('[Story Mode] Error deleting blueprint:', error);
-        toastr.error('Failed to delete blueprint');
-    }
-}
-
-/**
- * Export blueprint from library as PNG (extended format with embedded resources)
- */
-async function exportBlueprintFromLibrary(blueprintId) {
-    try {
-        const library = await getLibrary();
-        const blueprint = await library.getBlueprint(blueprintId);
-
-        if (!blueprint) {
-            toastr.error('Blueprint not found');
-            return;
-        }
-
-        // Use new extended PNG export (handles cover, characters, etc.)
-        const result = await exportBlueprintAsPNG(blueprint);
-
-        if (result.success) {
-            toastr.success(`Blueprint exported: ${result.filename}`);
-        } else {
-            toastr.error('Export failed: ' + result.error);
-        }
-    } catch (error) {
-        console.error('[Story Mode] Error exporting blueprint:', error);
-        toastr.error('Failed to export blueprint: ' + error.message);
-    }
-}
-
-/**
-* Refresh the sidebar content (no-op - sidebar removed)
-*/
-function refreshSidebar(content) {
-    // Sidebar removed - no-op
-}
+// Create callbacks object for library functions
+const libraryCallbacks = {
+    refreshBlueprintPreview,
+    updateStatusDisplay,
+    showLibraryGridView,
+    loadBlueprintsForFolder: (content, folderId) => loadBlueprintsForFolder(content, folderId, libraryCallbacks),
+    refreshLibraryView: (content) => refreshLibraryView(content, libraryCallbacks),
+};
 
 /**
 * Add UI components to the SillyTavern extensions panel.
@@ -2350,23 +2067,14 @@ jQuery(async function () {
 // LIBRARY HELPERS (used by wizard and library tabs)
 // ============================================================================
 
-// getWizardFormData, createWizardModalHtml, validateBlueprint, launchWizardModal,
-// updateWizardProgress, updateWizardPreview, getPhaseMessage, handleWizardAutoCover
-// have been moved to lib/dialog/wizard.js
-
-/**
- * Helper to return to the library tab if appropriate
- * @param {jQuery} content - The settings dialog content element
- * @returns {boolean} True if returned to library, false otherwise
- */
-function returnToLibraryIfNeeded(content) {
-    if (!content) return false;
-    const wasFromLibrary = content.data('generateFromLibrary');
-    if (wasFromLibrary) {
-        content.removeData('generateFromLibrary');
-        showLibraryGridView(content);
-        return true;
-    }
-    return false;
-}
+// Wizard functions moved to lib/dialog/wizard.js:
+// - getWizardFormData, createWizardModalHtml, validateBlueprint, launchWizardModal
+// - updateWizardProgress, updateWizardPreview, getPhaseMessage, handleWizardAutoCover
+//
+// Library functions moved to lib/dialog/library-view.js:
+// - debounce, refreshLibraryView, loadBlueprintsForFolder, sortLibraryBlueprints
+// - searchLibraryBlueprints, renderBlueprintGrid, loadBlueprintFromLibrary
+// - playBlueprintFromLibrary, editBlueprintFromLibrary, toggleBlueprintFavorite
+// - deleteBlueprintFromLibrary, exportBlueprintFromLibrary, refreshSidebar
+// - returnToLibraryIfNeeded
 

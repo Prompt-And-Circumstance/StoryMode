@@ -22,8 +22,12 @@ const MODULES = {
     'lib/blueprint/validation.js': ['validateBlueprint'],
     'lib/blueprint/normalization.js': ['normalizeBlueprint', 'normalizeCharacterOutcomes', 'initNormalization'],
 
+    // Wave 2.4 modules (generation)
+    'lib/generation/prompts.js': ['initPromptBuilders', 'buildBlueprintRequest', 'buildMasterPrompt', 'buildPhasePrompt', 'getExpectedSceneCount'],
+    'lib/generation/index.js': ['initPromptBuilders', 'buildBlueprintRequest', 'buildMasterPrompt', 'buildPhasePrompt', 'getExpectedSceneCount'],
+
     // Original module (should still have re-exports)
-    'lib/blueprint-module.js': ['MODULE_NAME', 'validateBlueprint', 'normalizeBlueprint', 'resolvePlaceholders'],
+    'lib/blueprint-module.js': ['MODULE_NAME', 'validateBlueprint', 'normalizeBlueprint', 'resolvePlaceholders', 'buildBlueprintRequest', 'buildMasterPrompt', 'buildPhasePrompt', 'getExpectedSceneCount'],
 };
 
 console.log('🔍 Wave Import Verification');

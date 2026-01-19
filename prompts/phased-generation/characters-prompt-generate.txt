@@ -68,7 +68,7 @@ Generate a JSON object with the following fields:
 
 ### 2. **character_arcs** (array)
 
-Create 2-4 compelling characters. Each character must have:
+Create 2-4 compelling characters. **If a player persona is provided above, you MUST include that persona as one of the characters with a full arc.** Each character must have:
 
 ```json
 {

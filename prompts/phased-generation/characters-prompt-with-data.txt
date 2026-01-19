@@ -15,7 +15,7 @@ This is Phase 2 of 5 in a phased blueprint generation process. You will design c
 **You MUST:**
 - Reference characters by their exact names as provided.
 - Respect their stated personalities, goals, and relationships.
-- Ensure protagonist_group and character_arcs center ONLY on these characters.
+- Ensure protagonist_group and character_arcs center on these characters AND any player persona provided below.
 - Adapt any antagonistic forces or conflicts to directly involve or challenge these specific characters.
 
 ## STORY TYPE
@@ -102,7 +102,7 @@ Generate a JSON object with the following fields:
 
 ### 2. **character_arcs** (array)
 
-Each character from the provided data MUST have an arc entry. Use exact character names.
+Each character from the provided data MUST have an arc entry, **including the player persona if one is provided**. Use exact character names.
 
 ```json
 {
@@ -123,7 +123,7 @@ Each character from the provided data MUST have an arc entry. Use exact characte
 ```
 
 **Guidelines for character_arcs:**
-- Create an arc for EACH character in the provided data.
+- Create an arc for EACH character in the provided data AND the player persona (if provided in PERSONA DATA section).
 - Initial states should reflect the character's provided description and personality.
 - Turning points should be specific scenes or events that create meaningful change.
 - Final states should be achievable through different player choices (not a single fixed outcome).

@@ -387,6 +387,25 @@ function returnToLibraryIfNeeded() {
 - `resolvePlaceholders()` - returns text unchanged (no placeholder resolution)
 - `checkPrerequisites()` - always returns true (no prerequisite checking)
 
+### GLM 4.7 Reasoning Parameter Error
+
+**Symptom:** Blueprint generation fails with error:
+```
+Bad Request {"error":{"message":"Invalid option: expected one of \"xhigh\"|\"high\"|\"medium\"|\"low\"|\"minimal\"|\"none\"","code":400}}
+```
+
+**Cause:** Some SillyTavern presets include `reasoning: { effort: 'auto' }` which GLM 4.7 does not support. The API expects explicit effort levels, not "auto".
+
+**Automatic Fix:** `generateWithPreset()` in `lib/blueprint-module.js` automatically detects this error (and "Bad Request" errors generally) and retries the request with:
+- `includePreset: false` - prevents preset from overriding settings
+- `reasoning: { effort: 'high' }` - explicit valid effort level
+
+**Tradeoff:** The retry runs without preset settings (temperature, top_p, etc. are undefined), but blueprint generation prompts are specific enough that default values work well.
+
+**Manual Fix (Optional):** Edit the connection profile preset in SillyTavern and change reasoning effort from "auto" to "high" (or another valid value). This makes requests succeed on the first try with full preset settings.
+
+**Affected Function:** `generateWithPreset()` at line ~4013 in `lib/blueprint-module.js`
+
 ### General
 - Phase boundaries fixed at 33%
 - No nested/branching arcs

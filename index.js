@@ -384,9 +384,8 @@ ${buildSettingsTabContent()}
         }
     }
 
-    // Show popup
+    // Show popup (panel-style without close button)
     const popup = new Popup(content, POPUP_TYPE.TEXT, 'Story Mode Settings', {
-        okButton: 'Close',
         wide: true,
         large: true,
         allowVerticalScrolling: true,
@@ -831,6 +830,26 @@ function setupUnifiedDialogEventListeners(content) {
             : 'Wizard mode disabled - blueprint generation will use standard single-pass mode'
         );
     });
+
+    // Generate Blueprint button - launch wizard modal
+    content.on('click', '#blueprint_generate_btn', async function () {
+        const btn = $(this);
+        const originalText = btn.html();
+
+        // Check if wizard mode is enabled (default true, unless "Legacy Mode" checked)
+        const wizardDisabled = content.find('#storymode_wizard_disabled').is(':checked');
+        const wizardEnabled = !wizardDisabled;
+
+        // If wizard mode is enabled, launch the wizard modal
+        if (wizardEnabled) {
+            await launchWizardModal(content);
+            return;
+        }
+
+        // Legacy single-pass mode - not fully implemented
+        toastr.warning('Legacy single-pass mode is not yet fully implemented. Please use wizard mode (uncheck "Legacy Single-Process Mode" in Advanced Options).');
+    });
+
     // Cancel blueprint generation button (stops the wizard modal)
     content.on('click', '#blueprint_cancel_generation_btn', function () {
         const wizardPopup = window.storyModeWizardPopup;

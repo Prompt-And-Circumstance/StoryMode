@@ -36,19 +36,7 @@ import {
 import * as PromptTemplates from './prompt-templates.js';
 import { robustParseJSON, validateOpeningMessage, MAX_OPENING_MESSAGE_LENGTH, MIN_OPENING_MESSAGE_LENGTH } from './blueprint-utils.js';
 import { isBlueprintDebugMode, getMockPhaseResponse } from './blueprint-debug-mocks.js';
-import { MODULE_NAME, METAPHOR_LEVELS, LENGTH_PRESETS, PHASE_CONFIG } from './core/index.js';
-import { resolvePlaceholders, checkPrerequisites } from './blueprint/index.js';
-import {
-    markBeatCompleted,
-    markBeatSkipped,
-    isBeatCompleted,
-    getCompletedBeats,
-    resetBeatProgress,
-    resetBeatsForScene,
-    setCurrentBeatFocus,
-} from './scenario/index.js';
 import { getLibrary } from './blueprint-integration.js';
-import { getCurrentChatCharacters, getAllPersonas } from './blueprint-character-linker.js';
 
 // ============================================================================
 // UUID POLYFILL (for older browsers)
@@ -144,6 +132,66 @@ export function generateBlueprintId() {
 export function isValidBlueprintId(id) {
     return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
 }
+
+// ============================================================================
+// MODULE CONSTANTS
+// ============================================================================
+
+export const MODULE_NAME = 'story_mode';
+
+/**
+ * Metaphor levels for genre interpretation (literal to symbolic)
+ */
+export const METAPHOR_LEVELS = {
+    LITERAL: 'literal',       // Genre elements are MANDATORY and CONCRETE
+    GROUNDED: 'grounded',     // Genre elements exist but are subtle/ambiguous
+    MIXED: 'mixed',           // Literal AND metaphorical genre elements
+    SYMBOLIC: 'symbolic',     // Social/emotional "monsters" in genre structure
+};
+
+/**
+ * Story length presets mapping to message targets
+ */
+export const LENGTH_PRESETS = {
+    SHORT: { label: 'Short (~10 messages)', target: 10, sceneCount: '5-7' },
+    MEDIUM: { label: 'Medium (~30 messages)', target: 30, sceneCount: '8-12' },
+    LONG: { label: 'Long (~60 messages)', target: 60, sceneCount: '12-20' },
+};
+
+/**
+ * Phase configuration for phased blueprint generation
+ * Defines the 5 phases of blueprint generation with their progress milestones
+ */
+export const PHASE_CONFIG = {
+    1: {
+        name: 'Foundation',
+        progress: 20,
+        description: 'Building story foundation...',
+        fields: ['core_premise', 'setting', 'antagonistic_forces', 'arc_structure', 'tone_and_style'],
+        maxTokens: 4096,
+    },
+    2: {
+        name: 'Characters',
+        progress: 40,
+        description: 'Developing character arcs...',
+        fields: ['protagonist_group', 'character_arcs'],
+        maxTokens: 8192, // Increased from 4096 to accommodate reasoning models
+    },
+    3: {
+        name: 'Scenes',
+        progress: 70,
+        description: 'Planning story scenes...',
+        fields: ['scene_plan'],
+        maxTokens: 16384,
+    },
+    4: {
+        name: 'Resolutions',
+        progress: 100,
+        description: 'Crafting endings, opening & cover...',
+        fields: ['primary_ending', 'alternate_endings', 'blueprint_title', 'cover_prompt', 'opening_message'],
+        maxTokens: 16384, // High limit required for reasoning models (o1, o3-mini, DeepSeek-R1)
+    },
+};
 
 /**
  * Default master prompt template for blueprint generation
@@ -580,6 +628,125 @@ export function createRunCopy(blueprint, sourceType = 'library') {
         sourceBlueprintId: blueprint.blueprint_id || null,
         sourceType,
     };
+}
+
+
+// ============================================================================
+// BEAT PROGRESS TRACKING
+// ============================================================================
+
+/**
+ * Mark a beat as completed
+ * Uses scenario.beatState as authoritative source, syncs to legacy beatProgress.
+ * @param {number} sceneIndex - Scene index
+ * @param {number} beatIndex - Beat index within scene
+ * @returns {boolean} True if beat was newly marked completed
+ */
+export async function markBeatCompleted(sceneIndex, beatIndex) {
+    console.log(`[Story Mode] Marking beat ${beatIndex} in scene ${sceneIndex} as complete`);
+
+    // Update authoritative state (scenario.beatState)
+    markBeatComplete(beatIndex);
+
+    // Legacy sync (for backward compatibility with saved states)
+    const blueprintState = getBlueprintState();
+    const beatId = `scene_${sceneIndex}_beat_${beatIndex}`;
+    if (!blueprintState.beatProgress.completedBeats.includes(beatId)) {
+        blueprintState.beatProgress.completedBeats.push(beatId);
+        blueprintState.beatProgress.lastUpdated = new Date().toISOString();
+        await saveBlueprintState(blueprintState);
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Mark a beat as skipped
+ * Uses scenario.beatState as authoritative source.
+ * @param {number} sceneIndex - Scene index
+ * @param {number} beatIndex - Beat index within scene
+ * @returns {boolean} True if beat was newly marked skipped
+ */
+export async function markBeatSkipped(sceneIndex, beatIndex) {
+    console.log(`[Story Mode] Marking beat ${beatIndex} in scene ${sceneIndex} as skipped`);
+
+    // Update authoritative state (scenario.beatState)
+    markBeatSkippedState(beatIndex);
+    return true;
+}
+
+/**
+ * Check if a beat has been completed
+ * @param {number} sceneIndex - Scene index
+ * @param {number} beatIndex - Beat index within scene
+ * @returns {boolean} True if beat is completed
+ */
+export function isBeatCompleted(sceneIndex, beatIndex) {
+    // Use new authoritative state
+    const beatState = getBeatState();
+    return beatState[beatIndex]?.status === 'complete';
+}
+
+/**
+ * Get completed beats for a specific scene
+ * Uses scenario.beatState as authoritative source.
+ * @param {number} sceneIndex - Scene index (kept for API compatibility)
+ * @returns {Array<number>} Array of completed beat indices for this scene
+ */
+export function getCompletedBeats(sceneIndex) {
+    // Use new unified accessor
+    return getCompletedBeatIndices();
+}
+
+/**
+ * Reset beat progress for a specific scene or all scenes
+ * Uses scenario.beatState as authoritative source, syncs to legacy beatProgress.
+ * @param {number|null} sceneIndex - Scene index to reset, or null for all scenes
+ */
+export async function resetBeatProgress(sceneIndex = null) {
+    // Reset authoritative state
+    resetBeatState();
+
+    // Legacy sync
+    const blueprintState = getBlueprintState();
+    if (sceneIndex === null) {
+        // Reset all beats
+        blueprintState.beatProgress.completedBeats = [];
+        blueprintState.beatProgress.currentBeatFocus = null;
+        console.log('[Story Mode Blueprint] All beat progress reset');
+    } else {
+        // Reset beats for specific scene
+        const prefix = `scene_${sceneIndex}_beat_`;
+        blueprintState.beatProgress.completedBeats = blueprintState.beatProgress.completedBeats.filter(
+            id => !id.startsWith(prefix)
+        );
+        console.log(`[Story Mode Blueprint] Beat progress reset for scene ${sceneIndex}`);
+    }
+
+    blueprintState.beatProgress.lastUpdated = new Date().toISOString();
+    await saveBlueprintState(blueprintState);
+}
+
+/**
+ * Reset beat progress for a specific scene (alias for backward compatibility)
+ * @param {number} sceneIndex - Scene index to reset
+ * @param {boolean} resetAll - If true, reset all scenes
+ */
+export async function resetBeatsForScene(sceneIndex, resetAll = false) {
+    await resetBeatProgress(resetAll ? null : sceneIndex);
+}
+
+/**
+ * Set the current beat focus
+ * @param {number|null} sceneIndex - Scene index
+ * @param {number|null} beatIndex - Beat index (null to clear focus)
+ */
+export async function setCurrentBeatFocus(sceneIndex, beatIndex) {
+    const blueprintState = getBlueprintState();
+    blueprintState.beatProgress.currentBeatFocus = (sceneIndex === null || beatIndex === null)
+        ? null
+        : `scene_${sceneIndex}_beat_${beatIndex}`;
+    await saveBlueprintState(blueprintState);
 }
 
 
@@ -3412,6 +3579,164 @@ Note: Signals are stripped from displayed text. Emit at response END, after narr
 </signals>`;
 }
 
+// ... existing code ...
+
+/**
+ * Resolve placeholders in text.
+ * Replaces [Role] tokens with character names from the blueprint.
+ *
+ * Supported placeholders:
+ * - [Protagonist] → First character from character_arcs
+ * - [Antagonist] → Extracted from antagonistic_forces if named, else "the antagonist"
+ * - [Guide] / [Mentor] → Character with mentor-like role if found
+ * - [Character:N] → Nth character from character_arcs (0-indexed)
+ *
+ * @param {string} text - Text containing placeholders
+ * @param {Object} blueprint - The blueprint object
+ * @returns {string} Resolved text
+ */
+export function resolvePlaceholders(text, blueprint) {
+    if (!text) return '';
+    if (!blueprint) return text;
+
+    // Build character lookup from character_arcs
+    const characters = blueprint.character_arcs || [];
+    const characterNames = characters.map(c => c.character_name).filter(Boolean);
+
+    // Cache for resolved placeholders (avoid repeated lookups)
+    const cache = {};
+
+    return text.replace(/\[([^\]]+)\]/g, (match, placeholder) => {
+        // Check cache first
+        if (cache[placeholder] !== undefined) {
+            return cache[placeholder];
+        }
+
+        let resolved = resolveOnePlaceholder(placeholder, blueprint, characterNames);
+        cache[placeholder] = resolved;
+        return resolved;
+    });
+}
+
+/**
+ * Resolve a single placeholder token.
+ * @param {string} placeholder - The placeholder without brackets (e.g., "Protagonist")
+ * @param {Object} blueprint - The blueprint object
+ * @param {string[]} characterNames - Array of character names from character_arcs
+ * @returns {string} Resolved name or original bracketed placeholder
+ */
+function resolveOnePlaceholder(placeholder, blueprint, characterNames) {
+    const lower = placeholder.toLowerCase();
+
+    // [Protagonist] → first character
+    if (lower === 'protagonist') {
+        if (characterNames.length > 0) {
+            return characterNames[0];
+        }
+        // Fallback: try to extract from protagonist_group.description
+        const desc = blueprint.protagonist_group?.description || '';
+        const extracted = extractFirstName(desc);
+        return extracted || '[Protagonist]';
+    }
+
+    // [Antagonist] → from antagonistic_forces
+    if (lower === 'antagonist') {
+        const antag = blueprint.antagonistic_forces;
+        if (antag?.description) {
+            const extracted = extractFirstName(antag.description);
+            if (extracted) return extracted;
+        }
+        // If nature is 'environmental' or no name found, use generic
+        if (antag?.nature === 'environmental') {
+            return 'the environment';
+        }
+        return 'the antagonist';
+    }
+
+    // [Guide] / [Mentor] → look for guide-like character
+    if (lower === 'guide' || lower === 'mentor') {
+        // Heuristic: look for character with "guide", "mentor", "teacher" in their arc
+        for (const char of (blueprint.character_arcs || [])) {
+            const arcText = `${char.initial_state} ${char.emotional_trajectory}`.toLowerCase();
+            if (arcText.includes('guide') || arcText.includes('mentor') || arcText.includes('teach')) {
+                return char.character_name;
+            }
+        }
+        // Fallback: second character if exists, else keep placeholder
+        if (characterNames.length > 1) {
+            return characterNames[1];
+        }
+        return '[Guide]';
+    }
+
+    // [Character:N] → Nth character (0-indexed)
+    const charIndexMatch = lower.match(/^character:(\d+)$/);
+    if (charIndexMatch) {
+        const idx = parseInt(charIndexMatch[1], 10);
+        if (idx >= 0 && idx < characterNames.length) {
+            return characterNames[idx];
+        }
+        return `[Character:${idx}]`;
+    }
+
+    // Check if placeholder matches a known character name exactly
+    for (const name of characterNames) {
+        if (name.toLowerCase() === lower) {
+            return name; // Return properly cased name
+        }
+    }
+
+    // Unknown placeholder - return as-is with brackets
+    return `[${placeholder}]`;
+}
+
+/**
+ * Extract the first proper name from a description string.
+ * Uses simple heuristics: capitalized words that aren't common words.
+ * @param {string} text - Description text
+ * @returns {string|null} Extracted name or null
+ */
+function extractFirstName(text) {
+    if (!text) return null;
+
+    // Common words to skip (articles, prepositions, etc.)
+    const skipWords = new Set([
+        'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
+        'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'were', 'been',
+        'be', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would',
+        'could', 'should', 'may', 'might', 'must', 'shall', 'can', 'need',
+        'their', 'they', 'them', 'his', 'her', 'its', 'our', 'your',
+        'this', 'that', 'these', 'those', 'who', 'whom', 'whose', 'which',
+        'what', 'where', 'when', 'why', 'how', 'all', 'each', 'every',
+        'both', 'few', 'more', 'most', 'other', 'some', 'such', 'no',
+        'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very'
+    ]);
+
+    // Match capitalized words (potential names)
+    const words = text.match(/\b[A-Z][a-z]+\b/g);
+    if (!words) return null;
+
+    for (const word of words) {
+        if (!skipWords.has(word.toLowerCase())) {
+            return word;
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Check if prerequisites for a beat are met (StoryVerse v1 stub)
+ * @param {Object} beat - The beat object
+ * @param {Object} scenarioState - Current scenario state
+ * @returns {boolean} True if prerequisites met
+ */
+export function checkPrerequisites(beat, scenarioState) {
+    // v1: Assume linear progression if no explicit prerequisites
+    // If beat has 'requires' field, check it (not yet in schema, but good for future)
+    return true;
+}
+
 /**
  * Build the blueprint injection for the current scene.
  * Uses consolidated XML format with visual beat progress markers and positive exit triggers.
@@ -3685,108 +4010,9 @@ export async function generateWithPreset(options) {
 
         return output;
     } catch (error) {
-        // Log the full error for debugging
-        console.error('[Story Mode Blueprint] Full error object:', error);
-        console.error('[Story Mode Blueprint] Error message:', error.message);
-        console.error('[Story Mode Blueprint] Error cause:', error.cause);
-        console.error('[Story Mode Blueprint] Error cause message:', error.cause?.message);
-
-        // Check if this is a reasoning parameter error (GLM 4.7 doesn't support auto reasoning)
-        // The error might be in error.message, error.cause, error.cause.message, or nested in the error object
-        const errorString = JSON.stringify(error);
-        const errorMessage = error.message || '';
-        const errorCauseMessage = error.cause?.message || '';
-        const errorCauseString = error.cause ? JSON.stringify(error.cause) : '';
-
-        // Combine all error sources for checking
-        const allErrorText = `${errorMessage} ${errorCauseMessage} ${errorString} ${errorCauseString}`;
-
-        // Check for the specific reasoning parameter error
-        const hasInvalidOption = allErrorText.includes('Invalid option');
-        const hasReasoningLevels = allErrorText.includes('xhigh') || allErrorText.includes('medium') ||
-            allErrorText.includes('minimal') || allErrorText.includes('none');
-
-        // Also detect "Bad Request" errors which may indicate reasoning parameter issues with GLM 4.7
-        const isBadRequest = errorMessage.includes('Bad Request') ||
-            errorCauseMessage.includes('Bad Request') ||
-            errorMessage.includes('API request failed');
-
-        const isReasoningError = (hasInvalidOption && hasReasoningLevels) || isBadRequest;
-
-        console.log('[Story Mode Blueprint] Error detection:', {
-            hasInvalidOption,
-            hasReasoningLevels,
-            isBadRequest,
-            isReasoningError
-        });
-
-        if (isReasoningError) {
-            console.warn('[Story Mode Blueprint] ========================================');
-            console.warn('[Story Mode Blueprint] DETECTED REASONING PARAMETER ERROR');
-            console.warn('[Story Mode Blueprint] Retrying with explicit reasoning effort...');
-            console.warn('[Story Mode Blueprint] ========================================');
-            console.warn('[Story Mode Blueprint] Original error:', errorMessage || errorString);
-
-            try {
-                // Retry with explicit reasoning effort parameter
-                // reasoning must be passed in overridePayload (5th param), not custom (4th param)
-                // Also disable preset to prevent it from overriding our reasoning setting
-                console.log('[Story Mode Blueprint] Sending retry with reasoning: { effort: "high" } in overridePayload (preset disabled)');
-                const retryResult = await ConnectionManagerRequestService.sendRequest(
-                    selectedProfileId,
-                    messages,
-                    options.responseLength || 0,
-                    { stream: false, extractData: true, includePreset: false },
-                    { reasoning: { effort: 'high' }, include_reasoning: true }  // overridePayload
-                );
-
-                const endTime = performance.now();
-                const output = retryResult.text || retryResult.content || '';
-
-                console.log('[Story Mode Blueprint] ========================================');
-                console.log('[Story Mode Blueprint] RETRY SUCCEEDED!');
-                console.log('[Story Mode Blueprint] Output length:', output.length);
-                console.log('[Story Mode Blueprint] ========================================');
-
-                // Capture success metrics for retry
-                metrics.endTime = endTime;
-                metrics.duration = endTime - startTime;
-                metrics.actualOutputLength = output.length;
-                metrics.actualOutputTokens = retryResult.usage?.completion_tokens || '?';
-                metrics.totalTokensUsed = retryResult.usage?.total_tokens || '?';
-                metrics.success = true;
-                metrics.retried = true;
-                metrics.retryReason = 'reasoning_parameter_error';
-
-                // Calculate tokens per second if we have the data
-                if (typeof metrics.actualOutputTokens === 'number' && metrics.duration > 0) {
-                    metrics.tokensPerSecond = Math.round((metrics.actualOutputTokens / metrics.duration) * 1000);
-                }
-
-                // Store metrics for analysis
-                storePhaseMetrics(metrics);
-
-                console.log('[Story Mode Blueprint] Retry with explicit reasoning effort succeeded');
-                return output;
-            } catch (retryError) {
-                // If retry also fails, capture that error
-                const endTime = performance.now();
-                metrics.endTime = endTime;
-                metrics.duration = endTime - startTime;
-                metrics.success = false;
-                metrics.error = retryError.message;
-                metrics.retried = true;
-                metrics.retryReason = 'reasoning_parameter_error';
-
-                storePhaseMetrics(metrics);
-
-                console.error('[Story Mode Blueprint] Retry with explicit reasoning effort failed:', retryError);
-                throw retryError;
-            }
-        }
-
-        // Not a reasoning error, or retry failed - capture original error metrics
         const endTime = performance.now();
+
+        // Capture failure metrics
         metrics.endTime = endTime;
         metrics.duration = endTime - startTime;
         metrics.success = false;
@@ -3890,7 +4116,9 @@ function getScenarioFromContext() {
  * Returns checkboxes for all characters in the current chat
  * @returns {string} HTML string
  */
-function buildCharacterSelectionList() {
+async function buildCharacterSelectionList() {
+    const { getCurrentChatCharacters } = await import('./blueprint-character-linker.js');
+
     // Get character data
     const characterList = getCurrentChatCharacters();
 
@@ -3915,7 +4143,9 @@ function buildCharacterSelectionList() {
  * Returns checkboxes for all available user personas
  * @returns {string} HTML string
  */
-function buildPersonaSelectionList() {
+async function buildPersonaSelectionList() {
+    const { getAllPersonas } = await import('./blueprint-character-linker.js');
+
     // Get persona data
     const personaList = getAllPersonas();
 
@@ -4030,23 +4260,6 @@ export {
     buildPersonaSelectionList,
 };
 
-// Re-export constants for backward compatibility
-export { MODULE_NAME, METAPHOR_LEVELS, LENGTH_PRESETS, PHASE_CONFIG } from './core/index.js';
-
-// Re-export placeholders for backward compatibility
-export { resolvePlaceholders, checkPrerequisites } from './blueprint/index.js';
-
-// Re-export beat functions for backward compatibility
-export {
-    markBeatCompleted,
-    markBeatSkipped,
-    isBeatCompleted,
-    getCompletedBeats,
-    resetBeatProgress,
-    resetBeatsForScene,
-    setCurrentBeatFocus,
-} from './scenario/index.js';
-
 export default {
     initBlueprintSettings,
     getBlueprintState,
@@ -4073,19 +4286,8 @@ export default {
     setAuthorStyles,
     getStoryTypeById,
     getAuthorStyleById,
-    MODULE_NAME,
     METAPHOR_LEVELS,
     LENGTH_PRESETS,
-    PHASE_CONFIG,
-    resolvePlaceholders,
-    checkPrerequisites,
-    markBeatCompleted,
-    markBeatSkipped,
-    isBeatCompleted,
-    getCompletedBeats,
-    resetBeatProgress,
-    resetBeatsForScene,
-    setCurrentBeatFocus,
     getScenarioFromContext,
     buildCharacterSelectionList,
     buildPersonaSelectionList,

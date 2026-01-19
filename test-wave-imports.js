@@ -24,10 +24,13 @@ const MODULES = {
 
     // Wave 2.4 modules (generation)
     'lib/generation/prompts.js': ['initPromptBuilders', 'buildBlueprintRequest', 'buildMasterPrompt', 'buildPhasePrompt', 'getExpectedSceneCount'],
-    'lib/generation/index.js': ['initPromptBuilders', 'buildBlueprintRequest', 'buildMasterPrompt', 'buildPhasePrompt', 'getExpectedSceneCount'],
+    'lib/generation/index.js': ['initPromptBuilders', 'buildBlueprintRequest', 'buildMasterPrompt', 'buildPhasePrompt', 'getExpectedSceneCount', 'initOrchestration', 'generateBlueprintPhased', 'generateWithPreset', 'generateOpeningMessage'],
+
+    // Wave 3 modules (generation orchestration)
+    'lib/generation/orchestration.js': ['initOrchestration', 'generateBlueprintPhased', 'generateWithPreset', 'generateOpeningMessage'],
 
     // Original module (should still have re-exports)
-    'lib/blueprint-module.js': ['MODULE_NAME', 'validateBlueprint', 'normalizeBlueprint', 'resolvePlaceholders', 'buildBlueprintRequest', 'buildMasterPrompt', 'buildPhasePrompt', 'getExpectedSceneCount'],
+    'lib/blueprint-module.js': ['MODULE_NAME', 'validateBlueprint', 'normalizeBlueprint', 'resolvePlaceholders', 'buildBlueprintRequest', 'buildMasterPrompt', 'buildPhasePrompt', 'getExpectedSceneCount', 'generateBlueprintPhased', 'generateWithPreset', 'generateOpeningMessage'],
 };
 
 console.log('🔍 Wave Import Verification');

@@ -37,7 +37,7 @@ import * as PromptTemplates from './prompt-templates.js';
 import { robustParseJSON, validateOpeningMessage, MAX_OPENING_MESSAGE_LENGTH, MIN_OPENING_MESSAGE_LENGTH } from './blueprint-utils.js';
 import { isBlueprintDebugMode, getMockPhaseResponse } from './blueprint-debug-mocks.js';
 import { MODULE_NAME, METAPHOR_LEVELS, LENGTH_PRESETS, PHASE_CONFIG } from './core/index.js';
-import { resolvePlaceholders, checkPrerequisites, validateBlueprint, parseBlueprintResponse, normalizeBlueprint, normalizeCharacterOutcomes, initNormalization } from './blueprint/index.js';
+import { resolvePlaceholders, checkPrerequisites } from './blueprint/index.js';
 import {
     markBeatCompleted,
     markBeatSkipped,
@@ -46,11 +46,6 @@ import {
     resetBeatProgress,
     resetBeatsForScene,
     setCurrentBeatFocus,
-} from './scenario/index.js';
-import {
-    buildScenarioModeInjection,
-    deriveExitTrigger,
-    buildSignalsBlock,
 } from './scenario/index.js';
 import { getLibrary } from './blueprint-integration.js';
 import { getCurrentChatCharacters, getAllPersonas } from './blueprint-character-linker.js';
@@ -149,10 +144,6 @@ export function generateBlueprintId() {
 export function isValidBlueprintId(id) {
     return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
 }
-
-// Initialize normalization module with ID functions
-// This must happen after generateBlueprintId and isValidBlueprintId are defined
-initNormalization(generateBlueprintId, isValidBlueprintId);
 
 /**
  * Default master prompt template for blueprint generation
@@ -2203,9 +2194,563 @@ async function executePhase(phase, request, storyType, authorStyle, partialBluep
 
 /**
  * Validate a blueprint object against required schema
+ * Only checks truly essential fields. Missing optional fields are filled with defaults.
+ * @param {Object} blueprint - The blueprint object to validate
+ * @returns {Object} { valid: boolean, errors: string[] }
+ */
+export function validateBlueprint(blueprint) {
+    const errors = [];
+
+    // Only truly required fields - everything else can have defaults
+    if (!blueprint.story_type_name && !blueprint.story_type_id) {
+        errors.push('Blueprint must have either story_type_name or story_type_id');
+    }
+
+    if (!blueprint.core_premise) {
+        errors.push('Blueprint must have a core_premise');
+    }
+
+    // Validate scene_plan is an array with at least one scene
+    if (!Array.isArray(blueprint.scene_plan) || blueprint.scene_plan.length === 0) {
+        errors.push('scene_plan must be a non-empty array');
+    } else {
+        // Validate each scene has minimal required fields
+        blueprint.scene_plan.forEach((scene, index) => {
+            if (!scene.title && !scene.situation) {
+                errors.push(`scene_plan[${index}] must have at least a title or situation`);
+            }
+
+            // Validate beats array if present (optional for legacy blueprints)
+            if (scene.beats) {
+                if (!Array.isArray(scene.beats)) {
+                    errors.push(`scene_plan[${index}].beats must be an array`);
+                } else {
+                    // Validate each beat structure
+                    scene.beats.forEach((beat, beatIndex) => {
+                        if (typeof beat.index !== 'number') {
+                            errors.push(`scene_plan[${index}].beats[${beatIndex}].index must be a number`);
+                        }
+                        if (!beat.title && !beat.description) {
+                            errors.push(`scene_plan[${index}].beats[${beatIndex}] must have at least a title or description`);
+                        }
+                        if (beat.type && !['establishment', 'hook', 'reaction', 'escalation', 'pivot', 'emotional', 'transition'].includes(beat.type)) {
+                            errors.push(`scene_plan[${index}].beats[${beatIndex}].type must be one of: establishment, hook, reaction, escalation, pivot, emotional, transition`);
+                        }
+                    });
+                }
+            }
+
+            // Validate expected_rounds if present
+            if (scene.expected_rounds && typeof scene.expected_rounds !== 'number') {
+                errors.push(`scene_plan[${index}].expected_rounds must be a number`);
+            }
+        });
+    }
+
+    // Validate character_arcs is an array (if present)
+    if (blueprint.character_arcs && !Array.isArray(blueprint.character_arcs)) {
+        errors.push('character_arcs must be an array');
+    }
+
+    // Validate primary_ending if present (optional for legacy blueprints)
+    if (blueprint.primary_ending) {
+        if (typeof blueprint.primary_ending !== 'object') {
+            errors.push('primary_ending must be an object');
+        } else {
+            // Validate primary_ending has required fields when present
+            if (!blueprint.primary_ending.title) {
+                errors.push('primary_ending must have a title');
+            }
+            if (!blueprint.primary_ending.description) {
+                errors.push('primary_ending must have a description');
+            }
+            // Validate character_outcomes is an array if present
+            if (blueprint.primary_ending.character_outcomes && !Array.isArray(blueprint.primary_ending.character_outcomes)) {
+                errors.push('primary_ending.character_outcomes must be an array');
+            }
+        }
+    }
+
+    // Validate alternate_endings is an array with exactly 2 items (if present)
+    if (blueprint.alternate_endings) {
+        if (!Array.isArray(blueprint.alternate_endings)) {
+            errors.push('alternate_endings must be an array');
+        } else if (blueprint.alternate_endings.length !== 2) {
+            console.warn(`[BlueprintModule] Expected 2 alternate endings, got ${blueprint.alternate_endings.length}`);
+        }
+    }
+
+    // Validate possible_resolutions is an array (if present) - deprecated field
+    if (blueprint.possible_resolutions && !Array.isArray(blueprint.possible_resolutions)) {
+        errors.push('possible_resolutions must be an array');
+    }
+
+    return {
+        valid: errors.length === 0,
+        errors,
+    };
+}
+
+/**
+ * Normalize character outcomes to consistent object format
  * Handles both string format ("CharacterName: outcome") and object format ({character_name, outcome})
+ * @param {Array<string|Object>} outcomes - Array of outcome strings or outcome objects
+ * @returns {Array<{character_name: string, outcome: string}>} Normalized outcome objects
+ */
+function normalizeCharacterOutcomes(outcomes = []) {
+    if (!Array.isArray(outcomes)) return [];
+
+    return outcomes
+        .filter(item => item != null) // Remove null/undefined items
+        .map(item => {
+            // Handle string format: "CharacterName: outcome" or just "outcome"
+            if (typeof item === 'string') {
+                const match = item.match(/^([^:]+):\s*(.+)$/);
+                return match
+                    ? { character_name: match[1].trim(), outcome: match[2].trim() }
+                    : { character_name: 'Character', outcome: item };
+            }
+            // Handle object format: {character_name, outcome} or {character_name, description}
+            if (typeof item === 'object') {
+                return {
+                    character_name: item.character_name || 'Character',
+                    outcome: item.outcome || item.description || ''
+                };
+            }
+            // Fallback for unexpected types
+            return { character_name: 'Character', outcome: String(item) };
+        })
+        .filter(outcome => outcome.outcome.length > 0); // Remove empty outcomes
+}
+
+/**
+ * Normalize a blueprint by filling in missing fields with defaults
  * @param {Object} blueprint - Blueprint object to normalize
+ * @returns {Object} Normalized blueprint with all required fields
+ */
+export function normalizeBlueprint(blueprint) {
+    const normalized = { ...blueprint };
+
+    // Generate or validate unique ID (preserve existing IDs for exports/imports)
+    if (!normalized.blueprint_id || !isValidBlueprintId(normalized.blueprint_id)) {
+        const oldId = normalized.blueprint_id;
+        normalized.blueprint_id = generateBlueprintId();
+        if (!oldId) {
+            console.log('[Story Mode Blueprint] Generated ID for imported blueprint:', normalized.blueprint_id);
+        } else {
+            console.warn('[Story Mode Blueprint] Invalid blueprint_id format, regenerating:', oldId, '->', normalized.blueprint_id);
+        }
+    }
+
+    // Essential fields with defaults
+    normalized.story_type_id = normalized.story_type_id || normalized.story_type_name?.toLowerCase().replace(/\s+/g, '_') || 'custom';
+    normalized.story_type_name = normalized.story_type_name || 'Custom Story';
+    normalized.core_premise = normalized.core_premise || 'A custom story';
+
+    // Preserve author style if present (explicitly set to undefined if not in blueprint)
+    // This ensures the field exists so syncBlueprintSettings can properly handle it
+    if (Object.prototype.hasOwnProperty.call(blueprint, 'author_style')) {
+        normalized.author_style = blueprint.author_style;
+    } else {
+        // Mark as explicitly not set for imported blueprints without the field
+        normalized.author_style = undefined;
+    }
+
+    // Preserve author style name and prompt if present in the blueprint
+    if (blueprint.author_style_name) {
+        normalized.author_style_name = blueprint.author_style_name;
+    }
+    if (blueprint.author_style_prompt) {
+        normalized.author_style_prompt = blueprint.author_style_prompt;
+    }
+
+    // Preserve opening message if present (with validation)
+    if (Object.prototype.hasOwnProperty.call(blueprint, 'opening_message')) {
+        const validation = validateOpeningMessage(blueprint.opening_message);
+        if (validation.valid) {
+            normalized.opening_message = validation.sanitized;
+            if (validation.truncated) {
+                console.warn('[BlueprintModule] Opening message truncated during normalization');
+            }
+        } else {
+            console.warn('[BlueprintModule] Invalid opening_message in blueprint, discarding:', validation.error);
+            normalized.opening_message = undefined;
+        }
+    } else {
+        normalized.opening_message = undefined;
+    }
+
+    // Preserve llmDescriptor if present (with validation)
+    if (Object.prototype.hasOwnProperty.call(blueprint, 'llmDescriptor')) {
+        const desc = blueprint.llmDescriptor;
+        // Validate: must be a string, non-empty, and within reasonable length
+        if (typeof desc === 'string' && desc.trim().length > 0 && desc.length < 200) {
+            normalized.llmDescriptor = desc.trim();
+        } else {
+            console.warn('[BlueprintModule] Invalid llmDescriptor in blueprint, discarding');
+            normalized.llmDescriptor = undefined;
+        }
+    } else {
+        normalized.llmDescriptor = undefined;
+    }
+
+    // Preserve blueprint_title if present (with validation)
+    if (Object.prototype.hasOwnProperty.call(blueprint, 'blueprint_title')) {
+        const title = blueprint.blueprint_title;
+        // Validate: must be a string, non-empty, and within reasonable length
+        if (typeof title === 'string' && title.trim().length > 0 && title.length < 200) {
+            normalized.blueprint_title = title.trim();
+        } else {
+            console.warn('[BlueprintModule] Invalid blueprint_title in blueprint, discarding');
+            normalized.blueprint_title = undefined;
+        }
+    } else {
+        normalized.blueprint_title = undefined;
+    }
+
+    // Preserve cover_prompt if present (with validation)
+    if (Object.prototype.hasOwnProperty.call(blueprint, 'cover_prompt')) {
+        const prompt = blueprint.cover_prompt;
+        // Validate: must be a string, non-empty, and within reasonable length
+        if (typeof prompt === 'string' && prompt.trim().length > 0 && prompt.length < 5000) {
+            normalized.cover_prompt = prompt.trim();
+        } else {
+            console.warn('[BlueprintModule] Invalid cover_prompt in blueprint, discarding');
+            normalized.cover_prompt = undefined;
+        }
+    } else {
+        normalized.cover_prompt = undefined;
+    }
+
+    // Preserve cover_image if present (with validation)
+    if (Object.prototype.hasOwnProperty.call(blueprint, 'cover_image')) {
+        const image = blueprint.cover_image;
+        // Validate: must be a string and non-empty (can be base64 or URL)
+        if (typeof image === 'string' && image.trim().length > 0) {
+            normalized.cover_image = image.trim();
+        } else {
+            console.warn('[BlueprintModule] Invalid cover_image in blueprint, discarding');
+            normalized.cover_image = undefined;
+        }
+    } else {
+        normalized.cover_image = undefined;
+    }
+
+    // Setting with defaults
+    normalized.setting = normalized.setting || {
+        location: 'Unknown',
+        time_period: 'Unknown',
+        atmosphere: 'Unknown',
+    };
+    normalized.setting.location = normalized.setting.location || 'Unknown';
+    normalized.setting.time_period = normalized.setting.time_period || 'Unknown';
+    normalized.setting.atmosphere = normalized.setting.atmosphere || 'Unknown';
+
+    // Protagonist group with defaults
+    normalized.protagonist_group = normalized.protagonist_group || {
+        description: 'The protagonists',
+        shared_goal: 'To complete their journey',
+        group_dynamic: 'Working together',
+    };
+    normalized.protagonist_group.description = normalized.protagonist_group.description || 'The protagonists';
+    normalized.protagonist_group.shared_goal = normalized.protagonist_group.shared_goal || 'To complete their journey';
+    normalized.protagonist_group.group_dynamic = normalized.protagonist_group.group_dynamic || 'Working together';
+
+    // Antagonistic forces with defaults
+    normalized.antagonistic_forces = normalized.antagonistic_forces || {
+        description: 'Opposing forces',
+        nature: 'Unknown',
+        motivation: 'Opposition to the protagonists',
+        manifestations: [],
+    };
+    normalized.antagonistic_forces.description = normalized.antagonistic_forces.description || 'Opposing forces';
+    normalized.antagonistic_forces.nature = normalized.antagonistic_forces.nature || 'Unknown';
+    normalized.antagonistic_forces.motivation = normalized.antagonistic_forces.motivation || 'Opposition to the protagonists';
+    normalized.antagonistic_forces.manifestations = normalized.antagonistic_forces.manifestations || [];
+
+    // Arc structure with defaults
+    normalized.arc_structure = normalized.arc_structure || {
+        opening_hook: 'The story begins',
+        escalation_pattern: 'Challenges increase',
+        climax_nature: 'Confrontation',
+        resolution_style: 'The story concludes',
+        total_messages_target: 30,
+    };
+    normalized.arc_structure.opening_hook = normalized.arc_structure.opening_hook || 'The story begins';
+    normalized.arc_structure.escalation_pattern = normalized.arc_structure.escalation_pattern || 'Challenges increase';
+    normalized.arc_structure.climax_nature = normalized.arc_structure.climax_nature || 'Confrontation';
+    normalized.arc_structure.resolution_style = normalized.arc_structure.resolution_style || 'The story concludes';
+    normalized.arc_structure.total_messages_target = normalized.arc_structure.total_messages_target || 30;
+
+    // Character arcs - ensure array
+    normalized.character_arcs = normalized.character_arcs || [];
+    normalized.character_arcs = normalized.character_arcs.map(arc => ({
+        character_name: arc.character_name || 'Unknown',
+        initial_state: arc.initial_state || 'Starting state',
+        key_turning_points: arc.key_turning_points || [],
+        final_state: arc.final_state || 'Ending state',
+        emotional_trajectory: arc.emotional_trajectory || 'Character journey',
+    }));
+
+    // Scene plan - normalize each scene
+    normalized.scene_plan = (normalized.scene_plan || []).map((scene, index) => {
+        const normalizedScene = {
+            index: scene.index ?? index,
+            title: scene.title || `Scene ${index + 1}`,
+            phase: scene.phase || 'setup',
+            purpose: scene.purpose || 'Advance the story',
+            situation: scene.situation || 'A scene unfolds',
+            key_events_if_unchanged: scene.key_events_if_unchanged || scene.key_events_if_unchallenged || [],
+            choice_points: scene.choice_points || [],
+            character_focus: scene.character_focus || [],
+            hooks_for_future: scene.hooks_for_future || [],
+        };
+
+        // Normalize beats array if present
+        if (scene.beats && Array.isArray(scene.beats)) {
+            normalizedScene.beats = scene.beats.map((beat, beatIndex) => ({
+                index: beat.index ?? beatIndex,
+                title: beat.title || `Beat ${beatIndex + 1}`,
+                description: beat.description || '',
+                type: beat.type || 'reaction', // Default to reaction type
+                required: beat.required ?? true, // Default to required
+                emotional_beat_target: beat.emotional_beat_target || null, // Optional emotional focus
+                pacing_constraints: beat.pacing_constraints || null, // Optional pacing guidance
+            }));
+        } else {
+            // Provide empty beats array for compatibility
+            normalizedScene.beats = [];
+        }
+
+        // Add expected_rounds if present, otherwise it will be calculated dynamically
+        if (scene.expected_rounds && typeof scene.expected_rounds === 'number') {
+            normalizedScene.expected_rounds = scene.expected_rounds;
+        }
+
+        return normalizedScene;
+    });
+
+    // Possible resolutions - ensure array (deprecated, kept for backward compatibility)
+    normalized.possible_resolutions = normalized.possible_resolutions || [];
+    normalized.possible_resolutions = normalized.possible_resolutions.map(resolution => ({
+        title: resolution.title || 'Resolution',
+        description: resolution.description || 'The story concludes',
+        character_outcomes: resolution.character_outcomes || [],
+        thematic_resolution: resolution.thematic_resolution || 'Themes are resolved',
+    }));
+
+    // Primary ending and alternate endings (new structure)
+    // Backward compatibility: convert old possible_resolutions to new structure if primary_ending not present
+    if (!normalized.primary_ending && normalized.possible_resolutions && normalized.possible_resolutions.length > 0) {
+        console.log('[BlueprintModule] Converting possible_resolutions to primary_ending + alternate_endings for backward compatibility');
+        // First resolution becomes primary
+        normalized.primary_ending = normalized.possible_resolutions[0];
+        // Next 2 become alternates
+        normalized.alternate_endings = normalized.possible_resolutions.slice(1, 3);
+    }
+
+    // Ensure primary_ending exists
+    if (!normalized.primary_ending) {
+        normalized.primary_ending = {
+            title: 'Story Conclusion',
+            description: 'The story reaches its conclusion',
+            character_outcomes: [],
+            thematic_resolution: 'The themes of the story are resolved'
+        };
+    }
+
+    // Normalize primary_ending character_outcomes using helper
+    if (normalized.primary_ending.character_outcomes) {
+        normalized.primary_ending.character_outcomes = normalizeCharacterOutcomes(normalized.primary_ending.character_outcomes);
+    } else {
+        normalized.primary_ending.character_outcomes = [];
+    }
+
+    // Ensure alternate_endings exists and has exactly 2 items (fill with defaults if needed)
+    normalized.alternate_endings = normalized.alternate_endings || [];
+    while (normalized.alternate_endings.length < 2) {
+        normalized.alternate_endings.push({
+            title: `Alternate Ending ${normalized.alternate_endings.length + 1}`,
+            description: 'An alternate conclusion to the story',
+            character_outcomes: [],
+            thematic_resolution: 'A different thematic resolution'
+        });
+    }
+
+    // Normalize alternate endings using helper
+    normalized.alternate_endings = normalized.alternate_endings.map((ending, index) => ({
+        title: ending.title || `Alternate Ending ${index + 1}`,
+        description: ending.description || 'An alternate conclusion to the story',
+        character_outcomes: normalizeCharacterOutcomes(ending.character_outcomes),
+        thematic_resolution: ending.thematic_resolution || 'A different thematic resolution'
+    }));
+
+    // Convert primary_ending to final scene in scene_plan
+    // This makes the primary ending a concrete scene that players will reach
+    if (normalized.primary_ending && normalized.scene_plan) {
+        // Build character_focus from character_outcomes
+        const characterFocus = [];
+        if (normalized.primary_ending.character_outcomes && Array.isArray(normalized.primary_ending.character_outcomes)) {
+            normalized.primary_ending.character_outcomes.forEach(outcome => {
+                // Null safety guard: skip null/undefined outcomes
+                if (!outcome || !outcome.character_name) return;
+
+                characterFocus.push({
+                    name: outcome.character_name,
+                    emotional_beat_target: outcome.outcome || 'Character reaches their conclusion'
+                });
+            });
+        }
+
+        const finalScene = {
+            index: normalized.scene_plan.length,
+            title: normalized.primary_ending.title || 'Epilogue',
+            phase: 'resolution',
+            purpose: 'Story conclusion and character resolution',
+            situation: normalized.primary_ending.description || 'The story reaches its conclusion',
+            key_events_if_unchanged: [],
+            choice_points: [],  // No choices in final scene
+            character_focus: characterFocus,
+            hooks_for_future: [],
+            beats: [
+                {
+                    index: 0,
+                    title: 'Resolution',
+                    description: normalized.primary_ending.description || 'The story concludes',
+                    type: 'resolution',
+                    required: true,
+                    emotional_beat_target: normalized.primary_ending.thematic_resolution || 'Themes are resolved'
+                }
+            ],
+            is_ending_scene: true  // Marker for UI display
+        };
+
+        // Check if last scene is already marked as ending scene (replace it)
+        const lastScene = normalized.scene_plan[normalized.scene_plan.length - 1];
+        if (lastScene?.is_ending_scene) {
+            console.log('[BlueprintModule] Replacing existing ending scene with primary_ending');
+            normalized.scene_plan[normalized.scene_plan.length - 1] = finalScene;
+        } else {
+            console.log('[BlueprintModule] Adding primary_ending as final scene to scene_plan');
+            normalized.scene_plan.push(finalScene);
+        }
+    }
+
+    // Tone and style with defaults
+    normalized.tone_and_style = normalized.tone_and_style || {
+        primary_tone: 'Neutral',
+        narrative_voice: 'Third-person',
+        pacing: 'Steady',
+        key_stylistic_elements: [],
+    };
+    normalized.tone_and_style.primary_tone = normalized.tone_and_style.primary_tone || 'Neutral';
+    normalized.tone_and_style.narrative_voice = normalized.tone_and_style.narrative_voice || 'Third-person';
+    normalized.tone_and_style.pacing = normalized.tone_and_style.pacing || 'Steady';
+    normalized.tone_and_style.key_stylistic_elements = normalized.tone_and_style.key_stylistic_elements || [];
+
+    // Content boundaries with defaults
+    normalized.content_boundaries = normalized.content_boundaries || {
+        violence_level: 'None specified',
+        romance_level: 'None specified',
+        other_content_notes: '',
+    };
+    normalized.content_boundaries.violence_level = normalized.content_boundaries.violence_level || 'None specified';
+    normalized.content_boundaries.romance_level = normalized.content_boundaries.romance_level || 'None specified';
+    normalized.content_boundaries.other_content_notes = normalized.content_boundaries.other_content_notes || '';
+
+    // Genre realism notes with defaults
+    normalized.genre_realism_notes = normalized.genre_realism_notes || {
+        metaphor_level_used: 'mixed',
+        implementation_notes: 'Genre elements blend with story themes.',
+    };
+    normalized.genre_realism_notes.metaphor_level_used = normalized.genre_realism_notes.metaphor_level_used || 'mixed';
+    normalized.genre_realism_notes.implementation_notes = normalized.genre_realism_notes.implementation_notes || 'Genre elements blend with story themes.';
+
     return normalized;
+}
+
+/**
+ * Parse and validate blueprint JSON from LLM response
+ * @param {string} rawResponse - Raw text response from LLM
+ * @returns {Object} Parsed and validated blueprint, or null if invalid
+ */
+export function parseBlueprintResponse(rawResponse) {
+    try {
+        // Extract JSON from response (handle markdown code blocks)
+        let jsonStr = rawResponse.trim();
+
+        // Remove markdown code fences if present
+        if (jsonStr.startsWith('```')) {
+            const lines = jsonStr.split('\n');
+            // Remove first line (```json or ```) and last line (```)
+            if (lines[0].includes('json')) {
+                lines.shift();
+            }
+            if (lines[lines.length - 1].trim() === '```') {
+                lines.pop();
+            }
+            jsonStr = lines.join('\n').trim();
+        }
+
+        // Parse JSON
+        const blueprint = JSON.parse(jsonStr);
+
+        // Normalize blueprint to fill in missing fields with defaults
+        const normalizedBlueprint = normalizeBlueprint(blueprint);
+
+        // Validate schema
+        const validation = validateBlueprint(normalizedBlueprint);
+        if (!validation.valid) {
+            console.error('[Story Mode Blueprint] Validation failed:', validation.errors);
+            return {
+                success: false,
+                errors: validation.errors,
+                rawResponse,
+            };
+        }
+
+        return {
+            success: true,
+            blueprint: normalizedBlueprint,
+        };
+    } catch (error) {
+        console.error('[Story Mode Blueprint] Parse error:', error);
+
+        // Detect if the response might be truncated
+        const jsonStr = rawResponse.trim();
+        let isLikelyTruncated = false;
+
+        // Check for common signs of truncation
+        if (error instanceof SyntaxError) {
+            // Count opening and closing braces to detect imbalance
+            const openBraces = (jsonStr.match(/\{/g) || []).length;
+            const closeBraces = (jsonStr.match(/\}/g) || []).length;
+            const openBrackets = (jsonStr.match(/\[/g) || []).length;
+            const closeBrackets = (jsonStr.match(/\]/g) || []).length;
+
+            if (openBraces > closeBraces || openBrackets > closeBrackets) {
+                isLikelyTruncated = true;
+            }
+
+            // Check if response ends mid-sentence or mid-string
+            const lastChars = jsonStr.slice(-100);
+            if (lastChars.includes('...') || lastChars.endsWith('"') || lastChars.endsWith(',')) {
+                isLikelyTruncated = true;
+            }
+        }
+
+        // Provide helpful error message
+        let errorMessage = error.message;
+        if (isLikelyTruncated) {
+            errorMessage = 'The blueprint response was truncated (incomplete JSON). This usually means the LLM hit the token limit. Try again with a higher token limit in your blueprint settings, or use a simpler story type with fewer scenes.';
+            console.warn('[Story Mode Blueprint] Detected likely truncated response:', {
+                error: error.message,
+                responseLength: jsonStr.length,
+                endsWith: jsonStr.slice(-100)
+            });
+        }
+
+        return {
             success: false,
             errors: [errorMessage],
             rawResponse,
@@ -2729,6 +3274,146 @@ export function setSceneMode(blueprintState, mode) {
 /**
  * Build injection for Scenario Mode (StoryVerse architecture)
  * Uses Abstract Acts, Placeholders, and Signal-based tracking.
+ * @param {Object} blueprintState - The current blueprint state
+ * @returns {string} The prompt injection XML
+ */
+function buildScenarioModeInjection(blueprintState) {
+    const beatState = getBeatState();
+    const blueprint = blueprintState.blueprint;
+    const sceneIndex = getCurrentSceneIndex();
+    const scene = blueprint.scene_plan[sceneIndex];
+    const totalScenes = blueprint.scene_plan.length;
+    const isFinalScene = sceneIndex >= totalScenes - 1;
+
+    if (!scene) return null;
+
+    // Resolve Placeholders
+    const title = resolvePlaceholders(scene.title, blueprint);
+    const situation = resolvePlaceholders(scene.situation, blueprint);
+    const purpose = resolvePlaceholders(scene.purpose, blueprint);
+
+    // Build character focus list
+    let characterFocusXml = '';
+    if (scene.character_focus && scene.character_focus.length > 0) {
+        const resolved = scene.character_focus.map(c => resolvePlaceholders(c, blueprint));
+        characterFocusXml = `\n  <focus_characters>${resolved.join(', ')}</focus_characters>`;
+    }
+
+    // Build Beat list with state
+    let beatsXml = '';
+    let activeBeat = null;
+    let activeBeatIndex = -1;
+
+    if (scene.beats && scene.beats.length > 0) {
+        const beatStrings = scene.beats.map((beat, idx) => {
+            const state = beatState[idx]?.status || 'pending';
+            const resolvedTitle = resolvePlaceholders(beat.title, blueprint);
+
+            // Determine visual marker
+            if (state === 'complete') return `[✓ ${resolvedTitle}]`;
+            if (state === 'skipped') return `[x ${resolvedTitle}]`;
+
+            // Find first pending beat to mark as current
+            if (!activeBeat && checkPrerequisites(beat, beatState)) {
+                activeBeat = beat;
+                activeBeatIndex = idx;
+                return `[→ ${resolvedTitle}]`; // Suggested Next
+            }
+
+            return `[□ ${resolvedTitle}]`;
+        });
+        beatsXml = `\n  <beats>${beatStrings.join(' ')}</beats>`;
+    }
+
+    // Derive exit trigger from purpose
+    const exitTrigger = deriveExitTrigger(purpose, isFinalScene);
+
+    // Build the abstract act XML
+    const actXml = `<abstract_act scene="${sceneIndex + 1}" of="${totalScenes}" phase="${scene.phase || 'unknown'}">
+  <title>${title}</title>
+  <goal>${purpose}</goal>
+  <situation>${situation}</situation>${characterFocusXml}${beatsXml}
+  <exit_trigger>${exitTrigger}</exit_trigger>
+</abstract_act>`;
+
+    // Build signals block with clear guidance
+    const signalsXml = buildSignalsBlock(activeBeatIndex, isFinalScene);
+
+    return `${actXml}\n\n${signalsXml}`;
+}
+
+/**
+ * Derive an exit trigger from the scene's purpose.
+ * Transforms goal-oriented purpose into completion condition.
+ * @param {string} purpose - The scene's purpose/goal
+ * @param {boolean} isFinalScene - Whether this is the last scene
+ * @returns {string} Exit trigger description
+ */
+function deriveExitTrigger(purpose, isFinalScene) {
+    if (!purpose) {
+        return isFinalScene
+            ? 'Scene ends when the story reaches its natural conclusion'
+            : 'Scene ends when the goal is achieved or circumstances force a change';
+    }
+
+    // Transform common goal patterns into exit conditions
+    const lowerPurpose = purpose.toLowerCase();
+
+    // Pattern: "Establish X" → "X is established"
+    if (lowerPurpose.startsWith('establish')) {
+        const what = purpose.slice(9).trim();
+        return `Scene ends when ${what} is established`;
+    }
+
+    // Pattern: "Reveal X" → "X is revealed"
+    if (lowerPurpose.startsWith('reveal')) {
+        const what = purpose.slice(6).trim();
+        return `Scene ends when ${what} is revealed`;
+    }
+
+    // Pattern: "Character discovers X" → "discovery is made"
+    if (lowerPurpose.includes('discover')) {
+        return `Scene ends when the discovery is made or abandoned`;
+    }
+
+    // Pattern: "Confront X" → "confrontation resolves"
+    if (lowerPurpose.includes('confront')) {
+        return `Scene ends when the confrontation resolves or escalates beyond this scene`;
+    }
+
+    // Default: reframe purpose as completion
+    if (isFinalScene) {
+        return `Story concludes when: ${purpose}`;
+    }
+    return `Scene ends when: ${purpose} — or player action redirects the narrative`;
+}
+
+/**
+ * Build the signals instruction block for LLM.
+ * @param {number} activeBeatIndex - Index of the current active beat (-1 if none)
+ * @param {boolean} isFinalScene - Whether this is the last scene
+ * @returns {string} Signals XML block
+ */
+function buildSignalsBlock(activeBeatIndex, isFinalScene) {
+    const beatSignal = activeBeatIndex >= 0
+        ? `When you address beat ${activeBeatIndex} in your narrative, emit: @@BEAT:${activeBeatIndex}@@`
+        : 'No pending beats — focus on the scene goal';
+
+    const sceneEndSignal = isFinalScene
+        ? `When the story reaches its conclusion, emit: @@STORY_COMPLETE@@`
+        : `When the exit trigger is met, emit: @@NEXT_SCENE@@`;
+
+    return `<signals>
+${beatSignal}
+If player bypasses a beat entirely, emit: @@SKIP:N@@ (where N is beat index)
+${sceneEndSignal}
+
+Note: Signals are stripped from displayed text. Emit at response END, after narrative.
+</signals>`;
+}
+
+/**
+ * Build the blueprint injection for the current scene.
  * Uses consolidated XML format with visual beat progress markers and positive exit triggers.
  * Designed to be the single source of pacing information when blueprint is active.
  *
@@ -3350,12 +4035,6 @@ export { MODULE_NAME, METAPHOR_LEVELS, LENGTH_PRESETS, PHASE_CONFIG } from './co
 
 // Re-export placeholders for backward compatibility
 export { resolvePlaceholders, checkPrerequisites } from './blueprint/index.js';
-
-// Re-export validation functions for backward compatibility
-export { validateBlueprint, parseBlueprintResponse } from './blueprint/index.js';
-
-// Re-export normalization functions for backward compatibility
-export { normalizeBlueprint, normalizeCharacterOutcomes } from './blueprint/index.js';
 
 // Re-export beat functions for backward compatibility
 export {

@@ -50,14 +50,14 @@ import {
     decodeBlueprintFromPNG,
     isBlueprintPNG,
     saveCurrentBlueprintToLibrary,
-} from './lib/blueprint-integration.js';
+} from './lib/blueprint/integration.js';
 
 // Import Scene Image Generation modules
 import * as SceneImageStorage from './lib/scene/image-storage.js';
 import * as SceneImageGenerator from './lib/scene/image-generator.js';
 
 // Import Blueprint Export module (extended PNG format)
-import { exportBlueprintAsPNG } from './lib/blueprint-export.js';
+import { exportBlueprintAsPNG } from './lib/blueprint/export.js';
 
 // Import UI Components module (wizard components)
 import {

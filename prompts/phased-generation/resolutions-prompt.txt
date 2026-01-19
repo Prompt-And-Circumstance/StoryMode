@@ -171,6 +171,16 @@ A detailed prompt for generating a cover image (50-100 words describing key visu
 - Suggest key visual elements (setting, symbols, atmosphere)
 - Guide composition and color palette
 
+### **opening_message** (string)
+
+The opening narrative message for the story (200-500 words). This establishes Scene 1 for the player. Guidelines:
+- Use Scene 1 details from the scene plan above
+- Set the scene based on the situation described in Scene 1
+- Create atmosphere appropriate to the setting
+- Provide a clear hook for the player to engage with
+- DO NOT ASK A QUESTION at the end - the opening should naturally invite engagement
+- Write as pure narrative prose, not instructions
+
 ## EXAMPLE OUTPUT
 
 ```json
@@ -235,7 +245,8 @@ A detailed prompt for generating a cover image (50-100 words describing key visu
     }
   ],
   "blueprint_title": "The Memory Merchants of Oakhaven",
-  "cover_prompt": "A moody, noir-style image of a crumbling coastal town shrouded in fog. In the foreground, a glowing blue abstract representation of a memory - like streams of light forming a human silhouette. The color palette emphasizes blues and grays with touches of warm amber light from distant windows. The composition suggests both scientific mystery and melancholic beauty, with the fog creating natural depth and mystery."
+  "cover_prompt": "A moody, noir-style image of a crumbling coastal town shrouded in fog. In the foreground, a glowing blue abstract representation of a memory - like streams of light forming a human silhouette. The color palette emphasizes blues and grays with touches of warm amber light from distant windows. The composition suggests both scientific mystery and melancholic beauty, with the fog creating natural depth and mystery.",
+  "opening_message": "The fog clung to Oakhaven like a secret it refused to surrender. Dr. Elena Chen stood at the edge of the crumbling pier, the salt-heavy air stinging her eyes as she gazed out at the churning gray expanse of the ocean. Behind her, the town's dilapidated buildings huddled together, their windows glowing with feeble amber light that did nothing to dispel the oppressive atmosphere. She had returned to Oakhaven after seven years away, drawn by a mysterious letter from her former mentor, Dr. Marcus Sterling—a letter she had burned after reading, its words already seared into her memory. The research facility where she had once worked as an idealistic young scientist now loomed on the cliffside above, its windows dark and foreboding. Something was wrong in Oakhaven. The letter had been vague, warning of 'discoveries that cannot be unmade' and urging her to return before it was too late. Chen had built a new life for herself in the city, become someone who valued ethics over ambition. But Oakhaven had a way of pulling people back into its depths. The sound of footsteps on the wooden planks behind her made her turn."
 }
 
 ## RESPONSE FORMAT

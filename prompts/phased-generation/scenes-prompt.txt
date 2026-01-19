@@ -33,6 +33,20 @@ This is Phase 3 of 5 in a phased blueprint generation process. You will design a
 
 {{AUTHOR_STYLE_SECTION}}
 
+## MEMORABLE ELEMENT
+
+Every great story has a moment that readers carry with them—a clever twist, an emotional peak, a meaningful MacGuffin, or a signature setpiece. This is the story type's defining memorable element:
+
+**Type:** {{MEMORABLE_ELEMENT_TYPE}}
+**Name:** {{MEMORABLE_ELEMENT_NAME}}
+**Description:** {{MEMORABLE_ELEMENT_DESCRIPTION}}
+**Recommended Placement:** {{MEMORABLE_ELEMENT_PLACEMENT}}
+
+**Setup Hooks (plant these in earlier scenes):**
+{{MEMORABLE_ELEMENT_SETUP_HOOKS}}
+
+**CRITICAL:** Your scene plan MUST include this memorable element. Assign it to the appropriate scene based on the recommended placement. Plant the setup hooks in earlier scenes so the payoff feels earned.
+
 ## USER SCENARIO
 
 {{USER_SCENARIO}}

@@ -1018,29 +1018,13 @@
     gap: 6px;
 }
 
-#tab_library .storymode-view-toggle {
-    display: flex;
-    gap: 4px;
-    align-items: stretch; /* Ensure buttons inside align properly */
-}
-
-#tab_library .storymode-view-toggle .menu_button {
-    padding: 6px 12px; /* Increased horizontal padding for better visibility */
-    min-width: 36px; /* Ensure square-ish buttons for icons */
-}
-
-#tab_library .storymode-view-toggle .menu_button.active {
-    background: var(--sm-accent);
-    color: white;
-}
-
 /* Content area with sidebar */
 #tab_library .storymode-library-content {
     display: flex;
     gap: 16px;
     flex: 1;
     margin-top: 16px;
-    overflow: hidden;
+    overflow: auto;
 }
 
 /* Folder Sidebar */
@@ -1049,6 +1033,7 @@
     min-width: 200px;
     flex-shrink: 0;
     overflow-y: auto;
+    min-height: 0;
 }
 
 .storymode-folder-list {
@@ -1126,6 +1111,7 @@
     flex: 1;
     overflow-y: auto;
     min-width: 0;
+    min-height: 0;
 }
 
 /* Empty state */
@@ -1418,7 +1404,7 @@
     align-items: center;
     gap: 8px;
     color: var(--SmartThemeBodyColor);
-    font-size: 1.1em;
+    font-size: 1.15em;
 }
 
 .storymode-library-generate-header .storymode-section-title i {
@@ -1439,4 +1425,17 @@
 /* Make the generate button more prominent in library context */
 #library_generate_form_container #blueprint_generate_btn {
     margin-top: 20px;
+}
+
+/* ============================================================================
+   LIBRARY GRID VIEW - Toggle Container
+   Handles switching between generate and grid views
+   ============================================================================ */
+
+#library_grid_view {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    gap: 16px;
 }

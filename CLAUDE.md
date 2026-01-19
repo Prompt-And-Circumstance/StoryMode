@@ -8,30 +8,61 @@ Story Mode is a SillyTavern extension providing narrative structure through thre
 
 ## Architecture
 
+### Dual Pacing Mode System
+
+The extension supports two distinct pacing modes. See `Planning/v2/ARCHITECTURE-dual-pacing-modes.md` for full details.
+
+#### Mode A: Story Mode (Round-Based)
+- **When**: No blueprint OR `chatState.pacingMode === 'story'`
+- **Progression**: User message → `currentStep++` → phase calculation
+- **Scene Position**: Calculated from round: `floor((currentStep / arcLength) * sceneCount)`
+- **Exit**: `currentStep >= arcLength` triggers arc completion
+
+#### Mode B: Scenario Mode (Signal-Based)
+- **When**: Blueprint active AND `chatState.pacingMode === 'scenario'`
+- **Progression**: LLM emits signals → extension updates state
+- **Scene Position**: Explicit via `scenario.currentSceneIndex`
+- **Exit**: `@@STORY_COMPLETE@@` signal
+
+**Signals** (parsed from LLM output, stripped before display):
+```
+@@BEAT:N@@        → Mark beat N as complete
+@@SKIP:N@@        → Mark beat N as skipped
+@@NEXT_SCENE@@    → Advance to next scene
+@@STORY_COMPLETE@@→ Trigger arc completion
+```
+
+**Key Functions:**
+- `parseStorySignals()` in event-handlers.js - extracts signals from LLM output
+- `buildScenarioModeInjection()` in blueprint-module.js - builds Abstract Act prompt
+- `startStoryFromBlueprint()` in blueprint-module.js - activates Scenario Mode
+
 ### Core Concepts
 
-**Rounds:** Increment on USER message submission (not AI response). Enables group chat where multiple AI characters respond per round.
+**Rounds:** Increment on USER message submission (not AI response). Enables group chat where multiple AI characters respond per round. Only used in Story Mode.
 
-**Three-Act Structure:** Fixed 33% phase boundaries:
+**Three-Act Structure:** Fixed 33% phase boundaries (Story Mode only):
 - Setup (0-33%): World-building, character introduction
 - Confrontation (34-66%): Escalating challenges
 - Resolution (67-100%): Climax and conclusion
+
+**Abstract Acts (Scenario Mode):** Based on **StoryVerse** (Wang et al., 2024). Scenes defined by goals, not round counts. Beats are flexible milestones with visual markers: `[✓ done] [→ current] [□ pending] [x skipped]`
 
 ### Key Files
 
 | File | Lines | Purpose |
 |------|-------|---------|
 | `index.js` | ~1.4k | Main orchestrator, settings dialog, initialization |
-| `lib/state-manager.js` | ~450 | Settings, chat state, data loading/storage |
-| `lib/arc-engine.js` | ~200 | Phase calculation, prompt building |
-| `lib/ui-components.js` | ~900 | HTML rendering, UI components |
-| `lib/type-editors.js` | ~938 | Story type and author style CRUD |
-| `lib/event-handlers.js` | ~414 | Message events, round progression |
-| `lib/wand-menu.js` | ~250 | Quick controls dropdown |
-| `lib/blueprint-module.js` | ~2.7k | Story Blueprints feature |
+| `lib/state-manager.js` | ~600 | Settings, chat state, pacing mode, scenario state |
+| `lib/arc-engine.js` | ~300 | Phase calculation, prompt building (Story Mode) |
+| `lib/event-handlers.js` | ~670 | Message events, signal parsing, progression |
+| `lib/controller-panel.js` | ~900 | Floating/docked Story Controller panel |
+| `lib/blueprint-module.js` | ~4k | Blueprints, Scenario Mode injection, Abstract Acts |
 | `lib/blueprint-schema.js` | ~420 | Blueprint schema, validation (single source of truth) |
 | `lib/blueprint-editor.js` | ~1.8k | Split-panel blueprint editor |
-| `lib/loading-indicator.js` | ~300 | Standalone loading indicator |
+| `lib/wand-menu.js` | ~470 | Quick controls dropdown |
+| `lib/ui-components.js` | ~900 | HTML rendering, UI components |
+| `lib/type-editors.js` | ~938 | Story type and author style CRUD |
 | `data/story_types.json` | - | 40+ story type definitions |
 | `data/author_styles.json` | - | 40+ author style definitions |
 
@@ -75,17 +106,43 @@ eventSource.on(event_types.MESSAGE_REGENERATED, ...)     // Set regeneration fla
 ### State Storage
 
 1. **Global Settings** (`extension_settings.story_mode`): Config, defaults, persists across sessions
-2. **Per-Chat State** (`chat_metadata.story_mode`): `currentStep`, `arcLength`, `selectedStoryType`, `selectedAuthorStyle`, boolean flags
-3. **Content Storage** (localForage): Story types and author styles, with JSON fallback
+2. **Per-Chat State** (`chat_metadata.story_mode`):
+   ```javascript
+   {
+     currentStep: 0,              // Round counter (Story Mode)
+     arcLength: 30,               // Total rounds
+     selectedStoryType: "...",
+     selectedAuthorStyle: "...",
+     pacingMode: "story" | "scenario",  // Which mode is active
+     scenario: {                  // Scenario Mode state
+       currentSceneIndex: 0,
+       beatState: { 0: { status: "complete" }, 1: { status: "pending" } }
+     }
+   }
+   ```
+3. **Blueprint State** (`chat_metadata.blueprint_state`): Active blueprint, scene summaries
+4. **Content Storage** (localForage): Story types and author styles, with JSON fallback
+
+**⚠️ Known Issue:** Scene index is tracked in both `chatState.scenario.currentSceneIndex` AND `blueprintState.currentSceneIndex`. Keep in sync.
 
 ### Data Flow
 
+**Story Mode (Round-Based):**
 ```
-User sends message → onMessageReceived() → handleUserMessageStep() → saveChatStoryState()
-→ updateStoryPrompt() → buildFullInjection() → setExtensionPrompt()
+User message → onUserMessageRendered() → handleUserMessageStep()
+  → currentStep++ → updateStoryPrompt() → buildFullInjection()
+  → setExtensionPrompt()
 ```
 
-### Round-Based Progression
+**Scenario Mode (Signal-Based):**
+```
+LLM response → onMessageReceived() → handleAIMessageChecks()
+  → processStorySignals() → parseStorySignals()
+  → Update beatState/sceneIndex → saveChatStoryState()
+  → Strip signals from display → refreshUI()
+```
+
+### Round-Based Progression (Story Mode)
 
 **Critical:** Rounds increment on USER message, not AI response (supports group chat).
 
@@ -96,9 +153,27 @@ User sends message → onMessageReceived() → handleUserMessageStep() → saveC
 
 **Implementation:** `handleUserMessageStep()` in `lib/event-handlers.js`
 
+### Signal-Based Progression (Scenario Mode)
+
+**Critical:** Scenes advance via LLM signals, not round count.
+
+**Signal Processing:**
+1. `onMessageReceived()` triggers for AI messages
+2. `processStorySignals()` calls `parseStorySignals()` to extract signals
+3. Signals update `chatState.scenario.beatState` and `currentSceneIndex`
+4. Signals are stripped from displayed message text
+5. UI refreshes to show new state
+
+**Beat State Values:** `'complete'` | `'pending'` | `'skipped'`
+
+**Implementation:** `processStorySignals()` in `lib/event-handlers.js`
+
 ### Arc Completion
 
-When `currentStep >= arcLength`: `handleArcCompletion()` generates epilogue/summary/end notice (each once, protected by flags).
+**Story Mode:** When `currentStep >= arcLength`
+**Scenario Mode:** When `@@STORY_COMPLETE@@` signal received
+
+`handleArcCompletion()` generates epilogue/summary/end notice (each once, protected by flags).
 
 ## Story Blueprints
 
@@ -113,20 +188,33 @@ LLM-generated story structure with scenes, character arcs, antagonistic forces, 
     antagonistic_forces: { description, nature, motivation, manifestations[] },
     arc_structure: { opening_hook, escalation_pattern, climax_nature, resolution_style },
     character_arcs: [{ character_name, initial_state, key_turning_points[], final_state }],
-    scene_plan: [{ index, title, phase, purpose, situation, key_events[], choice_points[] }],
+    scene_plan: [{
+        index, title, phase, purpose, situation,
+        key_events_if_unchallenged[],
+        choice_points[],
+        character_focus: [{ name, emotional_beat_target }],
+        beats: [{ title, type, required }]  // Scenario Mode milestones
+    }],
     possible_resolutions: [{ title, description, character_outcomes[] }],
+    opening_message: string,  // Generated in Phase 4 (200-500 words, sets Scene 1)
     tone_and_style: { primary_tone, narrative_voice, pacing },
     content_boundaries: { violence_level, romance_level }
 }
 ```
 
-**Scene Progression:**
-- Auto: `sceneIndex = floor((currentStep / arcLength) * sceneCount)`
-- Manual: User controls via blueprint spoiler panel
+**Scene Progression (Mode-Dependent):**
+- **Story Mode (Auto):** `sceneIndex = floor((currentStep / arcLength) * sceneCount)`
+- **Story Mode (Manual):** User controls via controller panel
+- **Scenario Mode:** Explicit via `@@NEXT_SCENE@@` signals
 
-**Scene Transitions:** LLM ends response with `@@NEXT_SCENE@@` marker (auto-detected and removed).
+**Scene Transitions:**
+- LLM ends response with `@@NEXT_SCENE@@` marker (auto-detected and removed)
+- On final scene, use `@@STORY_COMPLETE@@` instead to trigger epilogue/summary
+- Beat completion: LLM emits `@@BEAT:N@@` where N is beat index
 
-**Start Story from Blueprint:** Syncs settings, enables features, optionally generates opening message. See `lib/blueprint-module.js:644-716`.
+**Opening Message:** Generated automatically during Phase 4 (Resolutions) of blueprint creation. The `opening_message` field contains a 200-500 word narrative that establishes Scene 1 for the player.
+
+**Start Story from Blueprint:** Syncs settings, enables Scenario Mode (`pacingMode = 'scenario'`), sets `sceneMode = 'manual'`, prompts to use stored opening message. See `lib/blueprint-module.js:startStoryFromBlueprint()`.
 
 ## Connection Manager Integration
 
@@ -154,8 +242,7 @@ return result.text || result.content || '';
 ```javascript
 extension_settings[MODULE_NAME].blueprintSettings = {
     enabled, useScenePrompts, sceneTransitionNotify,
-    generationApi: string,  // Profile ID
-    openingMessageApi: string,
+    generationApi: string,  // Profile ID for blueprint generation
     masterPrompt: string | null
 };
 ```
@@ -270,35 +357,101 @@ function returnToLibraryIfNeeded() {
 
 ## Testing Checklist
 
+### Story Mode (Round-Based)
 1. Test 1:1 and group chat scenarios
 2. Verify rounds only increment on user messages
-3. Check arc completion triggers
-4. Test wand menu controls
-5. Verify persistence across chat changes
-6. Check regeneration/swipe doesn't increment rounds
-7. Verify modules load without errors
+3. Check arc completion triggers at `currentStep >= arcLength`
+4. Check regeneration/swipe doesn't increment rounds
+
+### Scenario Mode (Signal-Based)
+5. Start story from blueprint → verify `pacingMode === 'scenario'`
+6. LLM emits `@@BEAT:0@@` → verify beat marked complete in UI
+7. LLM emits `@@NEXT_SCENE@@` → verify scene advances
+8. Verify signals stripped from displayed message
+9. Controller panel shows Act X/Y (not Round)
+
+### General
+10. Test wand menu controls
+11. Verify persistence across chat changes
+12. Verify modules load without errors
+13. Check both state locations stay in sync (scenario.currentSceneIndex == blueprintState.currentSceneIndex)
 
 ## Known Limitations
 
+### Architecture Issues (v1)
+- **Dual scene index storage:** `chatState.scenario.currentSceneIndex` and `blueprintState.currentSceneIndex` can drift out of sync
+- **Beat state duplication:** `scenario.beatState` (new) vs `beatProgress` (legacy) track differently
+- **No UI for mode switching:** Users cannot toggle between Story/Scenario modes manually
+
+### Stub Functions (v2 placeholders)
+- `resolvePlaceholders()` - returns text unchanged (no placeholder resolution)
+- `checkPrerequisites()` - always returns true (no prerequisite checking)
+
+### General
 - Phase boundaries fixed at 33%
 - No nested/branching arcs
 - Story types manually selected
 - Regeneration edge cases partially addressed
 
-## Loading Indicator Module
+## Future Features
 
-Standalone, reusable component with authorship-themed messages.
+### Scene-by-Scene Summarization (UI exists, not implemented)
+**Status:** Settings UI exists in `ui-components.js` with toggles for:
+- Enable Scene Summarization
+- Summarize After N scenes
+- Max Summary Length (tokens)
+- Include Summaries in Prompts
+- Summary Style (narrative/bullet/both)
+- Scene Summary Prompt Template
 
-```javascript
-import * as LoadingIndicator from './lib/loading-indicator.js';
+**Not implemented:** Actual summarization logic, LLM calls, and injection into prompts.
 
-await LoadingIndicator.init();
-LoadingIndicator.show('Generating blueprint...');
-try {
-    await doAsyncWork();
-} finally {
-    LoadingIndicator.hide();
-}
-```
+### World Lore / Lorebook Integration
+- **Blueprint-aware lore injection:** Pull relevant World Info entries based on current scene keywords, characters, or locations
+- **Lore summaries in prompts:** Inject condensed lore context for the active scene without overwhelming token budget
+- **Character-specific lore:** Auto-include character lorebook entries when they're in `character_focus` for the scene
+- **Setting consistency:** Use lorebook entries supporting `setting.location` and `setting.time_period` from blueprint
+- **Dynamic lore activation:** Trigger World Info entries based on scene transitions or beat completions
 
-**Cross-extension usage:** Copy `lib/loading-indicator.js` and `lib/loading-indicator.css`, import CSS via `@import url()`.
+### Continuity Aides
+Track and inject context about:
+- **Objects:** Key items, their locations, who has them
+- **Character locations:** Where each character currently is
+- **Clothing/appearance:** What characters are wearing, visible state changes
+- **Time of day:** Tracking in-story time progression
+- **Environmental state:** Weather, damage, changes to locations
+
+### Auto-Create Memories / Lorebook Entries
+Automatically generate World Info entries from chat content:
+- **Arc completion (no blueprint):** Extract key events, characters, locations from final summary
+- **Scene transitions (with blueprint + summarization):** Create lorebook entries at end of each scene capturing:
+  - New characters introduced
+  - Significant plot events
+  - Location changes
+  - Object/item discoveries
+  - Relationship changes
+- **Entry format:** Match SillyTavern lorebook schema with appropriate keywords for retrieval
+
+### Scene/Beat Image Generation
+Add to Story Controller panel:
+- **Auto-generate prompt:** Create image prompt from current scene/beat context (characters, setting, action)
+- **Generate button:** Trigger SD generation asynchronously (non-blocking)
+- **Preview in panel:** Display generated image in Story Controller
+- **Gallery integration:** "Add to character gallery" option for generated images
+- **Style matching:** Use blueprint's tone/setting to inform image style prompts
+
+### Optional Overrides System
+Build toggles and processes for blueprints to optionally override:
+- **Story Type:** Blueprint can specify/override the story type
+- **Author Style:** Blueprint can embed or reference a specific author style
+- **Characters:** Blueprint can specify required characters to add to chat
+- **Personas:** Blueprint can suggest a user persona
+- User confirmation before applying, revert on story end
+
+### Other Ideas
+- Branching/nested story arcs
+- Per-scene pacing targets
+- AI-suggested scene transitions
+- Character relationship tracking across scenes
+
+

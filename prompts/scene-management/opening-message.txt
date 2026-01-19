@@ -1,25 +1,83 @@
-You are writing the opening message for an interactive story.
+You are writing the **opening message** for an interactive story. This message will be the very first thing the player sees when they begin their story.
 
-**Story Premise:** {{CORE_PREMISE}}
+## Story Foundation
+
+**Core Premise:**
+{{CORE_PREMISE}}
 
 **Setting:**
 - Location: {{LOCATION}}
 - Time Period: {{TIME_PERIOD}}
 - Atmosphere: {{ATMOSPHERE}}
 
-**Scene 1 (The Opening):**
-- Title: {{SCENE_TITLE}}
-- Phase: {{SCENE_PHASE}}
-- Purpose: {{SCENE_PURPOSE}}
-- Situation: {{SCENE_SITUATION}}
+**Antagonistic Forces:**
+{{ANTAGONIST_DESCRIPTION}}
+- Nature: {{ANTAGONIST_NATURE}}
+- Motivation: {{ANTAGONIST_MOTIVATION}}
 
-**Instructions:**
-Write the opening narrative message that establishes this scene for the player. This should:
-1. Set the scene based on the situation above
-2. Create atmosphere appropriate to the setting
-3. Provide a clear hook for the player to engage with, but DO NOT ASK A QUESTION AT THE END OF YOUR MESSAGE.
-4. Aim for around 500 words or less.
+**Story Arc:**
+- Opening Hook: {{ARC_OPENING}}
+- How Tension Builds: {{ARC_ESCALATION}}
+- Climax Nature: {{ARC_CLIMAX}}
+- Resolution Style: {{ARC_RESOLUTION}}
 
-Write ONLY the narrative message itself. No preamble, no explanation, no "Here is the opening:" - just start writing the scene directly.
+**Tone & Style:**
+- Primary Tone: {{TONE_PRIMARY}}
+- Narrative Voice: {{TONE_VOICE}}
+- Pacing: {{TONE_PACING}}
 
-IMPORTANT: Do not ask a question or otherwise prompt the user at the end of the opening.
+## Characters
+
+**Protagonist Group:**
+{{PROTAGONIST_GROUP_DESCRIPTION}}
+- Shared Goal: {{PROTAGONIST_GROUP_SHARED_GOAL}}
+- Group Dynamic: {{PROTAGONIST_GROUP_DYNAMIC}}
+
+**Character Arcs:**
+{{CHARACTER_ARCS_SUMMARY}}
+
+## Scene 1: The Opening
+
+**Scene Title:** {{SCENE_TITLE}}
+**Scene Phase:** {{SCENE_PHASE}}
+**Scene Purpose:** {{SCENE_PURPOSE}}
+
+**Situation to Establish:**
+{{SCENE_SITUATION}}
+
+---
+
+## Your Task
+
+Write the **opening narrative message** that establishes Scene 1 for the player. This is the story's first impression.
+
+### Requirements:
+
+1. **Establish the Scene**: Use the situation above to set up Scene 1. Make the player feel immediately immersed in the world.
+
+2. **Create Atmosphere**: Match the setting's atmosphere ({{ATMOSPHERE}}) and the story's primary tone ({{TONE_PRIMARY}}).
+
+3. **Introduce Key Elements**: 
+   - Hint at the core premise without explaining everything
+   - Suggest the antagonistic forces ({{ANTAGONIST_NATURE}})
+   - Reference the protagonist group naturally if appropriate
+   - Set up the opening hook ({{ARC_OPENING}})
+
+4. **Narrative Voice**: Write in the specified narrative voice: {{TONE_VOICE}}
+
+5. **Pacing**: Follow the {{TONE_PACING}} pacing style.
+
+6. **Length**: Aim for 400-600 words. Be vivid but focused.
+
+7. **NO QUESTIONS**: Do NOT end with a question or explicit prompt to the player. The message should feel like the natural start of a story, not a game prompt.
+
+8. **Pure Narrative**: Write ONLY the narrative message itself. No preamble like "Here is the opening:" or meta-commentary. Start directly with the scene.
+
+### Example Structure (adapt as needed):
+
+- **Hook**: Open with something that captures attention (action, dialogue, vivid description, mood)
+- **Ground the Reader**: Quickly establish where/when we are
+- **Introduce Stakes**: Hint at tension, conflict, or the journey ahead
+- **End with Forward Momentum**: Leave the scene at a natural pause that invites the player to engage
+
+Remember: This is the player's introduction to the entire story. Make it compelling, atmospheric, and true to the blueprint's vision.

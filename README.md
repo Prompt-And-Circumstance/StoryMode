@@ -256,6 +256,10 @@ To contribute custom story types or author styles:
 
 Built for SillyTavern with ❤️
 
+**Research & Inspiration**
+The "Scenario Mode" architecture is inspired by the **StoryVerse** system (Wang et al., 2024, Autodesk Research), adapting their "Abstract Act" and "Act Director" concepts for real-time chat extension.
+[*Ref: StoryVerse: Towards Co-authoring Dynamic Plot with LLM-based Character Simulation via Narrative Planning*](https://dl.acm.org/doi/10.1145/3649921.3656987)
+
 ## Version History
 
 ### v0.1 (Initial Release)

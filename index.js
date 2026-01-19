@@ -97,7 +97,7 @@ import {
     migrateFromExtensionSettings,
     getCurrentSceneIndex,
     setCurrentSceneIndex,
-} from './lib/state-manager.js';
+} from './lib/core/state-manager.js';
 
 // Import Arc Engine module
 import {
@@ -106,7 +106,7 @@ import {
     buildPhaseInjection,
     buildFullInjection,
     updateStoryPrompt,
-} from './lib/arc-engine.js';
+} from './lib/core/arc-engine.js';
 
 // Import Wand Menu module
 import {
@@ -176,7 +176,7 @@ import {
     isRegenerating as getIsRegenerating,
     isLoadingChat as getIsLoadingChat,
     jumpToRound,
-} from './lib/event-handlers.js';
+} from './lib/core/event-handlers.js';
 
 // Local aliases for backward compatibility with existing code
 // These will be replaced as we extract more modules

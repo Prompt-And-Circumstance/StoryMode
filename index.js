@@ -31,7 +31,7 @@ import { callGenericPopup, Popup, POPUP_TYPE, POPUP_RESULT } from '/scripts/popu
 import { Popper } from '/lib.js';
 
 // Import Blueprint module (Story Blueprints feature)
-import * as BlueprintModule from './lib/blueprint-module.js';
+import * as BlueprintModule from './lib/blueprint/module.js';
 
 // Import Blueprint Editor module
 import { openBlueprintEditor, generateCoverFromSD, addCoverToGallery, setCoverImageUrl } from './lib/blueprint-editor.js';

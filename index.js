@@ -872,7 +872,7 @@ function setupUnifiedDialogEventListeners(content) {
             content.find('#blueprint_generate_btn').show();
 
             // Return to library grid if we were generating from there
-            returnToLibraryIfNeeded();
+            returnToLibraryIfNeeded(content);
 
             // Clear the global reference
             window.storyModeWizardPopup = null;
@@ -2535,11 +2535,17 @@ async function attemptAutoCoverGeneration(blueprint, statusElement, previewConta
 
 /**
  * Helper to return to the library tab if appropriate
+ * @param {jQuery} content - The settings dialog content element
  * @returns {boolean} True if returned to library, false otherwise
  */
-function returnToLibraryIfNeeded() {
-    // Currently defaulting to false to fall back to overview
-    // Future improvement: track where the wizard was launched from
+function returnToLibraryIfNeeded(content) {
+    if (!content) return false;
+    const wasFromLibrary = content.data('generateFromLibrary');
+    if (wasFromLibrary) {
+        content.removeData('generateFromLibrary');
+        showLibraryGridView(content);
+        return true;
+    }
     return false;
 }
 
@@ -2648,7 +2654,7 @@ async function launchWizardModal(content) {
             if (isComplete) {
                 if (confirm('Are you sure you want to discard this blueprint and close?')) {
                     cleanupWizard();
-                    returnToLibraryIfNeeded();
+                    returnToLibraryIfNeeded(content);
                     wizardPopup.complete(POPUP_RESULT.CANCELLED);
                 }
             } else if (!wizardPopup.isCancelled && confirm('Are you sure you want to cancel blueprint generation?')) {
@@ -2658,7 +2664,7 @@ async function launchWizardModal(content) {
                     statusElement.innerHTML = '<span style="color: var(--corruption-red);">Generation cancelled by user.</span>';
                 }
                 cleanupWizard();
-                returnToLibraryIfNeeded();
+                returnToLibraryIfNeeded(content);
                 wizardPopup.complete(POPUP_RESULT.CANCELLED);
             }
         });
@@ -3030,7 +3036,7 @@ async function launchWizardModal(content) {
                     toastr.warning('Blueprint generated but not saved. Settings sync was cancelled.');
 
                     // Return to library if from library context, otherwise go to overview
-                    if (!returnToLibraryIfNeeded()) {
+                    if (!returnToLibraryIfNeeded(content)) {
                         content.find('.storymode-blueprint-subtab[data-subtab="overview"]').click();
                     }
 
@@ -3083,7 +3089,7 @@ async function launchWizardModal(content) {
                     toastr.success('Story started from blueprint!', 'Story Mode');
                 } else {
                     // Just return to library view
-                    returnToLibraryIfNeeded();
+                    returnToLibraryIfNeeded(content);
                     // Refresh the library grid to show the new blueprint
                     const activeFolder = content.find('.storymode-folder-item.active').data('folder') || 'all';
                     await loadBlueprintsForFolder(content, activeFolder);

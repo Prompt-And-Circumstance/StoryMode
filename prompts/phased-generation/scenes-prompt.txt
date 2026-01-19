@@ -29,6 +29,21 @@ This is Phase 3 of 5 in a phased blueprint generation process. You will design a
 
 **Character Arcs:** {{CHARACTER_ARCS_SUMMARY}}
 
+## TURNING POINT MAPPING (Required)
+
+**Every character turning point listed above MUST appear in your scene plan.** This is non-negotiable—the scene plan is how turning points become playable moments.
+
+For each turning point, you must:
+1. Assign it to a specific scene (via `character_focus`)
+2. Create a beat that enables that turning point to occur
+3. Set an `emotional_beat_target` that reflects the turning point's impact
+
+**Example mapping:**
+- Turning point: "Mark discovers the invoices don't add up"
+  → Scene 2, Beat "Hidden Invoices", character_focus: Mark with emotional_beat_target "growing suspicion"
+
+If a character has 4 turning points, your scene plan must have 4 corresponding beats across different scenes.
+
 ## AUTHOR STYLE GUIDANCE
 
 {{AUTHOR_STYLE_SECTION}}
@@ -73,9 +88,18 @@ Beat types: **establishment** (set scene/mood) | **hook** (create interest) | **
 
 Each beat requires: index, title, description, type, and required (true/false).
 
-Optional: character_focus (which characters experience emotional beats), hooks_for_future (threads connecting to later scenes), expected_rounds (how many rounds this scene spans).
+**character_focus** (required for scenes with turning points):
+```json
+"character_focus": [
+  {
+    "name": "Character Name",
+    "emotional_beat_target": "what emotional shift occurs",
+    "turning_point": "which turning point this addresses (if any)"
+  }
+]
+```
 
-**CRITICAL:** Ensure that the characters' **Key Turning Points** (listed in the CHARACTERS section) are represented in the scene plan. Assign specific scenes to trigger these pivotal moments.
+Optional: hooks_for_future (threads connecting to later scenes), expected_rounds (how many rounds this scene spans).
 
 ## YOUR TASK
 
@@ -100,6 +124,13 @@ Generate a JSON object with **scene_plan** (array of {{EXPECTED_SCENE_COUNT}} sc
       }
     }
   ],
+  "character_focus": [
+    {
+      "name": "Character Name",
+      "emotional_beat_target": "what emotional shift this scene creates",
+      "turning_point": "exact turning point text from Phase 2 (or null if none)"
+    }
+  ],
   "beats": [
     {
       "index": 0,
@@ -114,73 +145,88 @@ Generate a JSON object with **scene_plan** (array of {{EXPECTED_SCENE_COUNT}} sc
 
 ## QUICK EXAMPLE
 
-One setup scene to show structure (your output should have {{EXPECTED_SCENE_COUNT}} scenes):
+One scene showing turning point mapping (your output should have {{EXPECTED_SCENE_COUNT}} scenes):
+
+Given character arc turning point: *"Elena discovers her own forgotten memories among the stored data"*
 
 ```json
 {
   "scene_plan": [
     {
-      "index": 0,
-      "title": "The Discovery",
-      "phase": "setup",
-      "purpose": "Introduce the central conflict and hook the protagonists",
-      "situation": "The protagonists stumble upon something that shouldn't exist, sparking questions and concern.",
+      "index": 2,
+      "title": "The Archive's Secret",
+      "phase": "escalation",
+      "purpose": "Shatter Elena's self-perception as objective observer through personal discovery",
+      "situation": "Elena is cataloging memory files when she encounters one with her own biometric signature from a time she cannot remember.",
       "key_events_if_unchallenged": [
-        "Discovery of an anomaly or object",
-        "Initial confusion or disbelief",
-        "Realization that this matters",
-        "Decision to investigate further"
+        "Elena notices anomalous file during routine cataloging",
+        "Biometric match triggers security alert she must suppress",
+        "Memory fragment plays, showing younger Elena in a subject chair",
+        "Realization that her scientific objectivity was built on a lie"
       ],
       "choice_points": [
         {
-          "id": "scene0_approach",
-          "description": "How do the protagonists respond to the discovery?",
+          "id": "scene2_revelation",
+          "description": "How does Elena respond to discovering she was a test subject?",
           "example_player_intents": [
-            "Investigate immediately",
-            "Tell someone in authority",
-            "Keep it secret and gather information first"
+            "Dig deeper into her own file immediately",
+            "Confront Dr. Sterling about the deception",
+            "Hide the discovery and pretend nothing happened"
           ],
           "consequences": {
-            "direction_if_choice_1": "Gain advantage but risk exposure",
-            "direction_if_choice_2": "Get assistance but lose control",
-            "direction_if_choice_3": "Maintain secrecy but isolate themselves"
+            "direction_if_dig_deeper": "Uncover more painful truths but gain leverage",
+            "direction_if_confront": "Force Sterling's hand, escalate conflict",
+            "direction_if_hide": "Maintain cover but carry psychological burden"
           }
+        }
+      ],
+      "character_focus": [
+        {
+          "name": "Elena",
+          "emotional_beat_target": "shock dissolving into betrayed fury masked by professional composure",
+          "turning_point": "Discovers her own forgotten memories among the stored data"
         }
       ],
       "beats": [
         {
           "index": 0,
-          "title": "Normal Routine",
-          "description": "Protagonists going about their business in the story world",
+          "title": "Routine Cataloging",
+          "description": "Elena methodically processes memory files, clinical and detached",
           "type": "establishment",
           "required": true
         },
         {
           "index": 1,
-          "title": "Something's Off",
-          "description": "First hint that something is amiss—sensory detail or inconsistency",
+          "title": "Anomalous Signature",
+          "description": "A file's biometric data matches Elena's own—impossible, since she was never a subject",
           "type": "hook",
           "required": true
         },
         {
           "index": 2,
-          "title": "Full Realization",
-          "description": "The anomaly becomes undeniable and demands attention",
-          "type": "escalation",
+          "title": "The Memory Plays",
+          "description": "Elena watches her younger self in a subject chair, memories being extracted",
+          "type": "emotional",
           "required": true
         },
         {
           "index": 3,
-          "title": "First Decision",
-          "description": "Protagonists commit to a course of action",
-          "type": "transition",
+          "title": "Shattered Objectivity",
+          "description": "Elena realizes her entire scientific career was built on an erased foundation",
+          "type": "pivot",
           "required": true
         }
+      ],
+      "hooks_for_future": [
+        "The suppressed security alert may be logged somewhere",
+        "Other subjects may have similar 'erased researcher' origins"
       ]
     }
   ]
 }
 ```
+
+Note how `character_focus.turning_point` explicitly maps to the Phase 2 turning point, and the beats create the moment where that turning point can occur.
 
 ## RESPONSE FORMAT
 

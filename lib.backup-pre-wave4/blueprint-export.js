@@ -7,7 +7,7 @@
  * 3. Trigger download
  */
 
-import { encodeExtendedBlueprintPNG } from './png/encoder.js';
+import { encodeExtendedBlueprintPNG } from './blueprint-png-encoder.js';
 import {
     extractCharactersForExport,
     extractPersonasForExport,

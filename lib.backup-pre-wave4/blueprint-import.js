@@ -9,7 +9,7 @@
  * 5. Handle conflicts
  */
 
-import { decodeExtendedBlueprintPNG, isExtendedFormat, validateExtendedData } from './png/decoder.js';
+import { decodeExtendedBlueprintPNG, isExtendedFormat, validateExtendedData } from './blueprint-png-decoder.js';
 import { decodeBlueprintFromPNG } from './blueprint-storage.js';
 import {
     linkBlueprintCharacters,

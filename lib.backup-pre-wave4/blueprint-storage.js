@@ -46,7 +46,7 @@ import {
     verifyPNGSignature,
     extractMetadataFromPNG,
     insertMetadataChunks,
-} from './png/chunk-handler.js';
+} from './png-chunk-handler.js';
 
 import { getContext } from '/scripts/extensions.js';
 import { saveMetadata, eventSource, event_types } from '/script.js';

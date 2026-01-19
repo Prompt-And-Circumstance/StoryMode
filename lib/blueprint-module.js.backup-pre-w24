@@ -35,7 +35,7 @@ import {
 } from './state-manager.js';
 import * as PromptTemplates from './prompt-templates.js';
 import { robustParseJSON, validateOpeningMessage, MAX_OPENING_MESSAGE_LENGTH, MIN_OPENING_MESSAGE_LENGTH } from './blueprint-utils.js';
-import { isBlueprintDebugMode, getMockPhaseResponse } from './debug/mocks.js';
+import { isBlueprintDebugMode, getMockPhaseResponse } from './blueprint-debug-mocks.js';
 import { MODULE_NAME, METAPHOR_LEVELS, LENGTH_PRESETS, PHASE_CONFIG } from './core/index.js';
 import { resolvePlaceholders, checkPrerequisites, validateBlueprint, parseBlueprintResponse, normalizeBlueprint, normalizeCharacterOutcomes, initNormalization } from './blueprint/index.js';
 import {
@@ -58,10 +58,6 @@ import {
     buildMasterPrompt,
     buildPhasePrompt,
     getExpectedSceneCount,
-    initOrchestration,
-    generateBlueprintPhased,
-    generateWithPreset,
-    generateOpeningMessage,
 } from './generation/index.js';
 import { getLibrary } from './blueprint-integration.js';
 import { getCurrentChatCharacters, getAllPersonas } from './blueprint-character-linker.js';
@@ -96,6 +92,41 @@ let authorStyles = [];
 // ============================================================================
 // UTILITY FUNCTIONS
 // ============================================================================
+
+/**
+ * Initialize metrics storage on window object
+ * Metrics can be accessed via window.__blueprintMetrics for debugging
+ */
+function initializeMetricsStorage() {
+    if (!window.__blueprintMetrics) {
+        window.__blueprintMetrics = [];
+        console.log('[Story Mode Blueprint] Metrics tracking initialized. Access via: window.__blueprintMetrics');
+    }
+}
+
+/**
+ * Store phase metrics for performance analysis
+ * @param {Object} metrics - Metrics object with timing and token data
+ */
+function storePhaseMetrics(metrics) {
+    initializeMetricsStorage();
+    window.__blueprintMetrics.push(metrics);
+
+    // Log summary table for easy viewing
+    const summary = {
+        'Phase': `${metrics.phase} (${metrics.phaseName})`,
+        'Duration': `${(metrics.duration / 1000).toFixed(1)}s`,
+        'Prompt Tokens': metrics.promptTokens,
+        'System Tokens': metrics.systemTokens,
+        'Requested Output': metrics.requestedOutputTokens,
+        'Actual Output': metrics.actualOutputLength || '?',
+        'Tokens/sec': metrics.tokensPerSecond || '?',
+        'Success': metrics.success ? '✓' : '✗',
+    };
+
+    console.log('[Story Mode Blueprint] Phase Metrics:');
+    console.table([summary]);
+}
 
 /**
  * Get connection profiles from Connection Manager extension
@@ -1092,24 +1123,12 @@ export async function getEffectiveSceneSummaryPrompt() {
 // Initialize prompt builders with functions that need module-level state
 initPromptBuilders(getEffectiveMasterPrompt, getFallbackMasterPrompt);
 
-// Initialize generation orchestration with dependencies
-initOrchestration({
-    generateBlueprintId,
-    getConnectionProfiles,
-    extension_settings,
-    MODULE_NAME,
-    main_api,
-});
-
 // ============================================================================
 // LLM BLUEPRINT GENERATION (functions moved to generation/prompts.js)
 // ============================================================================
 
 // Re-export for backward compatibility
 export { buildBlueprintRequest, buildMasterPrompt, buildPhasePrompt, getExpectedSceneCount };
-
-// Re-export generation orchestration functions for backward compatibility
-export { generateBlueprintPhased, generateWithPreset, generateOpeningMessage };
 
 // NOTE: The following functions have been moved to lib/generation/prompts.js:
 // - buildBlueprintRequest
@@ -1126,6 +1145,573 @@ export { generateBlueprintPhased, generateWithPreset, generateOpeningMessage };
 // - getExpectedSceneCount
 
 /**
+ * REMOVED - now in generation/prompts.js
+ * Build the blueprint request object from UI configuration
+ * @param {Object} config - Configuration from UI
+ * @returns {Object} Blueprint request object
+ */
+/*
+export function buildBlueprintRequest(config) {
+    return {
+        story_type_id: config.storyTypeId,
+        author_style: config.authorStyleId || undefined,
+        character_data: config.characterData,
+        persona_data: config.personaData || [],
+        user_scenario: config.scenario || '',
+        total_messages_target: config.messageTarget || 30,
+        genre_interpretation: {
+            metaphor_level: config.metaphorLevel || METAPHOR_LEVELS.MIXED,
+        },
+    };
+}
+
+/**
+ * Build metaphor level instructions based on selected level
+ * @param {string} metaphorLevel - The metaphor level (literal, grounded, mixed, symbolic)
+ * @returns {Promise<string>} The instructions for the selected metaphor level
+ */
+/**
+ * Build metaphor instructions from template
+ * @param {string} metaphorLevel - Metaphor level setting
+ * @returns {Promise<string>} Metaphor instructions text
+ */
+async function buildMetaphorInstructions(metaphorLevel) {
+    return await PromptTemplates.getMetaphorInstructions(metaphorLevel);
+}
+
+/**
+ * Build author style section for prompts
+ * @param {Object} authorStyle - Author style object
+ * @returns {string} Formatted author style section
+ */
+function buildAuthorStyleSection(authorStyle) {
+    if (!authorStyle || !authorStyle.authorPrompt) {
+        return `
+### NO AUTHOR STYLE SPECIFIED
+
+No explicit author style has been requested. Generate the blueprint using the STORY TYPE's default tone and narrative conventions. You may draw on common storytelling best practices and the emotional/thematic underpinnings of the story type itself.
+`;
+    }
+
+    const styleParts = [`**User-specified author style:** ${authorStyle.name}`];
+
+    if (authorStyle.category) {
+        styleParts.push(`- **Category**: ${authorStyle.category}`);
+    }
+
+    styleParts.push(`- **Tone and voice**: ${authorStyle.authorPrompt}`);
+
+    if (authorStyle.nsfwPrompt) {
+        styleParts.push(`- **NSFW guidance**: ${authorStyle.nsfwPrompt}`);
+    }
+
+    if (authorStyle.heatLevel) {
+        styleParts.push(`- **Spice level**: ${authorStyle.heatLevel}/5`);
+    }
+
+    return `
+### AUTHOR STYLE GUIDANCE
+
+${styleParts.join('\n')}
+
+You MUST adopt this style's tone, voice, structure, and characteristic narrative devices throughout the blueprint.
+
+ACTIVE STYLE APPLICATION:
+1. Analyze the STORY TYPE JSON. Actively use its defined 'tropes', 'themes', and 'structure' to inform your scene choices. Do not simply treat it as metadata.
+2. Consider *how* ${authorStyle.name} would handle these plot points. Would they focus on internal monologue? Visceral action? Social dynamics? Adjust your scene descriptions to reflect this focus.
+
+Apply the style to:
+- Descriptions of scenes, settings, and situations.
+- Antagonistic forces (how they behave, what they represent).
+- Character arc language and emotional beats.
+- Choice points and decision descriptions.
+- The 'tone_and_style' section itself.
+
+**Note:** Style should enhance but never override the user's scenario, character data, or genre interpretation level.
+`;
+}
+
+/**
+ * Build persona section for prompts
+ * @param {Array<Object>} personaData - Array of persona references
+ * @returns {string} Formatted persona section or empty string
+ */
+function buildPersonaSection(personaData) {
+    if (!personaData || personaData.length === 0) {
+        return '';
+    }
+
+    if (typeof power_user === 'undefined' || !power_user.personas || !power_user.persona_descriptions) {
+        return '';
+    }
+
+    const personaDataStr = personaData.map(personaRef => {
+        const personaName = power_user.personas[personaRef.id];
+        const personaDesc = power_user.persona_descriptions[personaRef.id];
+
+        if (personaName && personaDesc) {
+            let text = `**Persona: ${personaName}`;
+            if (personaDesc.title) {
+                text += ` (${personaDesc.title})`;
+            }
+            text += '**\n';
+            if (personaDesc.description) {
+                text += `Description: ${personaDesc.description}\n`;
+            }
+            return text;
+        }
+
+        return `**Persona: ${personaRef.name}**\nDescription: Persona data not available\n`;
+    }).join('\n---\n');
+
+    return `---
+
+### PERSONA DATA
+
+${personaDataStr}
+
+This PERSONA_DATA includes optional user personas that define the player character's identity, personality, and behavior in this story.
+
+**You MUST:**
+- Treat personas as defining the player character's role and perspective in the story.
+- Incorporate persona traits, goals, and behaviors into the protagonist_group and character_arcs.
+- If a persona is provided, it represents who the player is role-playing as in this narrative.
+
+---`;
+}
+
+/**
+ * Build character data section for prompts
+ * @param {Array<Object>} characterData - Array of character objects
+ * @returns {string} Formatted character data section
+ */
+function buildCharacterDataSection(characterData) {
+    if (!characterData || characterData.length === 0) {
+        return 'No specific character data provided.';
+    }
+
+    return characterData.map(char => {
+        let text = `**Character: ${char.name}**\n`;
+        if (char.description) {
+            text += `Description: ${char.description.replace(/\{\{char\}\}/gi, char.name)}\n`;
+        }
+        if (char.personality) {
+            text += `Personality: ${char.personality.replace(/\{\{char\}\}/gi, char.name)}\n`;
+        }
+        if (char.scenario) {
+            text += `Scenario: ${char.scenario.replace(/\{\{char\}\}/gi, char.name)}\n`;
+        }
+        if (char.greeting) {
+            text += `Greeting: ${char.greeting}\n`;
+        }
+        return text;
+    }).join('\n---\n');
+}
+
+/**
+ * Build the master prompt with template variable replacement
+ * @param {Object} request - Blueprint request object
+ * @param {Object} storyType - Story type object (with storyPrompt, phasePrompts, etc.)
+ * @param {Object} authorStyle - Author style object (optional)
+ * @returns {Promise<string>} The complete master prompt
+ */
+export async function buildMasterPrompt(request, storyType, authorStyle) {
+    let prompt = getEffectiveMasterPrompt();
+
+    // Debug: Check which template is being used
+    const usingFallback = !DEFAULT_MASTER_PROMPT || prompt === getFallbackMasterPrompt();
+    const templateLength = prompt.length;
+    console.log('[Story Mode Blueprint] Template debug:', {
+        usingFallback,
+        templateLength,
+        templateStart: prompt.substring(0, 100) + '...',
+        hasStoryTypeJson: prompt.includes('{{STORY_TYPE_JSON}}'),
+    });
+
+    // Build prompt sections using helper functions
+    const authorStyleSection = buildAuthorStyleSection(authorStyle);
+    const personaSection = buildPersonaSection(request.persona_data);
+    const characterDataStr = buildCharacterDataSection(request.character_data);
+    const metaphorInstructions = await buildMetaphorInstructions(request.genre_interpretation.metaphor_level);
+
+    if (request.character_data && request.character_data.length > 0) {
+        console.log('[Story Mode Blueprint] Processing', request.character_data.length, 'characters');
+    }
+
+    // Calculate expected scene count based on target rounds
+    const expectedSceneCount = getExpectedSceneCount(request.total_messages_target);
+
+    // Debug: Log what we're replacing
+    console.log('[Story Mode Blueprint] Replacing variables:', {
+        storyTypeId: request.story_type_id,
+        storyTypeName: storyType.name,
+        metaphorLevel: request.genre_interpretation.metaphor_level,
+        metaphorInstructionsLength: metaphorInstructions.length,
+        authorStyleName: authorStyle?.name,
+        personaSectionLength: personaSection.length,
+        characterDataLength: characterDataStr.length,
+        scenarioLength: request.user_scenario?.length || 0,
+        messageTarget: request.total_messages_target,
+    });
+
+    // Replace template variables - do this in the right order!
+    prompt = prompt
+        // First, replace the large sections
+        .replace('{{STORY_TYPE_JSON}}', JSON.stringify(storyType, null, 2))
+        .replace('{{AUTHOR_STYLE_SECTION}}', authorStyleSection)
+        .replace('{{METAPHOR_INSTRUCTIONS}}', metaphorInstructions)
+        .replace('{{PERSONA_SECTION}}', personaSection)
+        .replace('{{CHARACTER_DATA}}', characterDataStr)
+        .replace('{{USER_SCENARIO}}', request.user_scenario || 'No specific scenario provided.')
+        // Then replace the simple variables
+        .replace('{{STORY_TYPE_ID}}', request.story_type_id)
+        .replace('{{STORY_TYPE_NAME}}', storyType.name || request.story_type_id)
+        .replace('{{METAPHOR_LEVEL}}', request.genre_interpretation.metaphor_level)
+        .replace('{{AUTHOR_STYLE}}', authorStyle?.name || 'None')
+        .replace('{{TOTAL_MESSAGES_TARGET}}', request.total_messages_target.toString())
+        .replace('{{EXPECTED_SCENE_COUNT}}', expectedSceneCount);
+
+    // Debug: Check final prompt
+    console.log('[Story Mode Blueprint] Final prompt length:', prompt.length);
+    console.log('[Story Mode Blueprint] Final prompt starts with:', prompt.substring(0, 200) + '...');
+
+    return prompt;
+}
+
+// ============================================================================
+// PHASED GENERATION FUNCTIONS
+// ============================================================================
+
+/**
+ * Build a phase-specific prompt for phased blueprint generation
+ * Dispatcher function that routes to the appropriate phase prompt builder
+ * @param {number} phase - Phase number (1-5)
+ * @param {Object} request - Blueprint request object
+ * @param {Object} storyType - Story type object
+ * @param {Object} authorStyle - Author style object (optional)
+ * @param {Object} partialBlueprint - Partial blueprint from previous phases
+ * @returns {Promise<string>} Phase-specific prompt
+ */
+export async function buildPhasePrompt(phase, request, storyType, authorStyle, partialBlueprint = {}) {
+    switch (phase) {
+        case 1:
+            return buildFoundationPrompt(request, storyType, authorStyle);
+        case 2:
+            return buildCharactersPrompt(request, storyType, authorStyle, partialBlueprint);
+        case 3:
+            return buildScenesPrompt(request, storyType, authorStyle, partialBlueprint);
+        case 4:
+            return buildResolutionsPrompt(request, storyType, authorStyle, partialBlueprint);
+        default:
+            throw new Error(`Invalid phase: ${phase}`);
+    }
+}
+
+/**
+ * Build Phase 1: Foundation prompt
+ * Generates core_premise, setting, antagonistic_forces, arc_structure, tone_and_style
+ * @param {Object} request - Blueprint request object
+ * @param {Object} storyType - Story type object
+ * @param {Object} authorStyle - Author style object (optional)
+ * @returns {Promise<string>} Foundation phase prompt
+ */
+async function buildFoundationPrompt(request, storyType, authorStyle) {
+    const authorStyleSection = buildAuthorStyleSection(authorStyle);
+    const personaSection = buildPersonaSection(request.persona_data);
+    const characterDataStr = buildCharacterDataSection(request.character_data);
+    const metaphorInstructions = await buildMetaphorInstructions(request.genre_interpretation.metaphor_level);
+    const expectedSceneCount = getExpectedSceneCount(request.total_messages_target);
+
+    return await PromptTemplates.buildFoundationPrompt({
+        storyTypeName: storyType.name,
+        storyTypeJson: JSON.stringify(storyType, null, 2),
+        authorStyleSection,
+        characterData: characterDataStr,
+        personaSection,
+        userScenario: request.user_scenario || 'No specific scenario provided.',
+        metaphorLevel: request.genre_interpretation.metaphor_level,
+        metaphorInstructions,
+        totalMessagesTarget: request.total_messages_target,
+        expectedSceneCount,
+    });
+}
+
+/**
+ * Build Phase 2: Characters prompt
+ * Generates protagonist_group and character_arcs
+ * Uses different template based on whether character data was provided
+ * @param {Object} request - Blueprint request object
+ * @param {Object} storyType - Story type object
+ * @param {Object} authorStyle - Author style object (optional)
+ * @param {Object} partialBlueprint - Blueprint from Phase 1
+ * @returns {Promise<string>} Characters phase prompt
+ */
+async function buildCharactersPrompt(request, storyType, authorStyle, partialBlueprint) {
+    const foundation = partialBlueprint.core_premise || '';
+    const setting = partialBlueprint.setting || {};
+    const antagonist = partialBlueprint.antagonistic_forces || {};
+    const arcStructure = partialBlueprint.arc_structure || {};
+    const toneAndStyle = partialBlueprint.tone_and_style || {};
+
+    // Build author style section
+    let authorStyleSection = '';
+    if (authorStyle && authorStyle.authorPrompt) {
+        const styleParts = [`**User-specified author style:** ${authorStyle.name}`];
+
+        if (authorStyle.category) {
+            styleParts.push(`- **Category**: ${authorStyle.category}`);
+        }
+
+        styleParts.push(`- **Tone and voice**: ${authorStyle.authorPrompt}`);
+
+        if (authorStyle.nsfwPrompt) {
+            styleParts.push(`- **NSFW guidance**: ${authorStyle.nsfwPrompt}`);
+        }
+
+        if (authorStyle.heatLevel) {
+            styleParts.push(`- **Spice level**: ${authorStyle.heatLevel}/5`);
+        }
+
+        authorStyleSection = `
+### AUTHOR STYLE GUIDANCE
+
+${styleParts.join('\n')}
+
+You MUST adopt this style's tone, voice, structure, and characteristic narrative devices throughout the blueprint.
+
+Apply the style to:
+- Character descriptions and emotional arcs.
+- Group dynamics and interpersonal relationships.
+- Emotional trajectory descriptions.
+- Character motivation and behavior.
+
+**Note:** Style should enhance but never override the user's scenario or genre interpretation level.
+`;
+    } else {
+        authorStyleSection = `
+### NO AUTHOR STYLE SPECIFIED
+
+No explicit author style has been requested. Generate the blueprint using the STORY TYPE's default tone and narrative conventions. You may draw on common storytelling best practices and the emotional/thematic underpinnings of the story type itself.
+`;
+    }
+
+    // Build persona section
+    const personaSection = buildPersonaSection(request.persona_data);
+
+    // Build character data section
+    const characterDataStr = buildCharacterDataSection(request.character_data);
+
+    // Get metaphor instructions
+    const metaphorInstructions = await buildMetaphorInstructions(request.genre_interpretation.metaphor_level);
+
+    // Calculate expected scene count
+    const expectedSceneCount = getExpectedSceneCount(request.total_messages_target);
+
+    // Determine which template to use based on whether character data was provided
+    const hasCharacterData = request.character_data && request.character_data.length > 0;
+
+    const builderParams = {
+        storyTypeName: storyType.name,
+        storyTypeJson: JSON.stringify(storyType, null, 2),
+        foundation,
+        setting,
+        antagonist,
+        arcStructure,
+        toneAndStyle,
+        personaSection,
+        authorStyleSection,
+        userScenario: request.user_scenario || 'No specific scenario provided.',
+        metaphorLevel: request.genre_interpretation.metaphor_level,
+        metaphorInstructions,
+        totalMessagesTarget: request.total_messages_target,
+        expectedSceneCount,
+    };
+
+    if (hasCharacterData) {
+        console.log('[Story Mode Blueprint] Phase 2: Using provided character data template');
+        return await PromptTemplates.buildCharactersPromptWithData({
+            ...builderParams,
+            characterData: characterDataStr,
+        });
+    } else {
+        console.log('[Story Mode Blueprint] Phase 2: Using generate new characters template');
+        return await PromptTemplates.buildCharactersPromptGenerate(builderParams);
+    }
+}
+
+/**
+ * Build Phase 3: Scenes prompt
+ * Generates scene_plan with beats (scene-by-scene generation)
+ * @param {Object} request - Blueprint request object
+ * @param {Object} storyType - Story type object
+ * @param {Object} authorStyle - Author style object (optional)
+ * @param {Object} partialBlueprint - Blueprint from Phases 1-2
+ * @returns {Promise<string>} Scenes phase prompt
+ */
+async function buildScenesPrompt(request, storyType, authorStyle, partialBlueprint) {
+    const foundation = partialBlueprint.core_premise || '';
+    const setting = partialBlueprint.setting || {};
+    const antagonist = partialBlueprint.antagonistic_forces || {};
+    const arcStructure = partialBlueprint.arc_structure || {};
+    const toneAndStyle = partialBlueprint.tone_and_style || {};
+    const protagonistGroup = partialBlueprint.protagonist_group || {};
+    const characters = partialBlueprint.character_arcs || [];
+    const expectedSceneCount = getExpectedSceneCount(request.total_messages_target);
+
+    // Build author style section
+    let authorStyleSection = '';
+    if (authorStyle && authorStyle.authorPrompt) {
+        const styleParts = [`**User-specified author style:** ${authorStyle.name}`];
+        if (authorStyle.category) {
+            styleParts.push(`- **Category**: ${authorStyle.category}`);
+        }
+        styleParts.push(`- **Tone and voice**: ${authorStyle.authorPrompt}`);
+        if (authorStyle.narrativeTechniques) {
+            styleParts.push(`- **Narrative techniques**: ${authorStyle.narrativeTechniques}`);
+        }
+        if (authorStyle.dialogueStyle) {
+            styleParts.push(`- **Dialogue style**: ${authorStyle.dialogueStyle}`);
+        }
+        if (authorStyle.pacingApproach) {
+            styleParts.push(`- **Pacing**: ${authorStyle.pacingApproach}`);
+        }
+        if (authorStyle.thematicFocus) {
+            styleParts.push(`- **Thematic focus**: ${authorStyle.thematicFocus}`);
+        }
+
+        authorStyleSection = `
+### AUTHOR STYLE GUIDANCE
+${styleParts.join('\n')}
+
+Apply this author's stylistic approach to the scene generation—emulate their voice, pacing, and sentence structure. Ensure ${authorStyle.name}'s distinctive qualities are present in how scenes are structured and described.
+`;
+    }
+
+    // Build persona section
+    const personaSection = buildPersonaSection(request.persona_data);
+
+    // Get metaphor instructions
+    const metaphorInstructions = await buildMetaphorInstructions(request.genre_interpretation.metaphor_level);
+
+    return await PromptTemplates.buildScenesPrompt({
+        storyTypeName: storyType.name,
+        storyTypeJson: JSON.stringify(storyType, null, 2),
+        foundation,
+        setting,
+        antagonist,
+        arcStructure,
+        toneAndStyle,
+        protagonistGroup,
+        characters,
+        personaSection,
+        authorStyleSection,
+        userScenario: request.user_scenario || 'No specific scenario provided.',
+        metaphorLevel: request.genre_interpretation.metaphor_level,
+        metaphorInstructions,
+        totalMessagesTarget: request.total_messages_target,
+        expectedSceneCount,
+        memorableElement: storyType.memorableElement,
+    });
+}
+
+/**
+ * Build Phase 4: Resolutions prompt
+ * Generates possible_resolutions, blueprint_title, cover_prompt
+ * @param {Object} request - Blueprint request object
+ * @param {Object} storyType - Story type object
+ * @param {Object} authorStyle - Author style object (optional)
+ * @param {Object} partialBlueprint - Blueprint from Phases 1-3
+ * @returns {Promise<string>} Resolutions phase prompt
+ */
+async function buildResolutionsPrompt(request, storyType, authorStyle, partialBlueprint) {
+    const foundation = partialBlueprint.core_premise || '';
+    const setting = partialBlueprint.setting || {};
+    const antagonist = partialBlueprint.antagonistic_forces || {};
+    const arcStructure = partialBlueprint.arc_structure || {};
+    const toneAndStyle = partialBlueprint.tone_and_style || {};
+    const protagonistGroup = partialBlueprint.protagonist_group || {};
+    const characters = partialBlueprint.character_arcs || [];
+    const scenes = partialBlueprint.scene_plan || [];
+
+    // Build author style section (matching buildMasterPrompt pattern)
+    let authorStyleSection = '';
+    if (authorStyle && authorStyle.authorPrompt) {
+        const styleParts = [`**User-specified author style:** ${authorStyle.name}`];
+        if (authorStyle.category) {
+            styleParts.push(`- **Category**: ${authorStyle.category}`);
+        }
+        styleParts.push(`- **Tone and voice**: ${authorStyle.authorPrompt}`);
+        if (authorStyle.narrativeTechniques) {
+            styleParts.push(`- **Narrative techniques**: ${authorStyle.narrativeTechniques}`);
+        }
+        if (authorStyle.dialogueStyle) {
+            styleParts.push(`- **Dialogue style**: ${authorStyle.dialogueStyle}`);
+        }
+        if (authorStyle.pacingApproach) {
+            styleParts.push(`- **Pacing**: ${authorStyle.pacingApproach}`);
+        }
+        if (authorStyle.thematicFocus) {
+            styleParts.push(`- **Thematic focus**: ${authorStyle.thematicFocus}`);
+        }
+
+        authorStyleSection = `
+### AUTHOR STYLE GUIDANCE
+${styleParts.join('\n')}
+
+Apply this author's stylistic approach to the resolution generation—consider how they would handle endings, themes, and character outcomes. Ensure ${authorStyle.name}'s distinctive qualities are present in how resolutions are structured.
+`;
+    }
+
+    // Build persona section
+    const personaSection = buildPersonaSection(request.persona_data);
+
+    // Get metaphor instructions
+    const metaphorInstructions = await buildMetaphorInstructions(request.genre_interpretation.metaphor_level);
+
+    return await PromptTemplates.buildResolutionsPrompt({
+        storyTypeName: storyType.name,
+        storyTypeJson: JSON.stringify(storyType, null, 2),
+        foundation,
+        setting,
+        antagonist,
+        arcStructure,
+        toneAndStyle,
+        protagonistGroup,
+        characters,
+        personaSection,
+        authorStyleSection,
+        userScenario: request.user_scenario || 'No specific scenario provided.',
+        metaphorLevel: request.genre_interpretation.metaphor_level,
+        metaphorInstructions,
+        sceneCount: scenes.length,
+        scenes: scenes,
+    });
+}
+
+
+
+/**
+ * Get expected scene count based on target rounds
+ * @param {number} totalRounds - Target number of rounds
+ * @returns {string} Expected scene count description
+ */
+function getExpectedSceneCount(totalRounds) {
+    if (totalRounds <= 12) {
+        return '~5–7 scenes';
+    } else if (totalRounds <= 30) {
+        return '~8–12 scenes';
+    } else if (totalRounds <= 60) {
+        return '~12–20 scenes';
+    } else if (totalRounds <= 120) {
+        return '~20–30 scenes';
+    } else {
+        const scenesPerRound = 0.25;
+        const calculatedScenes = Math.max(30, Math.round(totalRounds * scenesPerRound));
+        return `~${calculatedScenes}–${calculatedScenes + 10} scenes`;
+    }
+}
+
+/**
  * Generate a blueprint name from the blueprint title or core premise
  * @param {Object} blueprint - Blueprint object
  * @returns {string} Generated name
@@ -1139,6 +1725,399 @@ export function generateBlueprintName(blueprint) {
         return blueprint.core_premise.substring(0, 50) + '...';
     }
     return 'Untitled Blueprint';
+}
+
+/**
+ * Generate a blueprint using phased generation
+ * @param {Object} request - Blueprint request object
+ * @param {Array} storyTypes - Array of available story types
+ * @param {Array} authorStyles - Array of available author styles
+ * @param {Function} onPhaseUpdate - Callback for phase updates (phase, progress, data)
+ * @returns {Promise<Object>} Generated blueprint or error
+ */
+/**
+ * Generate a blueprint using phased approach (5 phases)
+ * @param {Object} request - Blueprint request object
+ * @param {Array} storyTypes - Available story types
+ * @param {Array} authorStyles - Available author styles
+ * @param {Function} onPhaseUpdate - Callback for phase updates (phase, progress, data)
+ * @param {Object} options - Generation options
+ * @param {number} options.startPhase - Phase to start from (1-5, default: 1)
+ * @param {Object} options.partialBlueprint - Partial blueprint to continue from
+ * @returns {Promise<Object>} Result object with success, blueprint, and error info
+ */
+export async function generateBlueprintPhased(request, storyTypes, authorStyles, onPhaseUpdate, options = {}) {
+    const { startPhase = 1, partialBlueprint: initialBlueprint = null, phaseTokenOverrides = {} } = options;
+
+    try {
+        // Find story type and author style
+        const storyType = storyTypes.find(t => t.id === request.story_type_id);
+        if (!storyType) {
+            throw new Error(`Story type not found: ${request.story_type_id}`);
+        }
+
+        const authorStyle = request.author_style
+            ? authorStyles.find(s => s.id === request.author_style)
+            : null;
+
+        // Capture the selected profile ID
+        const selectedProfileId = extension_settings[MODULE_NAME]?.blueprintSettings?.generationApi || null;
+
+        // Initialize or continue with partial blueprint
+        const partialBlueprint = initialBlueprint || {
+            story_type_id: request.story_type_id,
+            story_type_name: storyType.name,
+        };
+        // Ensure blueprint_id exists (for both new and retry scenarios)
+        if (!partialBlueprint.blueprint_id) {
+            partialBlueprint.blueprint_id = generateBlueprintId();
+        }
+
+        // Track token usage per phase for error reporting
+        const phaseTokensUsed = {};
+
+        // Execute phases from startPhase to 5
+        for (const phaseNum of [1, 2, 3, 4].filter(p => p >= startPhase)) {
+            const config = PHASE_CONFIG[phaseNum];
+
+            // Emit phase update BEFORE starting (to show this phase as "current")
+            onPhaseUpdate?.(phaseNum, config.progress, {
+                phase: config.name,
+                description: config.description,
+                partialBlueprint
+            });
+
+            try {
+                const phaseResult = await executePhase(phaseNum, request, storyType, authorStyle, partialBlueprint, selectedProfileId, phaseTokenOverrides);
+                Object.assign(partialBlueprint, validatePhaseResult(phaseResult, phaseNum));
+            } catch (phaseError) {
+                console.error(`[Story Mode Blueprint] Phase ${phaseNum} error:`, phaseError);
+                const errorResult = {
+                    success: false,
+                    error: phaseError.message,
+                    rawResponse: phaseError.rawResponse || null,
+                    phase: phaseNum,
+                    phaseName: config.name,
+                    phaseTokensUsed: phaseError.tokensUsed || phaseTokenOverrides[phaseNum] || config.maxTokens,
+                    partialBlueprint: { ...partialBlueprint },
+                    request: { ...request }
+                };
+                // Emit error event with phase information
+                onPhaseUpdate?.(phaseNum, config.progress, {
+                    phase: config.name,
+                    description: config.description,
+                    partialBlueprint,
+                    error: errorResult
+                });
+                return errorResult;
+            }
+        }
+
+        // Add metadata
+        partialBlueprint.arc_structure = partialBlueprint.arc_structure || {};
+        partialBlueprint.arc_structure.total_messages_target = request.total_messages_target;
+        partialBlueprint.author_style = request.author_style;
+
+        if (request.author_style && authorStyles) {
+            const authorStyleObj = authorStyles.find(s => s.id === request.author_style);
+            if (authorStyleObj) {
+                partialBlueprint.author_style_name = authorStyleObj.name;
+                partialBlueprint.author_style_prompt = authorStyleObj.authorPrompt;
+            }
+        }
+
+        // Capture LLM descriptor
+        if (selectedProfileId) {
+            const profiles = getConnectionProfiles();
+            const usedProfile = profiles.find(p => p.id === selectedProfileId);
+            if (usedProfile && usedProfile.model) {
+                partialBlueprint.llmDescriptor = usedProfile.model;
+            } else {
+                // Safely extract profile ID prefix for display
+                const profilePrefix = selectedProfileId && typeof selectedProfileId === 'string' && selectedProfileId.length >= 8
+                    ? selectedProfileId.substring(0, 8)
+                    : '????????';
+                partialBlueprint.llmDescriptor = `Unknown Profile (${profilePrefix}...)`;
+            }
+        } else {
+            partialBlueprint.llmDescriptor = `Main API (${main_api || 'Unknown'})`;
+        }
+
+        console.log('[Story Mode Blueprint] Phased generation complete:', partialBlueprint.blueprint_id);
+
+        return {
+            success: true,
+            blueprint: partialBlueprint,
+        };
+    } catch (error) {
+        console.error('[Story Mode Blueprint] Phased generation error:', error);
+        return {
+            success: false,
+            error: error.message,
+            partialBlueprint: initialBlueprint || null,
+            request: { ...request }
+        };
+    }
+}
+
+/**
+ * Generate an opening message for the blueprint
+ * @param {Object} blueprint - The blueprint object
+ * @param {string} [modelOverride] - Optional model override
+ * @returns {Promise<string>} Generated opening message
+ */
+export async function generateOpeningMessage(blueprint, modelOverride = null) {
+    // Validate blueprint has required data
+    if (!blueprint.scene_plan || blueprint.scene_plan.length === 0) {
+        throw new Error('Blueprint must have at least one scene to generate an opening message.');
+    }
+
+    const firstScene = blueprint.scene_plan[0];
+    const setting = blueprint.setting || {};
+    const antagonist = blueprint.antagonistic_forces || {};
+    const arcStructure = blueprint.arc_structure || {};
+    const toneAndStyle = blueprint.tone_and_style || {};
+    const protagonistGroup = blueprint.protagonist_group || {};
+    const characters = blueprint.character_arcs || [];
+
+    // Build prompt with full blueprint context
+    const prompt = await PromptTemplates.buildOpeningMessagePrompt({
+        corePremise: blueprint.core_premise,
+        location: setting.location || 'Unknown',
+        timePeriod: setting.time_period || 'Unknown',
+        atmosphere: setting.atmosphere || 'Unknown',
+        antagonist,
+        arcStructure,
+        toneAndStyle,
+        protagonistGroup,
+        characters,
+        sceneTitle: firstScene.title,
+        scenePhase: firstScene.phase,
+        scenePurpose: firstScene.purpose,
+        sceneSituation: firstScene.situation,
+    });
+
+    const systemPrompt = 'You are an expert story narrator. Write a compelling opening message for an interactive story.';
+
+    // Build messages array for the LLM
+    const messages = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: prompt }
+    ];
+
+    // Call LLM using SillyTavern's built-in generateRaw
+    // This avoids connection profile complications and uses the main API
+    console.log('[Story Mode] Generating opening message...');
+    const response = await generateRaw(prompt, '', false, false, systemPrompt);
+
+    if (!response) {
+        throw new Error('No response from LLM');
+    }
+
+    return response.trim();
+}
+
+/**
+ * Validate that a phase result is safe to merge into the blueprint
+ * Checks for null, primitive types, arrays, and prototype pollution attempts
+ * @param {Object} phaseResult - Result from executePhase
+ * @param {number} phase - Phase number for error reporting
+ * @returns {Object} Validated phase result
+ * @throws {Error} If phase result is invalid
+ */
+function validatePhaseResult(phaseResult, phase) {
+    // Reject null/undefined
+    if (!phaseResult || typeof phaseResult !== 'object') {
+        throw new Error(`Phase ${phase}: Invalid result - expected object, got ${typeof phaseResult}`);
+    }
+
+    // Reject arrays
+    if (Array.isArray(phaseResult)) {
+        throw new Error(`Phase ${phase}: Invalid result - expected object, got array`);
+    }
+
+    // Check for prototype pollution attempts
+    const dangerousKeys = ['__proto__', 'constructor', 'prototype'];
+    for (const key of dangerousKeys) {
+        if (Object.prototype.hasOwnProperty.call(phaseResult, key)) {
+            throw new Error(`Phase ${phase}: Invalid result - dangerous key "${key}" detected`);
+        }
+    }
+
+    return phaseResult;
+}
+
+/**
+ * Execute a single phase of generation
+ * @param {number} phase - Phase number (1-5)
+ * @param {Object} request - Blueprint request object
+ * @param {Object} storyType - Story type object
+ * @param {Object} authorStyle - Author style object (optional)
+ * @param {Object} partialBlueprint - Partial blueprint from previous phases
+ * @param {string} selectedProfileId - Connection Manager profile ID
+ * @param {Object} phaseTokenOverrides - Optional token overrides per phase {phaseNum: maxTokens}
+ * @returns {Promise<Object>} Phase result data
+ */
+/**
+ * Validate output for a specific phase
+ * @param {number} phase - Phase number
+ * @param {Object} data - Phase output data
+ * @throws {Error} If validation fails
+ */
+function validatePhaseOutput(phase, data) {
+    if (!data || typeof data !== 'object') {
+        throw new Error('Output must be an object');
+    }
+
+    if (phase === 3) { // Scenes Phase
+        if (!data.scene_plan || !Array.isArray(data.scene_plan)) {
+            throw new Error('Response missing "scene_plan" array');
+        }
+        if (data.scene_plan.length === 0) {
+            throw new Error('Scene plan is empty');
+        }
+
+        // Strict validation for beats
+        data.scene_plan.forEach((scene, index) => {
+            if (!scene.beats || !Array.isArray(scene.beats) || scene.beats.length === 0) {
+                throw new Error(`Scene ${index + 1} ("${scene.title || 'Untitled'}") is missing "beats" array. Every scene must have at least 3 beats.`);
+            }
+        });
+    }
+
+    if (phase === 4) { // Resolutions Phase
+        if (!data.primary_ending) {
+            throw new Error('Response missing "primary_ending"');
+        }
+        if (!data.blueprint_title && !data.title) {
+            // check if title is elsewhere or optional? Schema says required in validateBlueprint but maybe less critical here.
+            // Let's enforce it.
+            if (!data.blueprint_title) throw new Error('Response missing "blueprint_title"');
+        }
+    }
+
+    return true;
+}
+
+/**
+ * Execute a single phase of generation with retries
+ * @param {number} phase - Phase number (1-5)
+ * @param {Object} request - Blueprint request object
+ * @param {Object} storyType - Story type object
+ * @param {Object} authorStyle - Author style object (optional)
+ * @param {Object} partialBlueprint - Partial blueprint from previous phases
+ * @param {string} selectedProfileId - Connection Manager profile ID
+ * @param {Object} phaseTokenOverrides - Optional token overrides per phase {phaseNum: maxTokens}
+ * @returns {Promise<Object>} Phase result data
+ */
+async function executePhase(phase, request, storyType, authorStyle, partialBlueprint, selectedProfileId, phaseTokenOverrides = {}) {
+    const MAX_RETRIES = 2; // Try up to 3 times total (1 initial + 2 retries)
+    let lastError = null;
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        try {
+            // Build phase prompt
+            const prompt = await buildPhasePrompt(phase, request, storyType, authorStyle, partialBlueprint);
+
+            // Add retry guidance if this is a retry
+            let systemPrompt = 'You are an expert story designer';
+
+            // PERSONA INJECTION: Prime the model with the specific author style
+            if (authorStyle && authorStyle.name) {
+                systemPrompt += ` specializing in ${storyType.name} stories, writing in the distinct style of ${authorStyle.name}.`;
+            } else {
+                systemPrompt += '.';
+            }
+
+            systemPrompt += ' Output ONLY valid JSON as specified.';
+
+            if (attempt > 0 && lastError) {
+                console.log(`[Story Mode Blueprint] Retry attempt ${attempt}/${MAX_RETRIES} for Phase ${phase}. Previous error: ${lastError.message}`);
+                systemPrompt += `\n\nPREVIOUS ERROR: Your last response was invalid: ${lastError.message}\nFix this specific error in your new response. Ensure all required fields (like 'beats' arrays) are present.`;
+            }
+
+            console.log(`[Story Mode Blueprint] Executing Phase ${phase} (${PHASE_CONFIG[phase].name}) - Attempt ${attempt + 1}/${MAX_RETRIES + 1}...`);
+
+            // Call LLM with phase-specific token limit (use override if provided)
+            const phaseConfig = PHASE_CONFIG[phase];
+            const maxTokens = phaseTokenOverrides[phase] || phaseConfig.maxTokens;
+
+            // Log token usage
+            if (phaseTokenOverrides[phase]) {
+                console.log(`[Story Mode Blueprint] Phase ${phase} using OVERRIDDEN token limit: ${maxTokens} (default: ${phaseConfig.maxTokens})`);
+            } else {
+                console.log(`[Story Mode Blueprint] Phase ${phase} using default token limit: ${maxTokens}`);
+            }
+
+            // Check if debug mode is enabled - use mock LLM responses
+            let rawText;
+            if (isBlueprintDebugMode()) {
+                console.log(`[Story Mode Blueprint] DEBUG MODE ENABLED - Using mock response for Phase ${phase}`);
+                const mockData = getMockPhaseResponse(phase);
+                rawText = JSON.stringify(mockData, null, 2);
+                // Simulate a small delay to make it feel more realistic
+                await new Promise(resolve => setTimeout(resolve, 500));
+            } else {
+                rawText = await generateWithPreset({
+                    prompt: prompt,
+                    systemPrompt: systemPrompt,
+                    responseLength: maxTokens,
+                    profileId: selectedProfileId,
+                    phase: phase, // For metrics tracking
+                    phaseName: phaseConfig.name, // For metrics display
+                });
+            }
+
+            // Log response details for debugging
+            console.log(`[Story Mode Blueprint] Phase ${phase} response length:`, rawText?.length || 0);
+
+            if (!rawText || rawText.trim().length === 0) {
+                const error = new Error(
+                    `Phase ${phase}: Empty response from LLM (using ${maxTokens} tokens). ` +
+                    `This may occur with reasoning models that consume all tokens on reasoning. ` +
+                    `Try clicking Retry to automatically increase the token limit.`
+                );
+                error.tokensUsed = maxTokens; // Attach for error handling
+                throw error;
+            }
+
+            // Parse JSON response
+            let phaseData;
+            try {
+                phaseData = robustParseJSON(rawText);
+            } catch (parseError) {
+                console.error(`[Story Mode Blueprint] Phase ${phase} parse error:`, parseError);
+                console.error(`[Story Mode Blueprint] Raw response preview:`, rawText.substring(0, 500));
+                const error = new Error(`Phase ${phase}: Failed to parse JSON response`);
+                error.rawResponse = rawText; // Attach raw response for debugging
+                error.tokensUsed = maxTokens; // Attach for error handling
+                throw error;
+            }
+
+            // VALIDATE PHASE OUTPUT (New Validation Step)
+            validatePhaseOutput(phase, phaseData);
+
+            console.log(`[Story Mode Blueprint] Phase ${phase} complete:`, Object.keys(phaseData));
+
+            return phaseData;
+
+        } catch (error) {
+            lastError = error;
+            console.warn(`[Story Mode Blueprint] Phase ${phase} failed attempt ${attempt + 1}: ${error.message}`);
+
+            // If we have retries left, continue loop
+            if (attempt < MAX_RETRIES) {
+                continue;
+            }
+
+            // If no retries left, attach info and rethrow
+            if (!error.tokensUsed) {
+                // Add token usage helper if not present, though executePhase logic usually adds it
+                // We can't easily access maxTokens here unless we duplicate logic, but it's fine
+            }
+            throw error;
+        }
+    }
 }
 
 /**
@@ -1864,6 +2843,194 @@ These markers are parsed by the system - include them exactly as shown.
 </instructions>`;
 
     return injection.trim();
+}
+
+/**
+ * Helper function to generate with a specific connection profile
+ * Uses ConnectionManagerRequestService to call the API with the selected profile
+ * Captures performance metrics for analysis
+ * @param {Object} options - Options with prompt, systemPrompt, responseLength, profileId, phase, phaseName
+ * @returns {Promise<string>} Generated text
+ */
+export async function generateWithPreset(options) {
+    const selectedProfileId = options.profileId ?? extension_settings[MODULE_NAME]?.blueprintSettings?.generationApi;
+
+    if (!selectedProfileId) {
+        console.error('[Story Mode Blueprint] No profile selected!');
+        throw new Error('No API profile selected for blueprint generation. Please select a provider in Blueprint Settings.');
+    }
+
+    console.log('[Story Mode Blueprint] Using profile:', selectedProfileId);
+
+    // Initialize metrics tracking
+    const startTime = performance.now();
+    const metrics = {
+        phase: options.phase || '?',
+        phaseName: options.phaseName || 'Unknown',
+        startTime,
+        requestedOutputTokens: options.responseLength || 0,
+        profileId: selectedProfileId,
+    };
+
+    // Count tokens in prompt and system prompt (async)
+    try {
+        metrics.promptTokens = await getTokenCountAsync(options.prompt);
+        metrics.systemTokens = options.systemPrompt ? await getTokenCountAsync(options.systemPrompt) : 0;
+        metrics.totalInputTokens = metrics.promptTokens + metrics.systemTokens;
+    } catch (tokenError) {
+        console.warn('[Story Mode Blueprint] Token counting failed:', tokenError);
+        metrics.promptTokens = '?';
+        metrics.systemTokens = '?';
+        metrics.totalInputTokens = '?';
+    }
+
+    const messages = [];
+    if (options.systemPrompt) {
+        messages.push({ role: 'system', content: options.systemPrompt });
+    }
+    messages.push({ role: 'user', content: options.prompt });
+
+    try {
+        const result = await ConnectionManagerRequestService.sendRequest(
+            selectedProfileId,
+            messages,
+            options.responseLength || 0,
+            { stream: false, extractData: true }
+        );
+
+        const endTime = performance.now();
+        const output = result.text || result.content || '';
+
+        // Capture success metrics
+        metrics.endTime = endTime;
+        metrics.duration = endTime - startTime;
+        metrics.actualOutputLength = output.length;
+        metrics.actualOutputTokens = result.usage?.completion_tokens || '?';
+        metrics.totalTokensUsed = result.usage?.total_tokens || '?';
+        metrics.success = true;
+
+        // Calculate tokens per second if we have the data
+        if (typeof metrics.actualOutputTokens === 'number' && metrics.duration > 0) {
+            metrics.tokensPerSecond = Math.round((metrics.actualOutputTokens / metrics.duration) * 1000);
+        }
+
+        // Store metrics for analysis
+        storePhaseMetrics(metrics);
+
+        return output;
+    } catch (error) {
+        // Log the full error for debugging
+        console.error('[Story Mode Blueprint] Full error object:', error);
+        console.error('[Story Mode Blueprint] Error message:', error.message);
+        console.error('[Story Mode Blueprint] Error cause:', error.cause);
+        console.error('[Story Mode Blueprint] Error cause message:', error.cause?.message);
+
+        // Check if this is a reasoning parameter error (GLM 4.7 doesn't support auto reasoning)
+        // The error might be in error.message, error.cause, error.cause.message, or nested in the error object
+        const errorString = JSON.stringify(error);
+        const errorMessage = error.message || '';
+        const errorCauseMessage = error.cause?.message || '';
+        const errorCauseString = error.cause ? JSON.stringify(error.cause) : '';
+
+        // Combine all error sources for checking
+        const allErrorText = `${errorMessage} ${errorCauseMessage} ${errorString} ${errorCauseString}`;
+
+        // Check for the specific reasoning parameter error
+        const hasInvalidOption = allErrorText.includes('Invalid option');
+        const hasReasoningLevels = allErrorText.includes('xhigh') || allErrorText.includes('medium') ||
+            allErrorText.includes('minimal') || allErrorText.includes('none');
+
+        // Also detect "Bad Request" errors which may indicate reasoning parameter issues with GLM 4.7
+        const isBadRequest = errorMessage.includes('Bad Request') ||
+            errorCauseMessage.includes('Bad Request') ||
+            errorMessage.includes('API request failed');
+
+        const isReasoningError = (hasInvalidOption && hasReasoningLevels) || isBadRequest;
+
+        console.log('[Story Mode Blueprint] Error detection:', {
+            hasInvalidOption,
+            hasReasoningLevels,
+            isBadRequest,
+            isReasoningError
+        });
+
+        if (isReasoningError) {
+            console.warn('[Story Mode Blueprint] ========================================');
+            console.warn('[Story Mode Blueprint] DETECTED REASONING PARAMETER ERROR');
+            console.warn('[Story Mode Blueprint] Retrying with explicit reasoning effort...');
+            console.warn('[Story Mode Blueprint] ========================================');
+            console.warn('[Story Mode Blueprint] Original error:', errorMessage || errorString);
+
+            try {
+                // Retry with explicit reasoning effort parameter
+                // reasoning must be passed in overridePayload (5th param), not custom (4th param)
+                // Also disable preset to prevent it from overriding our reasoning setting
+                console.log('[Story Mode Blueprint] Sending retry with reasoning: { effort: "high" } in overridePayload (preset disabled)');
+                const retryResult = await ConnectionManagerRequestService.sendRequest(
+                    selectedProfileId,
+                    messages,
+                    options.responseLength || 0,
+                    { stream: false, extractData: true, includePreset: false },
+                    { reasoning: { effort: 'high' }, include_reasoning: true }  // overridePayload
+                );
+
+                const endTime = performance.now();
+                const output = retryResult.text || retryResult.content || '';
+
+                console.log('[Story Mode Blueprint] ========================================');
+                console.log('[Story Mode Blueprint] RETRY SUCCEEDED!');
+                console.log('[Story Mode Blueprint] Output length:', output.length);
+                console.log('[Story Mode Blueprint] ========================================');
+
+                // Capture success metrics for retry
+                metrics.endTime = endTime;
+                metrics.duration = endTime - startTime;
+                metrics.actualOutputLength = output.length;
+                metrics.actualOutputTokens = retryResult.usage?.completion_tokens || '?';
+                metrics.totalTokensUsed = retryResult.usage?.total_tokens || '?';
+                metrics.success = true;
+                metrics.retried = true;
+                metrics.retryReason = 'reasoning_parameter_error';
+
+                // Calculate tokens per second if we have the data
+                if (typeof metrics.actualOutputTokens === 'number' && metrics.duration > 0) {
+                    metrics.tokensPerSecond = Math.round((metrics.actualOutputTokens / metrics.duration) * 1000);
+                }
+
+                // Store metrics for analysis
+                storePhaseMetrics(metrics);
+
+                console.log('[Story Mode Blueprint] Retry with explicit reasoning effort succeeded');
+                return output;
+            } catch (retryError) {
+                // If retry also fails, capture that error
+                const endTime = performance.now();
+                metrics.endTime = endTime;
+                metrics.duration = endTime - startTime;
+                metrics.success = false;
+                metrics.error = retryError.message;
+                metrics.retried = true;
+                metrics.retryReason = 'reasoning_parameter_error';
+
+                storePhaseMetrics(metrics);
+
+                console.error('[Story Mode Blueprint] Retry with explicit reasoning effort failed:', retryError);
+                throw retryError;
+            }
+        }
+
+        // Not a reasoning error, or retry failed - capture original error metrics
+        const endTime = performance.now();
+        metrics.endTime = endTime;
+        metrics.duration = endTime - startTime;
+        metrics.success = false;
+        metrics.error = error.message;
+
+        storePhaseMetrics(metrics);
+
+        console.error('[Story Mode Blueprint] Connection Manager request failed:', error);
+        throw error;
+    }
 }
 
 /**

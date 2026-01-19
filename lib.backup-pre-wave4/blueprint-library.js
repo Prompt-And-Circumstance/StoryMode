@@ -464,7 +464,7 @@ export class BlueprintImporter {
 
     async importFromFile(file) {
         const { isBlueprintPNG, decodeBlueprintFromPNG, extractMetadataFromPNG } = await import('./blueprint-storage.js');
-        const { isExtendedFormat } = await import('./png/decoder.js');
+        const { isExtendedFormat } = await import('./blueprint-png-decoder.js');
 
         if (!(await isBlueprintPNG(file))) {
             throw new Error('Not a valid blueprint PNG file');

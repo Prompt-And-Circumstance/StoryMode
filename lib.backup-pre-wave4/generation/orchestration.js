@@ -12,7 +12,7 @@
 import { PHASE_CONFIG } from '../core/constants.js';
 import { buildPhasePrompt } from './prompts.js';
 import { robustParseJSON } from '../blueprint-utils.js';
-import { isBlueprintDebugMode, getMockPhaseResponse } from '../debug/mocks.js';
+import { isBlueprintDebugMode, getMockPhaseResponse } from '../blueprint-debug-mocks.js';
 import { ConnectionManagerRequestService } from '/scripts/extensions/shared.js';
 import { getTokenCountAsync } from '/scripts/tokenizers.js';
 import { generateRaw } from '/script.js';

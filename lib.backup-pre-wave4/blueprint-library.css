@@ -1,0 +1,1441 @@
+/**
+ * Blueprint Library Module - UI Styles
+ *
+ * Styles for the blueprint library interface including grid/list views,
+ * cards, detail modals, and conflict resolution dialogs.
+ *
+ * @version 1.0.0
+ */
+
+/* ============================================================================
+   LIBRARY TAB LAYOUT
+   ============================================================================ */
+
+.storymode-library-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    height: 100%;
+    overflow: hidden;
+}
+
+.storymode-library-header {
+    flex-shrink: 0;
+}
+
+.storymode-library-content {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.storymode-library-footer {
+    flex-shrink: 0;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================================================
+   SEARCH BAR
+   ============================================================================ */
+
+.storymode-library-search {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.storymode-library-search-input {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    padding: 0 12px;
+    transition: border-color 0.2s ease;
+}
+
+.storymode-library-search-input:focus-within {
+    border-color: #667eea;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.storymode-library-search-input i {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
+}
+
+.storymode-library-search-input input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 8px;
+    font-size: 14px;
+    outline: none;
+}
+
+.storymode-library-search-input input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.storymode-library-search-advanced {
+    position: relative;
+}
+
+.storymode-library-search-advanced .storymode-dropdown-toggle {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.storymode-library-search-advanced .storymode-dropdown-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================================================
+   FILTER BAR
+   ============================================================================ */
+
+.storymode-library-filterbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.storymode-library-folders {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.storymode-library-folder-btn {
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 13px;
+}
+
+.storymode-library-folder-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.storymode-library-folder-btn.active {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+}
+
+.storymode-library-view-controls {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.storymode-library-view-btn {
+    padding: 6px 10px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.storymode-library-view-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+.storymode-library-view-btn.active {
+    background: rgba(102, 126, 234, 0.3);
+    border-color: #667eea;
+    color: white;
+}
+
+.storymode-library-sort-select {
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.storymode-library-sort-select:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.storymode-library-grid-size {
+    display: flex;
+    gap: 4px;
+}
+
+.storymode-library-grid-size-btn {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 10px;
+}
+
+.storymode-library-grid-size-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+.storymode-library-grid-size-btn.active {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+}
+
+/* ============================================================================
+   BLUEPRINT GRID
+   ============================================================================ */
+
+.storymode-library-grid {
+    display: grid;
+    gap: 16px;
+    padding: 8px 0;
+    /* Default: 4 columns for portrait cards */
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+}
+
+/* List view mode */
+.storymode-library-grid.list-view {
+    grid-template-columns: 1fr;
+}
+
+/* Grid sizes (for future size toggle) */
+.storymode-library-grid.size-small {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+
+.storymode-library-grid.size-medium {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+
+.storymode-library-grid.size-large {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+/* ============================================================================
+   BLUEPRINT CARD
+   ============================================================================ */
+
+.storymode-blueprint-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.storymode-blueprint-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    border-color: rgba(102, 126, 234, 0.5);
+}
+
+.storymode-blueprint-card.favorite::after {
+    content: '\f005';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    color: #ffd700;
+    font-size: 14px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    z-index: 1;
+}
+
+.storymode-blueprint-card-cover {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.storymode-blueprint-card-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.storymode-blueprint-card-cover-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0.8) 100%
+    );
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.storymode-blueprint-card:hover .storymode-blueprint-card-cover-overlay {
+    opacity: 1;
+}
+
+.storymode-blueprint-card-content {
+    padding: 12px;
+}
+
+.storymode-blueprint-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    line-height: 1.3;
+    margin-bottom: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.storymode-blueprint-card-meta {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 8px;
+}
+
+.storymode-blueprint-card-meta-divider {
+    margin: 0 4px;
+}
+
+.storymode-blueprint-card-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.storymode-blueprint-card-action-btn {
+    flex: 1;
+    padding: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 12px;
+}
+
+.storymode-blueprint-card-action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.storymode-blueprint-card-action-btn.primary {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+}
+
+.storymode-blueprint-card-action-btn.primary:hover {
+    background: #5568d3;
+}
+
+/* ============================================================================
+   LIST VIEW
+   ============================================================================ */
+
+.storymode-blueprint-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.storymode-blueprint-list-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.storymode-blueprint-list-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+.storymode-blueprint-list-item-cover {
+    width: 80px;
+    aspect-ratio: 2 / 3;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.storymode-blueprint-list-item-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.storymode-blueprint-list-item-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.storymode-blueprint-list-item-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 4px;
+}
+
+.storymode-blueprint-list-item-meta {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.storymode-blueprint-list-item-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    justify-content: center;
+}
+
+/* ============================================================================
+   DETAIL MODAL
+   ============================================================================ */
+
+.storymode-blueprint-detail-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 24px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.storymode-blueprint-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.storymode-blueprint-detail-back {
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.storymode-blueprint-detail-back:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.storymode-blueprint-detail-title {
+    flex: 1;
+    font-size: 20px;
+    font-weight: 600;
+    color: white;
+}
+
+.storymode-blueprint-detail-content {
+    display: flex;
+    gap: 24px;
+}
+
+.storymode-blueprint-detail-cover {
+    flex: 0 0 300px;
+    aspect-ratio: 2 / 3;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.storymode-blueprint-detail-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.storymode-blueprint-detail-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.storymode-blueprint-detail-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.storymode-blueprint-detail-section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.storymode-blueprint-detail-section-content {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.5;
+}
+
+.storymode-blueprint-detail-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+}
+
+.storymode-blueprint-detail-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.storymode-blueprint-detail-meta-row i {
+    width: 16px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.storymode-blueprint-detail-scenes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.storymode-blueprint-detail-scene-phase {
+    padding: 4px 8px;
+    background: rgba(102, 126, 234, 0.2);
+    border-radius: 4px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.storymode-blueprint-detail-scene-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.storymode-blueprint-detail-scene-item {
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.storymode-blueprint-detail-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.storymode-blueprint-detail-btn {
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 13px;
+}
+
+.storymode-blueprint-detail-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.storymode-blueprint-detail-btn.primary {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+}
+
+.storymode-blueprint-detail-btn.primary:hover {
+    background: #5568d3;
+}
+
+.storymode-blueprint-detail-btn.danger {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.5);
+    color: #fca5a5;
+}
+
+.storymode-blueprint-detail-btn.danger:hover {
+    background: rgba(239, 68, 68, 0.3);
+}
+
+/* ============================================================================
+   CONFLICT DIALOG
+   ============================================================================ */
+
+.blueprint-conflict-dialog {
+    max-width: 700px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.blueprint-conflict-dialog h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 8px;
+}
+
+.blueprint-conflict-dialog > p {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 16px;
+}
+
+.conflict-item {
+    margin-bottom: 20px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+.conflict-item h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 12px;
+}
+
+.conflict-field {
+    margin-bottom: 12px;
+}
+
+.conflict-field > strong {
+    display: block;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 6px;
+}
+
+.conflict-sides {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.conflict-side {
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.conflict-side h5 {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 6px;
+}
+
+.conflict-side p {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.4;
+    margin: 0;
+}
+
+.conflict-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.conflict-actions label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+}
+
+.conflict-actions input[type="radio"] {
+    cursor: pointer;
+}
+
+.conflict-unique,
+.conflict-new {
+    margin-bottom: 16px;
+    padding: 12px;
+    background: rgba(102, 126, 234, 0.1);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    border-radius: 8px;
+}
+
+.conflict-unique h4,
+.conflict-new h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 6px;
+}
+
+.conflict-unique p,
+.conflict-new p {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 8px;
+}
+
+.conflict-unique ul,
+.conflict-new ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.conflict-unique li,
+.conflict-new li {
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.conflict-resolution-footer {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.conflict-resolution-footer h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 8px;
+}
+
+.conflict-resolution-footer select {
+    width: 100%;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: white;
+    font-size: 13px;
+}
+
+/* ============================================================================
+   EMPTY STATE
+   ============================================================================ */
+
+.storymode-library-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    text-align: center;
+}
+
+.storymode-library-empty-icon {
+    font-size: 64px;
+    color: rgba(255, 255, 255, 0.2);
+    margin-bottom: 16px;
+}
+
+.storymode-library-empty-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 8px;
+}
+
+.storymode-library-empty-text {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.5);
+    max-width: 400px;
+}
+
+/* ============================================================================
+   LOADING STATE
+   ============================================================================ */
+
+.storymode-library-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+}
+
+.storymode-library-loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.storymode-library-loading-text {
+    margin-top: 16px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* ============================================================================
+   FOOTER ACTIONS
+   ============================================================================ */
+
+.storymode-library-footer-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.storymode-library-footer-btn {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 13px;
+}
+
+.storymode-library-footer-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.storymode-library-footer-btn.primary {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+}
+
+.storymode-library-footer-btn.primary:hover {
+    background: #5568d3;
+}
+
+/* ============================================================================
+   TAGS AND BADGES
+   ============================================================================ */
+
+.storymode-blueprint-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+}
+
+.storymode-blueprint-tag {
+    padding: 2px 8px;
+    background: rgba(102, 126, 234, 0.2);
+    border-radius: 12px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* ============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    .storymode-blueprint-detail-content {
+        flex-direction: column;
+    }
+
+    .storymode-blueprint-detail-cover {
+        flex: 0 0 auto;
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+
+    .storymode-library-filterbar {
+        flex-wrap: wrap;
+    }
+
+    .storymode-library-view-controls {
+        width: 100%;
+        justify-content: space-between;
+        margin-top: 8px;
+    }
+
+    .conflict-sides {
+        grid-template-columns: 1fr;
+    }
+
+    .storymode-blueprint-grid.size-small,
+    .storymode-blueprint-grid.size-medium,
+    .storymode-blueprint-grid.size-large {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+}
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.storymode-blueprint-card {
+    animation: fadeIn 0.3s ease;
+}
+
+.storymode-blueprint-list-item {
+    animation: fadeIn 0.3s ease;
+}
+
+/* ============================================================================
+   LIBRARY TAB - SETTINGS DIALOG LAYOUT
+   ============================================================================ */
+
+/* Container needs to fill the tab pane */
+#tab_library .storymode-library-container {
+    height: calc(70vh - 100px);
+    min-height: 400px;
+}
+
+/* Header with search and actions */
+#tab_library .storymode-library-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    flex-wrap: wrap;
+}
+
+#tab_library .storymode-library-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 200px;
+    max-width: 350px;
+    position: relative;
+    margin-bottom: 0;
+}
+
+#tab_library .storymode-library-search i {
+    position: absolute;
+    left: 12px;
+    color: var(--SmartThemeEmColor);
+    pointer-events: none;
+}
+
+#tab_library .storymode-library-search input {
+    padding-left: 36px;
+    width: 100%;
+}
+
+#tab_library .storymode-library-actions {
+    display: flex;
+    gap: 8px;
+    align-items: stretch; /* Changed from center to stretch for consistent heights */
+}
+
+/* Ensure all buttons in library actions have consistent height */
+#tab_library .storymode-library-actions .menu_button {
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+/* Content area with sidebar */
+#tab_library .storymode-library-content {
+    display: flex;
+    gap: 16px;
+    flex: 1;
+    margin-top: 16px;
+    overflow: auto;
+}
+
+/* Folder Sidebar */
+.storymode-library-sidebar {
+    width: 200px;
+    min-width: 200px;
+    flex-shrink: 0;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.storymode-folder-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.storymode-folder-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--sm-radius-sm);
+    cursor: pointer;
+    color: var(--SmartThemeBodyColor);
+    transition: all 0.2s ease;
+}
+
+.storymode-folder-item:hover {
+    background: var(--black30a);
+}
+
+.storymode-folder-item.active {
+    background: var(--sm-accent-subtle);
+    color: var(--sm-accent);
+}
+
+.storymode-folder-item i {
+    width: 18px;
+    text-align: center;
+    opacity: 0.7;
+}
+
+.storymode-folder-item.active i {
+    opacity: 1;
+}
+
+.storymode-folder-item span:first-of-type {
+    flex: 1;
+}
+
+.storymode-folder-count {
+    font-size: 0.8em;
+    color: var(--SmartThemeEmColor);
+    background: var(--black30a);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.storymode-folder-divider {
+    border: none;
+    border-top: 1px solid var(--SmartThemeBorderColor);
+    margin: 8px 0;
+}
+
+.storymode-folder-add {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--sm-radius-sm);
+    cursor: pointer;
+    color: var(--SmartThemeEmColor);
+    transition: all 0.2s ease;
+}
+
+.storymode-folder-add:hover {
+    background: var(--black30a);
+    color: var(--sm-accent);
+}
+
+/* Main blueprint area */
+.storymode-library-main {
+    flex: 1;
+    overflow-y: auto;
+    min-width: 0;
+    min-height: 0;
+}
+
+/* Empty state */
+.storymode-library-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 300px;
+    text-align: center;
+    color: var(--SmartThemeEmColor);
+}
+
+.storymode-library-empty i {
+    font-size: 4em;
+    margin-bottom: 16px;
+    opacity: 0.3;
+}
+
+.storymode-library-empty h3 {
+    margin: 0 0 8px 0;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-library-empty p {
+    margin: 0 0 20px 0;
+}
+
+/* Footer with stats */
+#tab_library .storymode-library-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    margin-top: 16px;
+    border-top: 1px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-library-stats {
+    font-size: 0.85em;
+    color: var(--SmartThemeEmColor);
+}
+
+.storymode-stat-divider {
+    margin: 0 8px;
+    opacity: 0.5;
+}
+
+.storymode-library-sort {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.storymode-library-sort label {
+    font-size: 0.85em;
+    color: var(--SmartThemeEmColor);
+}
+
+.storymode-library-sort select {
+    padding: 6px 10px;
+    font-size: 0.85em;
+}
+
+/* Card styling in library context - Portrait cards like the mockup */
+#tab_library .storymode-blueprint-card {
+    background: var(--SmartThemeBlurTintColor);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-md, 8px);
+    overflow: hidden;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+#tab_library .storymode-blueprint-card:hover {
+    border-color: var(--sm-accent, #667eea);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Portrait cover image - 3:4 aspect ratio like mockup */
+#tab_library .storymode-card-cover {
+    aspect-ratio: 3 / 4;
+    min-height: 180px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+    transition: filter 0.2s ease;
+}
+
+#tab_library .storymode-card-cover:hover {
+    filter: brightness(1.1);
+}
+
+#tab_library .storymode-card-cover i {
+    font-size: 3em;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+#tab_library .storymode-card-favorite {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.4);
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+#tab_library .storymode-card-favorite:hover {
+    background: rgba(0, 0, 0, 0.6);
+    color: #ffc107;
+}
+
+#tab_library .storymode-card-favorite.active {
+    color: #ffc107;
+}
+
+/* Card overlay - shows title on hover */
+#tab_library .storymode-card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.6) 50%, transparent 100%);
+    padding: 40px 12px 12px 12px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+#tab_library .storymode-blueprint-card:hover .storymode-card-overlay {
+    opacity: 1;
+}
+
+#tab_library .storymode-card-overlay .storymode-card-title {
+    margin: 0;
+    font-size: 0.8em;
+    font-weight: 600;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+    text-align: center;
+    line-height: 1.4;
+    max-height: 4.2em;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+#tab_library .storymode-card-body {
+    padding: 10px 12px;
+    flex: 1;
+}
+
+#tab_library .storymode-card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.75em;
+    color: var(--SmartThemeEmColor);
+}
+
+#tab_library .storymode-card-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+#tab_library .storymode-card-meta i {
+    width: 12px;
+    text-align: center;
+    opacity: 0.7;
+}
+
+#tab_library .storymode-card-plays {
+    margin-top: 4px;
+    font-size: 0.7em;
+    color: var(--sm-accent, #667eea);
+}
+
+/* Compact action buttons - icon only like mockup */
+#tab_library .storymode-card-actions {
+    display: flex;
+    gap: 4px;
+    padding: 8px;
+    border-top: 1px solid var(--SmartThemeBorderColor);
+    background: var(--black30a, rgba(0, 0, 0, 0.1));
+    align-items: stretch; /* Ensure all buttons stretch to same height */
+}
+
+#tab_library .storymode-card-actions .menu_button {
+    flex: 1;
+    padding: 6px 8px;
+    font-size: 0.75em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: 0;
+    min-height: 40px; /* Consistent height for all buttons */
+}
+
+/* Primary action (Play) gets accent color */
+#tab_library .storymode-btn-play {
+    flex: 1;
+    background: var(--sm-accent, #667eea);
+    color: white;
+    border-color: var(--sm-accent, #667eea);
+}
+
+#tab_library .storymode-btn-play:hover {
+    background: var(--sm-accent-dark, #5568d3);
+}
+
+/* Icon-only buttons */
+#tab_library .storymode-btn-icon {
+    flex: 0 0 40px; /* Match the min-height */
+    width: 40px;
+    min-height: 40px; /* Same height as other buttons */
+    padding: 0;
+    background: transparent;
+    border: 1px solid var(--SmartThemeBorderColor);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75em;
+}
+
+#tab_library .storymode-btn-icon:hover {
+    background: var(--black30a, rgba(0, 0, 0, 0.1));
+}
+
+/* Danger button (delete) */
+#tab_library .storymode-btn-danger {
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+#tab_library .storymode-btn-danger:hover {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+/* ============================================================================
+   LIBRARY GENERATE VIEW
+   In-place blueprint generation form within the Library tab
+   ============================================================================ */
+
+.storymode-library-generate-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 16px;
+}
+
+.storymode-library-generate-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    flex-shrink: 0;
+}
+
+.storymode-library-generate-header .menu_button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.storymode-library-generate-header .storymode-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--SmartThemeBodyColor);
+    font-size: 1.15em;
+}
+
+.storymode-library-generate-header .storymode-section-title i {
+    color: var(--sm-accent, #667eea);
+}
+
+#library_generate_form_container {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 8px; /* Space for scrollbar */
+}
+
+/* Ensure form groups inside library generate view have proper spacing */
+#library_generate_form_container .storymode-form-group {
+    margin-bottom: 16px;
+}
+
+/* Make the generate button more prominent in library context */
+#library_generate_form_container #blueprint_generate_btn {
+    margin-top: 20px;
+}
+
+/* ============================================================================
+   LIBRARY GRID VIEW - Toggle Container
+   Handles switching between generate and grid views
+   ============================================================================ */
+
+#library_grid_view {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    gap: 16px;
+}

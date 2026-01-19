@@ -20,9 +20,9 @@ import {
 } from './state-manager.js';
 
 import * as BlueprintModule from './blueprint-module.js';
-import * as ImageStorage from './scene/image-storage.js';
-import * as ImageGenerator from './scene/image-generator.js';
-import * as ImagePreview from './scene/image-preview.js';
+import * as ImageStorage from './scene-image-storage.js';
+import * as ImageGenerator from './scene-image-generator.js';
+import * as ImagePreview from './scene-image-preview.js';
 
 import { buildFullInjection } from './arc-engine.js';
 import { escapeHtml } from './ui-component-system.js';

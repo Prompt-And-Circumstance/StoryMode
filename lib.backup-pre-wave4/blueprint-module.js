@@ -35,7 +35,7 @@ import {
 } from './state-manager.js';
 import * as PromptTemplates from './prompt-templates.js';
 import { robustParseJSON, validateOpeningMessage, MAX_OPENING_MESSAGE_LENGTH, MIN_OPENING_MESSAGE_LENGTH } from './blueprint-utils.js';
-import { isBlueprintDebugMode, getMockPhaseResponse } from './debug/mocks.js';
+import { isBlueprintDebugMode, getMockPhaseResponse } from './blueprint-debug-mocks.js';
 import { MODULE_NAME, METAPHOR_LEVELS, LENGTH_PRESETS, PHASE_CONFIG } from './core/index.js';
 import { resolvePlaceholders, checkPrerequisites, validateBlueprint, parseBlueprintResponse, normalizeBlueprint, normalizeCharacterOutcomes, initNormalization } from './blueprint/index.js';
 import {

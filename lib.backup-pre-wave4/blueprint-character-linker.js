@@ -13,7 +13,7 @@ import { getRequestHeaders } from '/script.js';
 import { setUserAvatar } from '/scripts/personas.js';
 import { saveSettingsDebounced } from '/script.js';
 import { escapeHtml, blobToDataURL, dataURLtoFile, normalizeCharacterName } from './blueprint-utils.js';
-import { verifyPNGSignature } from './png/chunk-handler.js';
+import { verifyPNGSignature } from './png-chunk-handler.js';
 import {
     getCurrentChatCharacters,
     findCharacterByName,

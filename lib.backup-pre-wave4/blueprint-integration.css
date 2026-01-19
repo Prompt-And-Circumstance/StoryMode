@@ -1,0 +1,627 @@
+/**
+ * Blueprint Integration Module - Unified UI Styles
+ *
+ * Additional styles for the integrated blueprint system.
+ * This complements the individual module CSS files.
+ *
+ * @version 1.0.0
+ */
+
+/* ============================================================================
+   UNIFIED ACTION BAR
+   ============================================================================ */
+
+.storymode-blueprint-actions-bar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    flex-wrap: wrap;
+}
+
+.storymode-blueprint-action-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.storymode-blueprint-action-group.separator {
+    margin-left: 8px;
+    padding-left: 8px;
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.storymode-blueprint-action-btn {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.storymode-blueprint-action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.storymode-blueprint-action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.storymode-blueprint-action-btn.primary {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+}
+
+.storymode-blueprint-action-btn.primary:hover {
+    background: #5568d3;
+}
+
+.storymode-blueprint-action-btn.success {
+    background: #10b981;
+    border-color: #10b981;
+    color: white;
+}
+
+.storymode-blueprint-action-btn.success:hover {
+    background: #059669;
+}
+
+.storymode-blueprint-action-btn.danger {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.5);
+    color: #fca5a5;
+}
+
+.storymode-blueprint-action-btn.danger:hover {
+    background: rgba(239, 68, 68, 0.3);
+}
+
+/* ============================================================================
+   STATUS INDICATORS
+   ============================================================================ */
+
+.storymode-blueprint-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.storymode-blueprint-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.storymode-blueprint-status.success {
+    color: #10b981;
+}
+
+.storymode-blueprint-status.warning {
+    color: #f59e0b;
+}
+
+.storymode-blueprint-status.error {
+    color: #ef4444;
+}
+
+.storymode-blueprint-status.info {
+    color: #3b82f6;
+}
+
+/* ============================================================================
+   BADGES AND METADATA
+   ============================================================================ */
+
+.storymode-blueprint-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    background: rgba(102, 126, 234, 0.2);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    border-radius: 4px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.storymode-blueprint-badge.favorite {
+    background: rgba(251, 191, 36, 0.2);
+    border-color: rgba(251, 191, 36, 0.3);
+    color: #fbbf24;
+}
+
+.storymode-blueprint-badge.favorite i {
+    color: #fbbf24;
+}
+
+.storymode-blueprint-badge.new {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #10b981;
+}
+
+.storymode-blueprint-badge.edited {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #3b82f6;
+}
+
+/* ============================================================================
+   STATISTICS DISPLAY
+   ============================================================================ */
+
+.storymode-blueprint-stats {
+    display: flex;
+    gap: 16px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    font-size: 12px;
+}
+
+.storymode-blueprint-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.storymode-blueprint-stat-label {
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.storymode-blueprint-stat-value {
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+/* ============================================================================
+   RATING STARS
+   ============================================================================ */
+
+.storymode-blueprint-rating {
+    display: inline-flex;
+    gap: 2px;
+}
+
+.storymode-blueprint-rating-star {
+    color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.storymode-blueprint-rating-star:hover {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.storymode-blueprint-rating-star.filled {
+    color: #fbbf24;
+}
+
+/* ============================================================================
+   PROGRESS BAR
+   ============================================================================ */
+
+.storymode-blueprint-progress {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.storymode-blueprint-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    transition: width 0.3s ease;
+}
+
+/* ============================================================================
+   TOOLBAR
+   ============================================================================ */
+
+.storymode-blueprint-toolbar {
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.storymode-blueprint-toolbar-search {
+    flex: 1;
+    min-width: 200px;
+}
+
+.storymode-blueprint-toolbar-search input {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: white;
+    font-size: 13px;
+}
+
+.storymode-blueprint-toolbar-search input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.storymode-blueprint-toolbar-filter {
+    display: flex;
+    gap: 4px;
+}
+
+.storymode-blueprint-toolbar-filter select {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.storymode-blueprint-toolbar-filter select:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* ============================================================================
+   DROP ZONE
+   ============================================================================ */
+
+.storymode-blueprint-drop-zone {
+    border: 2px dashed rgba(102, 126, 234, 0.5);
+    border-radius: 8px;
+    padding: 32px;
+    text-align: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.storymode-blueprint-drop-zone:hover,
+.storymode-blueprint-drop-zone.drag-over {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.storymode-blueprint-drop-zone input[type="file"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.storymode-blueprint-drop-zone-icon {
+    font-size: 48px;
+    color: #667eea;
+    margin-bottom: 16px;
+}
+
+.storymode-blueprint-drop-zone-text {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.storymode-blueprint-drop-zone-subtext {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+}
+
+/* ============================================================================
+   QUICK ACTIONS MENU
+   ============================================================================ */
+
+.storymode-blueprint-quick-menu {
+    position: relative;
+    display: inline-block;
+}
+
+.storymode-blueprint-quick-menu-trigger {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 13px;
+}
+
+.storymode-blueprint-quick-menu-trigger:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.storymode-blueprint-quick-menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 4px;
+    min-width: 200px;
+    background: rgba(30, 30, 40, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+    display: none;
+}
+
+.storymode-blueprint-quick-menu-dropdown.show {
+    display: block;
+}
+
+.storymode-blueprint-quick-menu-item {
+    padding: 10px 16px;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+}
+
+.storymode-blueprint-quick-menu-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+.storymode-blueprint-quick-menu-item:first-child {
+    border-radius: 8px 8px 0 0;
+}
+
+.storymode-blueprint-quick-menu-item:last-child {
+    border-radius: 0 0 8px 8px;
+}
+
+.storymode-blueprint-quick-menu-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 4px 0;
+}
+
+/* ============================================================================
+   BREADCRUMBS
+   ============================================================================ */
+
+.storymode-blueprint-breadcrumbs {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 13px;
+}
+
+.storymode-blueprint-breadcrumb {
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.storymode-blueprint-breadcrumb:hover {
+    color: white;
+}
+
+.storymode-blueprint-breadcrumb.active {
+    color: white;
+    cursor: default;
+}
+
+.storymode-blueprint-breadcrumb-separator {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* ============================================================================
+   TOOLTIPS
+   ============================================================================ */
+
+.storymode-blueprint-tooltip {
+    position: relative;
+}
+
+.storymode-blueprint-tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    font-size: 12px;
+    white-space: nowrap;
+    border-radius: 4px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    margin-bottom: 6px;
+}
+
+.storymode-blueprint-tooltip:hover::after {
+    opacity: 1;
+}
+
+/* ============================================================================
+   TOAST NOTIFICATIONS
+   ============================================================================ */
+
+.storymode-blueprint-toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.storymode-blueprint-toast {
+    padding: 12px 16px;
+    background: rgba(30, 30, 40, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 300px;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.storymode-blueprint-toast-icon {
+    font-size: 20px;
+}
+
+.storymode-blueprint-toast.success .storymode-blueprint-toast-icon {
+    color: #10b981;
+}
+
+.storymode-blueprint-toast.error .storymode-blueprint-toast-icon {
+    color: #ef4444;
+}
+
+.storymode-blueprint-toast.warning .storymode-blueprint-toast-icon {
+    color: #f59e0b;
+}
+
+.storymode-blueprint-toast.info .storymode-blueprint-toast-icon {
+    color: #3b82f6;
+}
+
+.storymode-blueprint-toast-content {
+    flex: 1;
+}
+
+.storymode-blueprint-toast-title {
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.storymode-blueprint-toast-message {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 13px;
+}
+
+.storymode-blueprint-toast-close {
+    padding: 4px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.storymode-blueprint-toast-close:hover {
+    color: white;
+}
+
+/* ============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    .storymode-blueprint-actions-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .storymode-blueprint-action-group {
+        justify-content: center;
+    }
+
+    .storymode-blueprint-action-group.separator {
+        margin-left: 0;
+        padding-left: 0;
+        border-left: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        padding-top: 8px;
+    }
+
+    .storymode-blueprint-toolbar {
+        flex-direction: column;
+    }
+
+    .storymode-blueprint-toolbar-search {
+        width: 100%;
+    }
+
+    .storymode-blueprint-stats {
+        flex-wrap: wrap;
+    }
+
+    .storymode-blueprint-toast-container {
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+    }
+
+    .storymode-blueprint-toast {
+        min-width: auto;
+    }
+}
+
+/* ============================================================================
+   ACCESSIBILITY
+   ============================================================================ */
+
+.storymode-blueprint-action-btn:focus,
+.storymode-blueprint-quick-menu-trigger:focus,
+.storymode-blueprint-breadcrumb:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    .storymode-blueprint-action-btn,
+    .storymode-blueprint-toast,
+    .storymode-blueprint-rating-star,
+    .storymode-blueprint-progress-fill {
+        transition: none;
+    }
+}

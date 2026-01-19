@@ -64,10 +64,10 @@ import {
     buildWizardProgressHTML,
     buildWizardPreview,
     buildPrimaryEndingDisplay,
-} from './lib/ui-components.js';
+} from './lib/ui/components.js';
 
 // Import Controller Panel module
-import { updateControllerPanel } from './lib/controller-panel.js';
+import { updateControllerPanel } from './lib/ui/controller-panel.js';
 
 // Import State Manager module
 import {
@@ -112,10 +112,10 @@ import {
 import {
     registerWandMenuEntry,
     updateWandMenuStatus,
-} from './lib/wand-menu.js';
+} from './lib/ui/wand-menu.js';
 
 // Import UI Component System module (for utilities)
-import { escapeHtml } from './lib/ui-component-system.js';
+import { escapeHtml } from './lib/ui/component-system.js';
 
 // Import UI Components module
 import {
@@ -139,7 +139,7 @@ import {
     showLibraryGenerateView,
     showLibraryGridView,
     renderBlueprintCard,
-} from './lib/ui-components.js';
+} from './lib/ui/components.js';
 
 // Import Type Editors module
 import {

@@ -48,47 +48,160 @@ The extension supports two distinct pacing modes. See `Planning/v2/ARCHITECTURE-
 
 **Abstract Acts (Scenario Mode):** Based on **StoryVerse** (Wang et al., 2024). Scenes defined by goals, not round counts. Beats are flexible milestones with visual markers: `[✓ done] [→ current] [□ pending] [x skipped]`
 
-### Key Files
+### Directory Structure
+
+```
+Extension-StoryMode/
+├── index.js                 # Entry point, UI setup, event wiring
+├── style.css                # Main stylesheet (imports from lib/css/)
+├── manifest.json            # Extension manifest
+├── CLAUDE.md                # This file
+├── data/
+│   ├── story_types.json     # 40+ story type definitions
+│   └── author_styles.json   # 40+ author style definitions
+└── lib/
+    ├── core/                # Core state and logic
+    │   ├── index.js         # Re-exports public API
+    │   ├── constants.js     # MODULE_NAME, PHASE_CONFIG, presets
+    │   ├── state-manager.js # Settings, chat state, data storage
+    │   ├── arc-engine.js    # Phase calculation, prompt injection
+    │   └── event-handlers.js# Message events, signal parsing
+    ├── blueprint/           # Blueprint system
+    │   ├── index.js         # Re-exports public API
+    │   ├── module.js        # Core blueprint operations (large)
+    │   ├── schema.js        # Blueprint field definitions
+    │   ├── validation.js    # Blueprint validation
+    │   ├── normalization.js # Data normalization
+    │   ├── storage.js       # PNG encode/decode, persistence
+    │   ├── integration.js   # Library API facade
+    │   ├── library.js       # Blueprint library management
+    │   ├── import.js        # Import from PNG/JSON
+    │   ├── export.js        # Export to PNG
+    │   ├── merger.js        # Blueprint merging
+    │   ├── utils.js         # Utility functions
+    │   └── characters/      # Character linking
+    │       ├── linker.js    # Link blueprints to ST characters
+    │       └── discovery.js # Character discovery
+    ├── generation/          # LLM generation
+    │   ├── index.js         # Re-exports public API
+    │   ├── orchestration.js # Phased generation coordinator
+    │   ├── prompts.js       # Prompt builders for each phase
+    │   └── templates.js     # Prompt templates
+    ├── ui/                  # UI rendering
+    │   ├── index.js         # Re-exports public API
+    │   ├── components.js    # HTML rendering functions (large)
+    │   ├── component-system.js # Shared UI utilities
+    │   ├── controller-panel.js # Floating/docked controller
+    │   └── wand-menu.js     # Quick controls dropdown
+    ├── editor/              # Editors
+    │   ├── index.js         # Re-exports public API
+    │   ├── blueprint-editor.js # Split-panel blueprint editor (large)
+    │   └── type-editors.js  # Story type/author style CRUD
+    ├── dialog/              # Dialog modules
+    │   ├── wizard.js        # Blueprint generation wizard
+    │   ├── settings-handlers.js # Settings dialog event handlers
+    │   └── library-view.js  # Library tab operations
+    ├── scenario/            # Scenario Mode runtime
+    │   ├── index.js         # Re-exports public API
+    │   ├── injection.js     # Scenario prompt injection
+    │   └── beats.js         # Beat state management
+    ├── scene/               # Scene image generation
+    │   ├── index.js         # Re-exports public API
+    │   ├── image-generator.js
+    │   ├── image-prompt.js
+    │   ├── image-preview.js
+    │   └── image-storage.js
+    ├── png/                 # PNG handling
+    │   ├── index.js         # Re-exports public API
+    │   ├── encoder.js       # PNG encoding
+    │   ├── decoder.js       # PNG decoding
+    │   └── chunk-handler.js # PNG chunk manipulation
+    ├── debug/               # Debug utilities
+    │   ├── index.js
+    │   └── mocks.js
+    └── css/                 # Stylesheets
+        ├── base.css
+        ├── settings-dialog.css
+        ├── controller-panel.css
+        ├── wizard.css
+        ├── library.css
+        └── blueprint-editor.css
+```
+
+### Key Files by Size
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `index.js` | ~1.4k | Main orchestrator, settings dialog, initialization |
-| `lib/state-manager.js` | ~600 | Settings, chat state, pacing mode, scenario state |
-| `lib/arc-engine.js` | ~300 | Phase calculation, prompt building (Story Mode) |
-| `lib/event-handlers.js` | ~670 | Message events, signal parsing, progression |
-| `lib/controller-panel.js` | ~900 | Floating/docked Story Controller panel |
-| `lib/blueprint-module.js` | ~4k | Blueprints, Scenario Mode injection, Abstract Acts |
-| `lib/blueprint-schema.js` | ~420 | Blueprint schema, validation (single source of truth) |
-| `lib/blueprint-editor.js` | ~1.8k | Split-panel blueprint editor |
-| `lib/wand-menu.js` | ~470 | Quick controls dropdown |
-| `lib/ui-components.js` | ~900 | HTML rendering, UI components |
-| `lib/type-editors.js` | ~938 | Story type and author style CRUD |
-| `data/story_types.json` | - | 40+ story type definitions |
-| `data/author_styles.json` | - | 40+ author style definitions |
+| `index.js` | 1,264 | Entry point, UI setup, settings dialog |
+| `lib/blueprint/module.js` | 2,165 | Core blueprint operations, Scenario Mode |
+| `lib/editor/blueprint-editor.js` | 2,197 | Split-panel blueprint editor |
+| `lib/ui/components.js` | 2,243 | HTML rendering functions |
+| `lib/editor/type-editors.js` | 1,052 | Story type/author style CRUD |
+| `lib/ui/controller-panel.js` | 1,007 | Floating/docked Story Controller |
+| `lib/generation/templates.js` | 973 | LLM prompt templates |
+| `lib/dialog/settings-handlers.js` | 929 | Settings dialog event handlers |
+| `lib/blueprint/library.js` | 926 | Blueprint library management |
+| `lib/dialog/wizard.js` | 841 | Blueprint generation wizard |
+| `lib/core/state-manager.js` | 673 | Settings, chat state, data storage |
+| `lib/core/event-handlers.js` | 656 | Message events, signal parsing |
+| `lib/generation/orchestration.js` | 650 | Phased generation coordinator |
 
 ### Module Dependencies
 
 ```
-state-manager.js (no internal deps)
-    ↓
-arc-engine.js (imports state-manager)
-    ↓
-ui-components.js (imports state-manager, arc-engine, blueprint-module)
-    ↓
-type-editors.js (imports state-manager, ui-components)
-    ↓
-event-handlers.js (imports state-manager, arc-engine, blueprint-module)
-    ↓
-wand-menu.js (imports state-manager, event-handlers)
-    ↓
-index.js (imports all, orchestrates)
+lib/core/
+├── constants.js (no deps)
+├── state-manager.js (imports constants)
+├── arc-engine.js (imports state-manager)
+└── event-handlers.js (imports state-manager, arc-engine, blueprint/module)
+
+lib/blueprint/
+├── schema.js (no internal deps)
+├── validation.js (imports schema)
+├── utils.js (imports state-manager)
+├── storage.js (imports utils, validation)
+├── module.js (imports most core + generation modules)
+└── integration.js (imports library, storage, module)
+
+lib/ui/
+├── component-system.js (no internal deps)
+├── components.js (imports state-manager, arc-engine, blueprint/module)
+├── controller-panel.js (imports state-manager, blueprint/module)
+└── wand-menu.js (imports state-manager, event-handlers)
+
+lib/dialog/
+├── wizard.js (imports generation/orchestration, ui/components)
+├── library-view.js (imports blueprint/integration, ui/components)
+└── settings-handlers.js (imports most modules via context object)
+
+index.js (orchestrates all, provides callbacks to dialog modules)
 ```
 
-**State Management:** `state-manager.js` owns data arrays. Use getters/setters: `getStoryTypes()`, `setStoryTypes()`, `getAuthorStyles()`, `setAuthorStyles()`.
+**State Management:** `lib/core/state-manager.js` owns data arrays. Use getters/setters: `getStoryTypes()`, `setStoryTypes()`, `getAuthorStyles()`, `setAuthorStyles()`.
 
-**Legacy window exports:** For backward compatibility with blueprint-module.js:
+**Facade Pattern:** Each `lib/*/index.js` re-exports the public API for that module group. Import from the index for cleaner imports:
+```javascript
+// ✅ Preferred
+import { validateBlueprint, normalizeBlueprint } from './lib/blueprint/index.js';
+
+// Also OK - direct import
+import { validateBlueprint } from './lib/blueprint/validation.js';
+```
+
+**Context Object Pattern:** Dialog modules (`settings-handlers.js`, `wizard.js`) receive callbacks from index.js via a context object to avoid circular dependencies:
+```javascript
+const settingsContext = {
+    storyTypes,
+    authorStyles,
+    updateStatusDisplay,
+    refreshBlueprintPreview,
+    // ...
+};
+setupUnifiedDialogEventListeners(content, settingsContext);
+```
+
+**Legacy window exports:** For backward compatibility:
 - `window.updateStatusDisplay`, `window.updateStoryPrompt`, `window.refreshBlueprintPreview`
-- `window.setupEventListeners`, `window.updateStoryTypeDropdown`, `window.updateAuthorStyleDropdown`
 
 ### Extension Integration
 
@@ -250,13 +363,25 @@ extension_settings[MODULE_NAME].blueprintSettings = {
 ## Code Patterns
 
 ### ES6 Module Import Chains
-Always import from the **source module**, not intermediate modules:
+Always import from the **source module**, not intermediate re-exports:
 ```javascript
 // ✅ CORRECT - import from source
-import { generateUUID } from './blueprint-utils.js';
+import { generateUUID } from './lib/blueprint/utils.js';
 
-// ❌ WRONG - blueprint-storage.js doesn't re-export it
-import { generateUUID } from './blueprint-storage.js';
+// ✅ ALSO OK - import from facade index
+import { generateUUID } from './lib/blueprint/index.js';
+
+// ❌ WRONG - storage.js doesn't re-export utils
+import { generateUUID } from './lib/blueprint/storage.js';
+```
+
+**Relative paths after refactoring:** Files moved to subdirectories need correct relative paths:
+```javascript
+// From lib/core/state-manager.js to data/
+const url = new URL('../../data/story_types.json', import.meta.url);
+
+// From lib/blueprint/module.js to data/
+const url = new URL('../../data/author_styles.json', import.meta.url);
 ```
 
 ### Document-Level Event Delegation
@@ -298,7 +423,7 @@ content.on('click', '#my_button', async function() {
 
 ### Accessing State Arrays
 ```javascript
-import { getStoryTypes, setStoryTypes } from './lib/state-manager.js';
+import { getStoryTypes, setStoryTypes } from './lib/core/state-manager.js';
 
 const storyTypes = getStoryTypes();
 storyTypes.push(newType);
@@ -404,7 +529,7 @@ Bad Request {"error":{"message":"Invalid option: expected one of \"xhigh\"|\"hig
 
 **Manual Fix (Optional):** Edit the connection profile preset in SillyTavern and change reasoning effort from "auto" to "high" (or another valid value). This makes requests succeed on the first try with full preset settings.
 
-**Affected Function:** `generateWithPreset()` at line ~4013 in `lib/blueprint-module.js`
+**Affected Function:** `generateWithPreset()` in `lib/blueprint/module.js`
 
 ### General
 - Phase boundaries fixed at 33%
@@ -415,7 +540,7 @@ Bad Request {"error":{"message":"Invalid option: expected one of \"xhigh\"|\"hig
 ## Future Features
 
 ### Scene-by-Scene Summarization (UI exists, not implemented)
-**Status:** Settings UI exists in `ui-components.js` with toggles for:
+**Status:** Settings UI exists in `lib/ui/components.js` with toggles for:
 - Enable Scene Summarization
 - Summarize After N scenes
 - Max Summary Length (tokens)

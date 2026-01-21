@@ -1213,7 +1213,8 @@
     filter: brightness(1.1);
 }
 
-#tab_library .storymode-card-cover i {
+/* Fallback icon when no cover image - exclude favorite button icon */
+#tab_library .storymode-card-cover > i {
     font-size: 3em;
     color: rgba(255, 255, 255, 0.4);
 }
@@ -1233,6 +1234,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+#tab_library .storymode-card-favorite i {
     font-size: 12px;
 }
 

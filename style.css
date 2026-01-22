@@ -4429,8 +4429,22 @@ details.storymode-advanced-options[open] summary {
 .storymode-add-to-gallery {
     display: flex;
     gap: 8px;
-    flex: 1;
-    min-width: 200px;
+    flex: 1 1 auto;
+    min-width: min(200px, 100%);
+    /* On narrow displays, take full width */
+}
+
+/* Make buttons wrap nicely on narrow displays */
+@media (max-width: 600px) {
+    .storymode-add-to-gallery {
+        flex-basis: 100%;
+        width: 100%;
+    }
+
+    .storymode-image-preview-actions > button {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
 }
 
 .storymode-gallery-select {
@@ -4796,4 +4810,102 @@ details.storymode-advanced-options[open] summary {
     flex: 1;
     overflow-y: auto;
     padding: 10px;
+}
+/* ============================================================================
+   SCENE SUMMARIES PANEL
+   Compact display of past scene summaries in controller
+   ============================================================================ */
+
+.storymode-summaries-panel {
+    margin-top: 16px;
+    border-radius: var(--sm-radius-sm);
+    border: 1px solid var(--SmartThemeBorderColor);
+    background: var(--black30a);
+    overflow: hidden;
+}
+
+.storymode-summaries-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--black50a);
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    font-size: 0.85em;
+    font-weight: 600;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-summaries-header i {
+    color: var(--sm-accent);
+    font-size: 0.9em;
+}
+
+.storymode-summaries-count {
+    margin-left: auto;
+    font-size: 0.9em;
+    opacity: 0.7;
+    font-weight: 400;
+}
+
+.storymode-summaries-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--SmartThemeBorderColor);
+}
+
+.storymode-summary-item {
+    padding: 10px 12px;
+    background: var(--black30a);
+    cursor: help;
+    transition: background 0.2s ease;
+}
+
+.storymode-summary-item:hover {
+    background: var(--black50a);
+}
+
+.storymode-summary-header {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.storymode-summary-scene {
+    font-size: 0.75em;
+    font-weight: 600;
+    color: var(--sm-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.storymode-summary-title {
+    font-size: 0.85em;
+    font-weight: 500;
+    color: var(--SmartThemeEmColor);
+}
+
+.storymode-summary-text {
+    font-size: 0.8em;
+    line-height: 1.4;
+    color: var(--SmartThemeQuoteColor);
+}
+
+.storymode-summaries-note {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: var(--black50a);
+    border-top: 1px solid var(--SmartThemeBorderColor);
+    font-size: 0.75em;
+    color: var(--SmartThemeQuoteColor);
+    font-style: italic;
+}
+
+.storymode-summaries-note i {
+    color: var(--sm-accent);
+    opacity: 0.6;
 }

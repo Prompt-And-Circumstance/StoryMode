@@ -105,6 +105,53 @@ function returnToLibraryIfNeeded() {
 }
 ```
 
+### Accessing SillyTavern Context and Globals
+
+**CRITICAL: Use proper imports, NOT `window.getContext()`**
+
+SillyTavern provides global state through ES6 imports, not through a context object. Using `window.getContext()` is unreliable and often returns undefined/incomplete data.
+
+**✓ CORRECT - Use direct imports:**
+```javascript
+// Character data and current character
+import { characters, this_chid } from '/script.js';
+
+// Group chat data
+import { groups, selected_group } from '/scripts/group-chats.js';
+
+// Chat messages and message utilities
+import { chat, addOneMessage, system_message_types } from '/script.js';
+
+// Extension context (for settings and saveChat)
+import { getContext } from '/scripts/extensions.js';
+
+// File upload utilities
+import { saveBase64AsFile, getFileExtension } from '/scripts/utils.js';
+```
+
+**✗ WRONG - Do NOT use:**
+```javascript
+const { getContext } = window;  // Unreliable, often undefined
+const context = getContext?.();  // Properties may be missing/stale
+```
+
+**Common use cases:**
+
+| Task | Use This |
+|------|----------|
+| Get current character | `characters[this_chid]` |
+| Check if group chat | `selected_group !== null` |
+| Get group members | `groups.find(g => g.id === selected_group)?.members` |
+| Access chat messages | `chat` (array) or `window.chat` |
+| Add message to UI | `addOneMessage(message, options)` |
+| Save chat | `getContext().saveChat()` or `window.saveChat()` |
+| Upload to gallery | `saveBase64AsFile(base64, folder, name, ext)` |
+
+**Character gallery folders:**
+- Character `avatar` property includes extension (e.g., `"Julie.png"`)
+- Gallery folders do NOT include extension (use `"Julie"`)
+- Strip extension: `avatar.replace(/\.[^.]+$/, '')`
+
 ## Debug Commands
 
 Mock LLM calls for testing wizard flow without API costs:

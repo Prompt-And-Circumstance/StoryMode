@@ -1075,13 +1075,24 @@
     color: var(--SmartThemeEmColor);
 }
 
+/* Opening Message specific styles */
+.storymode-card-title #inject_opening_message_btn {
+    padding: 4px 24px !important;
+    min-width: 140px;
+}
+
+.storymode-card h4 + div {
+    padding-bottom: 20px !important;
+}
+
 /* Info Display */
 .storymode-info-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     padding: 10px 10px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    gap: 16px;
 }
 
 .storymode-info-row:last-child {
@@ -1091,12 +1102,16 @@
 .storymode-info-label {
     font-size: 0.82em;
     color: var(--SmartThemeEmColor);
+    min-width: 100px;
+    flex-shrink: 0;
 }
 
 .storymode-info-value {
     font-size: 0.88em;
     font-weight: 500;
     color: var(--SmartThemeBodyColor);
+    text-align: left;
+    flex: 1;
 }
 
 /* Status Badge */
@@ -1930,7 +1945,7 @@
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
 }
 
-#story_mode_dropdown span {
+#story_mode_dropdown #story_mode_dropdown_status {
     display: block;
     padding: 10px 14px;
     margin-bottom: 10px;

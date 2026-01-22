@@ -421,7 +421,13 @@ ${buildSettingsTabContent()}
         allowVerticalScrolling: true,
     });
 
+    // Store popup reference globally so event handlers can close it
+    window.storyModeSettingsPopup = popup;
+
     await popup.show();
+
+    // Clear reference when popup closes
+    window.storyModeSettingsPopup = null;
 }
 /**
 * Populate connection profiles dropdowns in the dialog

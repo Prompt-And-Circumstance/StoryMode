@@ -67,10 +67,21 @@ Extension-StoryMode/
     │       └── misc.js      # Additional tab content
     ├── editor/              # Editors
     │   ├── index.js         # Re-exports public API
-    │   ├── blueprint-editor.js # Split-panel blueprint editor (large)
+    │   ├── blueprint-editor.js # Split-panel blueprint editor (orchestrator)
     │   ├── type-editors.js  # Story type/author style CRUD
-    │   └── blueprint-editor/ # (Future split - state module prepared)
-    │       └── state.js     # Shared state accessors for editor split
+    │   └── blueprint-editor/ # Editor submodules
+    │       ├── state.js         # Shared state (getter/setter pattern)
+    │       ├── panels.js        # Left/right panel renderers
+    │       ├── event-handlers.js # Document-level event delegation
+    │       ├── editor-action-handlers.js # Play, export, revert, view JSON
+    │       ├── cover-action-handlers.js # Cover generation, upload, prompt
+    │       ├── cover-generation.js # SD cover generation
+    │       ├── cover-gallery.js # Cover gallery navigation
+    │       ├── scene-crud.js    # Scene add/edit/delete/reorder
+    │       ├── details-tab.js   # Blueprint details form
+    │       ├── scenes-tab.js    # Scene list display
+    │       ├── cover-tab.js     # Cover tab with gallery
+    │       └── characters-tab.js # Character linking tab
     ├── dialog/              # Dialog modules
     │   ├── wizard.js        # Blueprint generation wizard
     │   ├── settings-handlers.js # Settings dialog event handlers
@@ -107,7 +118,6 @@ Extension-StoryMode/
 | File | Lines | Purpose |
 |------|-------|---------|
 | `lib/blueprint/module.js` | ~2,165 | Core blueprint operations, Scenario Mode |
-| `lib/editor/blueprint-editor.js` | ~2,220 | Split-panel blueprint editor |
 | `index.js` | ~1,264 | Entry point, UI setup, settings dialog |
 | `lib/editor/type-editors.js` | ~1,052 | Story type/author style CRUD |
 | `lib/ui/controller-panel.js` | ~1,007 | Floating/docked Story Controller |
@@ -135,6 +145,26 @@ Extension-StoryMode/
 | `helpers.js` | ~43 | Utility functions |
 
 Note: `lib/ui/components.js` is now a thin re-export layer (~16 lines) for backward compatibility.
+
+### Blueprint Editor Modules (lib/editor/blueprint-editor/)
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `blueprint-editor.js` | ~351 | Main orchestrator, wires up submodules |
+| `event-handlers.js` | ~381 | Document-level event delegation |
+| `details-tab.js` | ~318 | Blueprint details form fields |
+| `cover-action-handlers.js` | ~290 | Cover generation, upload, prompt management |
+| `editor-action-handlers.js` | ~237 | Play, export, revert, view JSON handlers |
+| `cover-tab.js` | ~224 | Cover tab with gallery and prompt editor |
+| `cover-gallery.js` | ~174 | Gallery navigation and image management |
+| `scene-crud.js` | ~146 | Scene add/edit/delete/reorder |
+| `panels.js` | ~131 | Left panel (info) and right panel (tabs) renderers |
+| `characters-tab.js` | ~122 | Character linking tab |
+| `cover-generation.js` | ~111 | SD cover image generation |
+| `state.js` | ~74 | Getter/setter state management |
+| `scenes-tab.js` | ~63 | Scene list display |
+
+The blueprint editor uses **dependency injection** for refresh functions to avoid circular imports between modules.
 
 ## Module Dependencies
 
@@ -173,6 +203,22 @@ lib/ui/
     ├── library.js (imports blueprint/utils, blueprint-tabs)
     ├── sidebar.js (imports component-system)
     └── misc.js (imports state-manager)
+
+lib/editor/
+├── blueprint-editor.js (orchestrator - wires up all submodules)
+└── blueprint-editor/
+    ├── state.js (no deps - pure getter/setter state)
+    ├── panels.js (imports state, details-tab, scenes-tab, cover-tab, characters-tab)
+    ├── event-handlers.js (imports state, cover-action-handlers, editor-action-handlers, scene-crud, cover-gallery)
+    ├── editor-action-handlers.js (imports state, blueprint/module)
+    ├── cover-action-handlers.js (imports state, cover-generation, cover-gallery, blueprint/storage)
+    ├── cover-generation.js (imports state, blueprint/module, blueprint/storage)
+    ├── cover-gallery.js (imports state, blueprint/utils)
+    ├── scene-crud.js (imports state, blueprint/utils)
+    ├── details-tab.js (imports state, core/state-manager)
+    ├── scenes-tab.js (imports state)
+    ├── cover-tab.js (imports state, cover-gallery)
+    └── characters-tab.js (imports state, blueprint/characters/*)
 
 lib/dialog/
 ├── wizard.js (imports generation/orchestration, ui/components)
@@ -272,7 +318,7 @@ const url = new URL('../../data/author_styles.json', import.meta.url);
 | Blueprint PNG encode/decode | `lib/blueprint/storage.js` | `png/*.js` |
 | Blueprint file storage | `lib/blueprint/file-storage.js` | `file-api.js`, `manifest.js` |
 | Blueprint library | `lib/blueprint/library-adapter.js` | `integration.js`, `manifest.js` |
-| Blueprint editor | `lib/editor/blueprint-editor.js` | `type-editors.js` |
+| Blueprint editor | `lib/editor/blueprint-editor.js` | `blueprint-editor/*.js` (12 submodules) |
 | Settings dialog | `lib/dialog/settings-handlers.js` | `lib/ui/components/*.js` |
 | Settings tabs | `lib/ui/components/settings-tabs.js` | `blueprint-settings.js` |
 | Main panel | `lib/ui/components/main-panel.js` | `helpers.js` |

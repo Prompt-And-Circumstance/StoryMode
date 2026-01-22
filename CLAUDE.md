@@ -158,6 +158,25 @@ window.StoryModeDebug.setCoverDebug(true/false)
 18. Import PNG → preserves cover quality (no re-encoding)
 19. Different browser → same library visible (file storage is cross-browser)
 
+### Scene Summarization (Advanced)
+20. Enable scene summarization in Blueprint Settings
+21. Scene transition → verify summary generated and stored
+22. Check summary appears in chat or lorebook (depending on config)
+23. Verify summarization API profile is used when configured
+
+### Cover/Scene Image Generation (Advanced)
+24. Generate cover during wizard → verify image appears in preview
+25. Generate cover from editor Cover tab → verify gallery updates
+26. Navigate gallery → previous/next images work correctly
+27. Delete cover from gallery → verify removal
+28. Scene image generation (if SD configured) → verify image appears
+
+### Epilogue & Summary Generation
+29. Arc completes with auto-epilogue enabled → epilogue message appears
+30. Arc completes with auto-summary enabled → summary generated
+31. Manual "Generate Summary" from wand menu → summary appears
+32. Manual "Generate Epilogue" from wand menu → epilogue appears
+
 ## Known Limitations
 
 ### Architecture Issues (v1)

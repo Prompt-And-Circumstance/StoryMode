@@ -13,6 +13,7 @@ chutes_claude_code_env.sh
 
 # Debugging and workflow state (personal/temporary)
 Debugging/
+Testing/
 WORKFLOW-STATE-*.json
 
 # Planning documents (private development notes)

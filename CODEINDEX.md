@@ -50,14 +50,27 @@ Extension-StoryMode/
     │   └── templates.js     # Prompt templates
     ├── ui/                  # UI rendering
     │   ├── index.js         # Re-exports public API
-    │   ├── components.js    # HTML rendering functions (large)
+    │   ├── components.js    # Re-export layer (imports from components/)
     │   ├── component-system.js # Shared UI utilities
     │   ├── controller-panel.js # Floating/docked controller
-    │   └── wand-menu.js     # Quick controls dropdown
+    │   ├── wand-menu.js     # Quick controls dropdown
+    │   └── components/      # Split component modules
+    │       ├── index.js     # Re-exports all components
+    │       ├── helpers.js   # createHelpIcon, createToggle
+    │       ├── main-panel.js # renderMainPanel, renderBlueprintPreview
+    │       ├── settings-tabs.js # Settings dialog subtabs
+    │       ├── blueprint-settings.js # Blueprint settings subtab
+    │       ├── blueprint-tabs.js # Blueprint generation/display tabs
+    │       ├── wizard.js    # Wizard progress/preview components
+    │       ├── library.js   # Library tab, blueprint cards
+    │       ├── sidebar.js   # Settings sidebar
+    │       └── misc.js      # Additional tab content
     ├── editor/              # Editors
     │   ├── index.js         # Re-exports public API
     │   ├── blueprint-editor.js # Split-panel blueprint editor (large)
-    │   └── type-editors.js  # Story type/author style CRUD
+    │   ├── type-editors.js  # Story type/author style CRUD
+    │   └── blueprint-editor/ # (Future split - state module prepared)
+    │       └── state.js     # Shared state accessors for editor split
     ├── dialog/              # Dialog modules
     │   ├── wizard.js        # Blueprint generation wizard
     │   ├── settings-handlers.js # Settings dialog event handlers
@@ -93,19 +106,35 @@ Extension-StoryMode/
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `index.js` | 1,264 | Entry point, UI setup, settings dialog |
-| `lib/blueprint/module.js` | 2,165 | Core blueprint operations, Scenario Mode |
-| `lib/editor/blueprint-editor.js` | 2,197 | Split-panel blueprint editor |
-| `lib/ui/components.js` | 2,243 | HTML rendering functions |
-| `lib/editor/type-editors.js` | 1,052 | Story type/author style CRUD |
-| `lib/ui/controller-panel.js` | 1,007 | Floating/docked Story Controller |
-| `lib/generation/templates.js` | 973 | LLM prompt templates |
-| `lib/dialog/settings-handlers.js` | 929 | Settings dialog event handlers |
-| `lib/blueprint/library.js` | 926 | Blueprint library management |
-| `lib/dialog/wizard.js` | 841 | Blueprint generation wizard |
-| `lib/core/state-manager.js` | 673 | Settings, chat state, data storage |
-| `lib/core/event-handlers.js` | 656 | Message events, signal parsing |
-| `lib/generation/orchestration.js` | 650 | Phased generation coordinator |
+| `lib/blueprint/module.js` | ~2,165 | Core blueprint operations, Scenario Mode |
+| `lib/editor/blueprint-editor.js` | ~2,220 | Split-panel blueprint editor |
+| `index.js` | ~1,264 | Entry point, UI setup, settings dialog |
+| `lib/editor/type-editors.js` | ~1,052 | Story type/author style CRUD |
+| `lib/ui/controller-panel.js` | ~1,007 | Floating/docked Story Controller |
+| `lib/generation/templates.js` | ~973 | LLM prompt templates |
+| `lib/dialog/settings-handlers.js` | ~929 | Settings dialog event handlers |
+| `lib/blueprint/library.js` | ~926 | Blueprint library management |
+| `lib/dialog/wizard.js` | ~841 | Blueprint generation wizard |
+| `lib/core/state-manager.js` | ~673 | Settings, chat state, data storage |
+| `lib/core/event-handlers.js` | ~656 | Message events, signal parsing |
+| `lib/generation/orchestration.js` | ~650 | Phased generation coordinator |
+
+### Split Component Modules (lib/ui/components/)
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `blueprint-tabs.js` | ~431 | Blueprint generation and display tabs |
+| `blueprint-settings.js` | ~382 | Blueprint settings subtab |
+| `settings-tabs.js` | ~359 | Settings dialog subtabs |
+| `wizard.js` | ~298 | Wizard progress/preview components |
+| `main-panel.js` | ~206 | Main panel and blueprint preview |
+| `library.js` | ~205 | Library tab, blueprint cards |
+| `index.js` | ~90 | Re-exports all components |
+| `sidebar.js` | ~75 | Settings sidebar |
+| `misc.js` | ~65 | Additional tab content |
+| `helpers.js` | ~43 | Utility functions |
+
+Note: `lib/ui/components.js` is now a thin re-export layer (~16 lines) for backward compatibility.
 
 ## Module Dependencies
 
@@ -130,9 +159,20 @@ lib/blueprint/
 
 lib/ui/
 ├── component-system.js (no internal deps)
-├── components.js (imports state-manager, arc-engine, blueprint/module)
+├── components.js (re-exports from components/index.js)
 ├── controller-panel.js (imports state-manager, blueprint/module)
-└── wand-menu.js (imports state-manager, event-handlers)
+├── wand-menu.js (imports state-manager, event-handlers)
+└── components/
+    ├── index.js (re-exports all)
+    ├── helpers.js (imports component-system)
+    ├── main-panel.js (imports state-manager, blueprint/module)
+    ├── settings-tabs.js (imports state-manager, arc-engine, helpers)
+    ├── blueprint-settings.js (imports state-manager, helpers)
+    ├── blueprint-tabs.js (imports state-manager, blueprint/module, helpers, wizard)
+    ├── wizard.js (imports component-system)
+    ├── library.js (imports blueprint/utils, blueprint-tabs)
+    ├── sidebar.js (imports component-system)
+    └── misc.js (imports state-manager)
 
 lib/dialog/
 ├── wizard.js (imports generation/orchestration, ui/components)
@@ -233,7 +273,11 @@ const url = new URL('../../data/author_styles.json', import.meta.url);
 | Blueprint file storage | `lib/blueprint/file-storage.js` | `file-api.js`, `manifest.js` |
 | Blueprint library | `lib/blueprint/library-adapter.js` | `integration.js`, `manifest.js` |
 | Blueprint editor | `lib/editor/blueprint-editor.js` | `type-editors.js` |
-| Settings dialog | `lib/dialog/settings-handlers.js` | `lib/ui/components.js` |
+| Settings dialog | `lib/dialog/settings-handlers.js` | `lib/ui/components/*.js` |
+| Settings tabs | `lib/ui/components/settings-tabs.js` | `blueprint-settings.js` |
+| Main panel | `lib/ui/components/main-panel.js` | `helpers.js` |
+| Blueprint tabs | `lib/ui/components/blueprint-tabs.js` | `wizard.js` |
+| Library tab | `lib/ui/components/library.js` | `blueprint-tabs.js` |
 | Controller panel | `lib/ui/controller-panel.js` | `wand-menu.js` |
 | Scenario Mode | `lib/scenario/injection.js` | `beats.js`, `blueprint/module.js` |
 | Scene images | `lib/scene/image-generator.js` | `image-prompt.js`, `image-storage.js` |

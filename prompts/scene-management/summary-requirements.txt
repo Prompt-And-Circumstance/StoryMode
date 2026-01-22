@@ -1,18 +1,31 @@
 <!-- @@STYLE: narrative@@ -->
-- Provide a concise narrative summary (2-4 sentences)
-- Capture key plot points, character actions, and emotional beats
-- Maintain the story's tone and style
-- Focus on what happened, not dialogue details
-- Output ONLY the summary text, no meta-commentary
+Write a narrative paragraph (3-5 sentences) covering:
+- What the characters did and decided in this scene
+- Key plot developments or revelations
+- Important relationship changes or emotional turning points
+- Any new information, items, or locations introduced
+- How this scene advances the overall story
+
+Write in past tense, third person. Be specific but concise. Omit trivial dialogue and minor actions.
+<!-- @@END@@ -->
 
 <!-- @@STYLE: bullet@@ -->
-- Use bullet points for key events
-- Each bullet should be 1 sentence
-- Focus on actionable plot points
-- Output ONLY the bullet list, no intro/outro
+Create a bullet-point list with:
+- One bullet per significant event (5-8 bullets typical)
+- Each bullet is a complete sentence in past tense
+- Include: character actions, plot developments, new information
+- Prioritize events that will matter for future scenes
+- Omit: greetings, small talk, scene-setting descriptions
+
+Format as a plain list with "- " prefix for each item.
+<!-- @@END@@ -->
 
 <!-- @@STYLE: both@@ -->
-- Provide a brief narrative summary (1-2 sentences)
-- Follow with bullet points for key events
-- Each bullet should be 1 sentence
-- Output ONLY the summary and bullets, no intro/outro
+Provide two sections:
+
+1. **Overview** (2-3 sentences): Narrative summary of what happened in this scene and why it matters to the story.
+
+2. **Key Events** (5-8 bullets): Specific plot points in chronological order, one sentence each.
+
+Use past tense throughout. Focus on actionable information for future AI context.
+<!-- @@END@@ -->

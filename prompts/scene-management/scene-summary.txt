@@ -1,10 +1,14 @@
+You are summarizing a completed scene from an ongoing story. Your summary will be injected into future AI prompts to provide context about what happened in this scene.
+
 **Story Context:**
 {{CONTEXT}}
 
-**Scene Messages:**
+**Scene Dialogue & Actions:**
 {{MESSAGES}}
 
 **Summary Requirements:**
 {{REQUIREMENTS}}
 
-Summary:
+Generate a concise summary that captures the essential narrative progression of this scene. Focus on plot advancement, character decisions, and significant events that will matter for future scenes. Omit minor details and casual dialogue unless directly relevant to the plot.
+
+**Summary:**

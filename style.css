@@ -1968,6 +1968,13 @@
     color: var(--sm-accent);
 }
 
+#story_mode_dropdown .wand-menu-divider {
+    border: none;
+    border-top: 1px solid var(--SmartThemeBorderColor);
+    margin: 8px 0;
+    opacity: 0.5;
+}
+
 /* ============================================================================
    RESPONSIVE ADJUSTMENTS
    ============================================================================ */
@@ -3217,7 +3224,9 @@ details.storymode-advanced-options[open] summary {
 
 .storymode-debug-close,
 .storymode-debug-dock-btn,
-.storymode-debug-prompt-btn {
+.storymode-debug-prompt-btn,
+.storymode-debug-library-btn,
+.storymode-debug-settings-btn {
     background: rgba(0, 0, 0, 0.2);
     border: none;
     color: white;
@@ -3233,8 +3242,14 @@ details.storymode-advanced-options[open] summary {
 
 .storymode-debug-close:hover,
 .storymode-debug-dock-btn:hover,
-.storymode-debug-prompt-btn:hover {
+.storymode-debug-prompt-btn:hover,
+.storymode-debug-library-btn:hover,
+.storymode-debug-settings-btn:hover {
     background: rgba(0, 0, 0, 0.4);
+}
+
+.storymode-header-actions {
+    margin-left: auto;
 }
 
 .storymode-debug-content {
@@ -3244,7 +3259,7 @@ details.storymode-advanced-options[open] summary {
 /* Docked Drawer Styles */
 #storymode-controller-drawer .storymode-drawer-content-inner {
     padding: 10px;
-    height: calc(100% - 40px);
+    height: calc(100% - 50px);
     overflow-y: auto;
 }
 
@@ -3258,16 +3273,46 @@ details.storymode-advanced-options[open] summary {
     border-bottom: none;
 }
 
-.storymode-drawer-actions {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    padding: 8px;
-    background: var(--black30a);
-    border-top: 1px solid var(--SmartThemeBorderColor);
+/* Docked Header Styles */
+.storymode-docked-header {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    background: var(--black50a);
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-docked-header h3 {
+    margin: 0;
+    font-size: 0.95em;
+    font-weight: 600;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-docked-header-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.storymode-docked-action-btn {
+    background: var(--black30a);
+    border: 1px solid var(--SmartThemeBorderColor);
+    color: var(--SmartThemeBodyColor);
+    cursor: pointer;
+    border-radius: 4px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
     justify-content: center;
+    transition: all 0.2s;
+}
+
+.storymode-docked-action-btn:hover {
+    background: var(--sm-accent);
+    border-color: var(--sm-accent);
+    color: white;
 }
 
 .storymode-debug-section {
@@ -4574,6 +4619,140 @@ details.storymode-advanced-options[open] summary {
 
 .storymode-mode-btn i {
     font-size: 10px;
+}
+
+/* OOC (Out of Context) Panel Styles */
+.storymode-ooc-panel {
+    background: transparent;
+    overflow: hidden;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+}
+
+.storymode-ooc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+    margin-bottom: 8px;
+}
+
+.storymode-ooc-header:hover {
+    opacity: 0.8;
+}
+
+.storymode-ooc-header .storymode-debug-label {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.storymode-ooc-toggle {
+    background: transparent;
+    border: none;
+    color: var(--sm-accent);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+}
+
+.storymode-ooc-toggle:hover {
+    color: var(--sm-accent-hover);
+}
+
+.storymode-ooc-content {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 500px;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.storymode-ooc-panel.sm-ooc-rolled-up .storymode-ooc-content {
+    max-height: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.storymode-ooc-textarea {
+    width: 100%;
+    min-height: 60px;
+    max-height: 150px;
+    padding: 8px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    background: var(--SmartThemeBlurTintColor);
+    color: var(--SmartThemeBodyColor);
+    font-family: inherit;
+    font-size: 0.9em;
+    line-height: 1.4;
+    resize: vertical;
+    transition: border-color 0.2s;
+}
+
+.storymode-ooc-textarea:focus {
+    outline: none;
+    border-color: var(--sm-accent);
+    box-shadow: 0 0 0 2px var(--sm-accent-glow);
+}
+
+.storymode-ooc-textarea::placeholder {
+    color: var(--SmartThemeQuoteColor);
+    opacity: 0.6;
+}
+
+.storymode-ooc-hint {
+    font-size: 0.75em;
+    color: var(--SmartThemeQuoteColor);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+}
+
+.storymode-ooc-hint i {
+    color: var(--sm-accent);
+    opacity: 0.8;
+}
+
+.storymode-ooc-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+.storymode-ooc-clear-btn {
+    padding: 6px 12px;
+    border-radius: var(--sm-radius-sm);
+    border: 1px solid var(--SmartThemeBorderColor);
+    background: transparent;
+    color: var(--SmartThemeBodyColor);
+    cursor: pointer;
+    font-size: 0.85em;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.storymode-ooc-clear-btn:hover {
+    background: var(--sm-phase-resolution);
+    border-color: var(--sm-phase-resolution);
+    color: white;
+}
+
+.storymode-ooc-clear-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* Docked Drawer Header */

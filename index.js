@@ -252,11 +252,11 @@ async function showSettingsDialog(initialTab = 'genre-style') {
 <button class="storymode-tab active" data-tab="genre-style" title="Configure story arc and writing style">
 <i class="fa-solid fa-book-open"></i> Genre & Style
 </button>
-<button class="storymode-tab" data-tab="library" title="Browse and manage your blueprint collection">
+<button class="storymode-tab" data-tab="library" title="Browse and manage your scenario blueprint collection">
 <i class="fa-solid fa-folder-open"></i> Library
 </button>
-<button class="storymode-tab" data-tab="blueprint" title="View and manage the current story blueprint">
-<i class="fa-solid fa-scroll"></i> Blueprint
+<button class="storymode-tab" data-tab="blueprint" title="View and manage the current scenario">
+<i class="fa-solid fa-scroll"></i> Current Scenario
 </button>
 <button class="storymode-tab" data-tab="settings" title="Configure extension settings and API options">
 <i class="fa-solid fa-gear"></i> Settings
@@ -359,7 +359,7 @@ ${buildSettingsTabContent()}
             const blueprintState = BlueprintModule.getBlueprintState();
             const blueprint = blueprintState.blueprint;
             if (!blueprint) {
-                contentDiv.html('<p class="storymode-form-hint">No blueprint available. Generate one first.</p>');
+                contentDiv.html('<p class="storymode-form-hint">No scenario blueprint available. Generate one first.</p>');
                 return;
             }
             const chatState = getChatStoryState();
@@ -526,7 +526,7 @@ function setupEventListeners() {
         const blueprintState = BlueprintModule.getBlueprintState();
 
         if (!blueprintState.blueprint) {
-            toastr.error('No blueprint loaded', 'Blueprint Error');
+            toastr.error('No scenario loaded', 'Scenario Error');
             return;
         }
 
@@ -539,12 +539,12 @@ function setupEventListeners() {
             const result = await BlueprintModule.startStoryFromBlueprint(blueprintState.blueprint);
 
             if (!result.success) {
-                toastr.error(result.error || 'Failed to start story', 'Blueprint Error');
+                toastr.error(result.error || 'Failed to start story', 'Scenario Error');
                 return;
             }
 
             // Show any warnings
-            result.warnings?.forEach(w => toastr.warning(w, 'Blueprint Warning'));
+            result.warnings?.forEach(w => toastr.warning(w, 'Scenario Warning'));
 
             // Handle opening message logic (simplified - no generation option)
             const savedOpening = blueprintState.blueprint?.opening_message;
@@ -561,12 +561,12 @@ function setupEventListeners() {
                     await saveChatConditional();
                     toastr.success('Story started with opening message!', 'Story Mode');
                 } else {
-                    toastr.success('Story started from blueprint!', 'Story Mode');
+                    toastr.success('Story started from scenario!', 'Story Mode');
                 }
             } else {
                 // Legacy blueprint without opening message
-                toastr.success('Story started from blueprint!', 'Story Mode');
-                toastr.info('This blueprint has no opening message. You can write your own first message.', 'Story Mode', { timeOut: 5000 });
+                toastr.success('Story started from scenario!', 'Story Mode');
+                toastr.info('This scenario blueprint has no opening message. You can write your own first message.', 'Story Mode', { timeOut: 5000 });
             }
 
             // Close the settings dialog (try multiple methods for reliability)
@@ -585,7 +585,7 @@ function setupEventListeners() {
             setupEventListeners();
         } catch (error) {
             console.error('[Story Mode] Error starting story from blueprint:', error);
-            toastr.error(`Failed to start story: ${error.message}`, 'Blueprint Error');
+            toastr.error(`Failed to start story: ${error.message}`, 'Scenario Error');
         } finally {
             btn.prop('disabled', false);
             btn.html(originalText);
@@ -908,6 +908,8 @@ function refreshBlueprintPreview() {
 window.updateStatusDisplay = updateStatusDisplay;
 window.updateStoryPrompt = updateStoryPrompt;
 window.refreshBlueprintPreview = refreshBlueprintPreview;
+window.updateControllerPanel = updateControllerPanel;
+window.updateWandMenuStatus = updateWandMenuStatus;
 
 /**
 * Update the story type dropdown in the settings dialog.

@@ -330,12 +330,16 @@ ${buildSettingsTabContent()}
     // Subtab switching (handles both Genre & Style and Settings tab subtabs)
     content.on('click', '.storymode-settings-subtab', function () {
         const subtabName = $(this).data('subtab');
-        // Update subtab buttons
-        content.find('.storymode-settings-subtab').removeClass('active');
+        const $activeTabPane = content.find('.storymode-tab-pane.active');
+
+        // Update subtab buttons (only within the active main tab)
+        $activeTabPane.find('.storymode-settings-subtab').removeClass('active');
         $(this).addClass('active');
-        // Update subtab panes
-        content.find('.storymode-settings-subtab-pane').removeClass('active');
-        content.find(`#settings_subtab_${subtabName}`).addClass('active');
+
+        // Update subtab panes (only within the active main tab)
+        $activeTabPane.find('.storymode-settings-subtab-pane').removeClass('active');
+        $activeTabPane.find(`#settings_subtab_${subtabName}`).addClass('active');
+
         // Re-populate connection profiles if switching to API Options tab
         if (subtabName === 'api_options') {
             populateConnectionProfiles(content);
@@ -575,14 +579,10 @@ function setupEventListeners() {
                 toastr.info('This scenario blueprint has no opening message. You can write your own first message.', 'Story Mode', { timeOut: 5000 });
             }
 
-            // Close the settings dialog (try multiple methods for reliability)
-            const popup = btn.closest('.popup');
-            const okButton = popup.find('.popup-button-ok');
-            if (okButton.length > 0) {
-                okButton.trigger('click');
-            } else {
-                // Fallback: close all popups
-                $('.popup').find('.popup-close, .popup-button-cancel, .popup-button-ok').trigger('click');
+            // Close the settings dialog using stored popup reference
+            // (avoids race condition with confirm popup DOM removal)
+            if (window.storyModeSettingsPopup) {
+                window.storyModeSettingsPopup.complete(POPUP_RESULT.AFFIRMATIVE);
             }
 
             // Update main panel UI

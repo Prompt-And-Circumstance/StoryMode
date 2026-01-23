@@ -101,6 +101,27 @@ Each beat requires: index, title, description, type, and required (true/false).
 
 Optional: hooks_for_future (threads connecting to later scenes), expected_rounds (how many rounds this scene spans).
 
+## SCENE COHESION RULES
+
+A scene is a **complete dramatic unit**. Do NOT split continuous action into separate scenes.
+
+**Anti-Split Rule:** Keep together:
+- Action sequences and their immediate emotional aftermath
+- A crisis and its resolution when they occur in the same location
+- A confrontation and its direct consequences if they flow without interruption
+
+**Bad example:** Scene 7 "The Bridge Collapse" + Scene 8 "The Aftermath"
+**Good example:** Scene 7 "The Bridge Collapse and Escape" (includes BOTH the crisis AND the immediate emotional beat)
+
+If characters remain in continuous action/reaction without a scene break (new location, significant time skip, or narrative pause), it belongs in ONE scene.
+
+**Climax-Resolution Unity:** The CLIMAX phase scene and its immediate aftermath MUST be combined if:
+- They occur in the same location or continuous movement
+- Less than 1 hour passes narratively between them
+- The same core characters are involved
+
+The final RESOLUTION scene should represent a NEW situation—next day, different location, or clearly separated context—not the last few minutes of the climax action. Resolution is for reflection and new equilibrium, not for finishing the climax's loose ends.
+
 ## YOUR TASK
 
 Generate a JSON object with **scene_plan** (array of {{EXPECTED_SCENE_COUNT}} scene objects). Each scene must follow this structure:

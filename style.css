@@ -1217,8 +1217,8 @@
 /* Blueprint beat progress section */
 .storymode-beats-section {
     margin-top: 12px;
+    margin-bottom: 12px;
     padding: 10px;
-    background: var(--black30a);
     border-radius: var(--sm-radius-sm);
 }
 
@@ -1243,7 +1243,13 @@
 .storymode-beats-list {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 8px;
+    height: 180px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 8px;
+    border-radius: 4px;
 }
 
 .storymode-beat-item {
@@ -3363,6 +3369,20 @@ details.storymode-advanced-options[open] summary {
     margin-top: 2px;
 }
 
+.storymode-debug-hint {
+    font-size: 0.75em;
+    color: var(--SmartThemeQuoteColor);
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px dashed var(--SmartThemeBorderColor);
+    opacity: 0.85;
+}
+
+.storymode-debug-hint i {
+    margin-right: 4px;
+    opacity: 0.7;
+}
+
 .storymode-debug-bar {
     height: 4px;
     background: var(--black30a);
@@ -3605,8 +3625,10 @@ details.storymode-advanced-options[open] summary {
 
 .storymode-scene-popout-body {
     padding: 16px;
+    padding-bottom: 24px;
     overflow-y: auto;
     flex: 1;
+    min-height: 0; /* Allows flex child to shrink and scroll properly */
 }
 
 .storymode-popout-section {

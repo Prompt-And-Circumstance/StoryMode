@@ -1181,8 +1181,9 @@
 
 /* Blueprint scene card */
 .storymode-scene-card {
+    display: flex;
+    align-items: stretch;
     border-radius: var(--sm-radius-sm);
-    padding: 14px;
     margin-bottom: 12px;
     border: 1px solid var(--SmartThemeBorderColor);
     transition: var(--sm-transition);
@@ -1197,7 +1198,46 @@
     background: var(--sm-accent-subtle);
     box-shadow: 0 2px 8px var(--sm-accent-glow);
     margin-bottom: 0px;
+}
 
+.storymode-scene-card.dragging {
+    opacity: 0.5;
+}
+
+.storymode-scene-card.drag-over {
+    border-color: var(--sm-accent);
+    background: var(--sm-accent-subtle);
+}
+
+/* Scene drag handle */
+.storymode-scene-drag-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    min-width: 28px;
+    background: var(--black20a);
+    border-right: 1px solid var(--SmartThemeBorderColor);
+    cursor: grab;
+    user-select: none;
+    color: var(--SmartThemeEmColor);
+    opacity: 0.6;
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-scene-drag-handle:hover {
+    opacity: 1;
+    background: var(--black30a);
+}
+
+.storymode-scene-drag-handle:active {
+    cursor: grabbing;
+}
+
+.storymode-scene-content {
+    flex: 1;
+    padding: 14px;
+    min-width: 0;
 }
 
 .storymode-scene-title {
@@ -1244,12 +1284,100 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    height: 180px;
+    max-height: 200px;
     overflow-y: auto;
     overflow-x: hidden;
     border: 1px solid rgba(255, 255, 255, 0.1);
     padding: 8px;
     border-radius: 4px;
+}
+
+/* Beat card in editor */
+.storymode-beat-card {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    background: var(--black10a);
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-beat-card:hover {
+    border-color: var(--SmartThemeEmColor);
+}
+
+.storymode-beat-card.dragging {
+    opacity: 0.5;
+}
+
+.storymode-beat-card.drag-over {
+    border-color: var(--sm-accent);
+    background: var(--sm-accent-subtle);
+}
+
+/* Beat drag handle */
+.storymode-beat-drag-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    min-width: 24px;
+    background: var(--black20a);
+    border-right: 1px solid var(--SmartThemeBorderColor);
+    cursor: grab;
+    user-select: none;
+    color: var(--SmartThemeEmColor);
+    opacity: 0.6;
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-beat-drag-handle:hover {
+    opacity: 1;
+    background: var(--black30a);
+}
+
+.storymode-beat-drag-handle:active {
+    cursor: grabbing;
+}
+
+.storymode-beat-content {
+    flex: 1;
+    padding: 8px 10px;
+    min-width: 0;
+}
+
+.storymode-beat-description {
+    margin-top: 4px;
+    font-size: 0.9em;
+    color: var(--SmartThemeEmColor);
+}
+
+.storymode-beat-tag {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.8em;
+    color: #fff;
+}
+
+.storymode-beat-tag-type {
+    background-color: var(--SmartThemeEmColor);
+}
+
+.storymode-beat-tag-required {
+    background-color: #d9534f;
+}
+
+.storymode-beat-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 8px;
+}
+
+.storymode-beat-actions .menu_button {
+    padding: 4px 6px;
 }
 
 .storymode-beat-item {

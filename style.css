@@ -108,7 +108,7 @@
     padding: 6px 12px;
     font-size: 0.8em;
     border-radius: var(--sm-radius-sm);
-    background: var(--black40a);
+    background: var(--black30a);
     border: 1px solid var(--SmartThemeBorderColor);
     color: var(--SmartThemeBodyColor);
     transition: var(--sm-transition-fast);
@@ -274,7 +274,7 @@
 #view_blueprint_details_btn {
     margin-top: 10px;
     padding: 8px 12px;
-    background: var(--black40a);
+    background: var(--black30a);
     border: 1px solid var(--SmartThemeBorderColor);
     border-radius: var(--sm-radius-sm);
     color: var(--SmartThemeBodyColor);
@@ -406,7 +406,7 @@
     line-height: 1.5;
     font-style: italic;
     padding: 12px;
-    background: var(--black40a);
+    background: var(--black30a);
     border-radius: var(--sm-radius-sm);
     border-left: 3px solid var(--sm-warm);
     position: relative;
@@ -446,7 +446,7 @@
 }
 
 .storymode-entity-item:hover {
-    background: var(--black40a);
+    background: var(--black30a);
     border-color: var(--SmartThemeBorderColor);
 }
 
@@ -504,7 +504,7 @@
 .storymode-tabs {
     display: flex;
     gap: 0;
-    background: var(--black40a);
+    background: var(--black30a);
     border-bottom: 1px solid var(--SmartThemeBorderColor);
     padding: 0 20px;
     position: relative;
@@ -618,7 +618,7 @@
 }
 
 .storymode-settings-subtab:hover {
-    background: var(--black40a);
+    background: var(--black30a);
     color: var(--SmartThemeBodyColor);
     border-color: var(--SmartThemeEmColor);
 }
@@ -740,7 +740,7 @@
    ============================================================================ */
 
 .storymode-blueprint-subtab[data-special="generate"] {
-    background: var(--black40a);
+    background: var(--black30a);
     border-left: 3px solid var(--sm-warm);
     padding: 10px 16px;
     display: inline-flex;
@@ -759,7 +759,7 @@
 }
 
 .storymode-blueprint-subtab[data-subtab="load"] {
-    background: var(--black40a);
+    background: var(--black30a);
     border-left: 3px solid var(--SmartThemeEmColor);
     padding: 10px 16px;
     display: inline-flex;
@@ -901,7 +901,7 @@
 
 .storymode-info-box {
     padding: 16px;
-    background: var(--black40a);
+    background: var(--black30a);
     border-left: 3px solid var(--sm-accent);
     border-radius: var(--sm-radius-sm);
     margin-top: 16px;
@@ -969,7 +969,7 @@
 .storymode-slider-value {
     min-width: 70px;
     padding: 8px 12px;
-    background: var(--black40a);
+    background: var(--black30a);
     border: 1px solid var(--SmartThemeBorderColor);
     border-radius: var(--sm-radius-sm);
     text-align: center;
@@ -982,7 +982,7 @@
 .storymode-select {
     width: 100%;
     padding: 11px 14px;
-    background: var(--black40a);
+    background: var(--black30a);
     border: 1px solid var(--SmartThemeBorderColor);
     border-radius: var(--sm-radius-sm);
     color: var(--SmartThemeBodyColor);
@@ -1020,7 +1020,7 @@
 .storymode-select-group button {
     padding: 10px 14px;
     flex-shrink: 0;
-    background: var(--black40a);
+    background: var(--black30a);
     border: 1px solid var(--SmartThemeBorderColor);
     border-radius: var(--sm-radius-sm);
     color: var(--SmartThemeEmColor);
@@ -1038,7 +1038,7 @@
    ============================================================================ */
 
 .storymode-card {
-    background: var(--black40a);
+    background: var(--black30a);
     border: 1px solid var(--SmartThemeBorderColor);
     border-radius: var(--sm-radius-md);
     padding: 0px;
@@ -1171,7 +1171,7 @@
     color: var(--sm-accent);
     user-select: none;
     padding: 12px 14px;
-    background: var(--black40a);
+    background: var(--black30a);
     transition: var(--sm-transition-fast);
 }
 
@@ -1460,7 +1460,7 @@
 }
 
 .storymode-blueprint-subtabs::-webkit-scrollbar-thumb:hover {
-    background: var(--black40a);
+    background: var(--black30a);
 }
 
 /* Blueprint subtab separator (visual divider) */
@@ -1512,7 +1512,7 @@
 }
 
 .storymode-blueprint-content.long-content::-webkit-scrollbar-thumb:hover {
-    background: var(--black40a);
+    background: var(--black30a);
 }
 
 /* Blueprint subtabs row - ensures all buttons have equal height */
@@ -1542,7 +1542,7 @@
 }
 
 .storymode-blueprint-subtab:hover {
-    background: var(--black40a);
+    background: var(--black30a);
     color: var(--SmartThemeBodyColor);
     border-color: var(--SmartThemeEmColor);
 }
@@ -1577,7 +1577,7 @@
 
 .storymode-summary-content {
     padding: 20px;
-    background: var(--black40a);
+    background: var(--black30a);
     border-radius: var(--sm-radius-md);
     line-height: 1.7;
     color: var(--SmartThemeBodyColor);
@@ -1624,7 +1624,7 @@
     max-height: 200px;
     overflow-y: auto;
     padding: 12px;
-    background: var(--black40a);
+    background: var(--black30a);
     border-radius: var(--sm-radius-sm);
     border: 1px solid var(--SmartThemeBorderColor);
 }
@@ -1797,7 +1797,7 @@
 .storymode-advanced summary {
     cursor: pointer;
     padding: 12px 14px;
-    background: var(--black40a);
+    background: var(--black30a);
     border-radius: var(--sm-radius-sm);
     font-size: 0.88em;
     font-weight: 500;
@@ -1903,7 +1903,7 @@
 .storymode-textarea {
     width: 100%;
     padding: 14px;
-    background: var(--black40a);
+    background: var(--black30a);
     border: 1px solid var(--SmartThemeBorderColor);
     border-radius: var(--sm-radius-sm);
     color: var(--SmartThemeBodyColor);
@@ -2083,7 +2083,7 @@
     display: block;
     padding: 10px 14px;
     margin-bottom: 10px;
-    background: var(--black40a);
+    background: var(--black30a);
     border: 1px solid var(--SmartThemeBorderColor);
     border-radius: var(--sm-radius-sm);
     text-align: center;
@@ -2293,7 +2293,7 @@
     overflow-y: auto;
     border: 1px solid var(--SmartThemeBorderColor);
     padding: 12px;
-    background: var(--black40a);
+    background: var(--black30a);
     border-radius: var(--sm-radius-sm);
     text-align: left;
 }
@@ -2320,7 +2320,7 @@
     padding: 8px 12px;
     user-select: none;
     font-size: 0.88em;
-    background: var(--black40a);
+    background: var(--black30a);
     border-radius: var(--sm-radius-sm);
 }
 
@@ -2346,7 +2346,7 @@
 }
 
 .storymode-blueprint-modal-tab:hover {
-    background: var(--black40a);
+    background: var(--black30a);
 }
 
 .storymode-blueprint-modal-tab.active {
@@ -2408,7 +2408,7 @@
 /* Blueprint content areas */
 .storymode-blueprint-content {
     padding: 14px;
-    background: var(--black40a);
+    background: var(--black30a);
     border-radius: var(--sm-radius-sm);
     min-height: 220px;
     overflow-y: auto;
@@ -4403,7 +4403,7 @@ details.storymode-advanced-options[open] summary {
     align-items: center;
     gap: 8px;
     padding: 8px 14px;
-    background: var(--black40a);
+    background: var(--black30a);
     border: 1px solid var(--SmartThemeBorderColor);
     border-radius: var(--sm-radius-sm);
     color: var(--SmartThemeBodyColor);
@@ -4691,7 +4691,7 @@ details.storymode-advanced-options[open] summary {
     align-items: center;
     gap: 10px;
     padding: 10px 14px;
-    background: var(--black40a);
+    background: var(--black30a);
     border-radius: var(--sm-radius-sm);
     cursor: pointer;
     transition: var(--sm-transition-fast);

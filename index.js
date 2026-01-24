@@ -528,7 +528,7 @@ function setupEventListeners() {
         updateStatusDisplay();
     });
     // Open settings dialog
-    $('#open_story_mode_settings').on('click', showSettingsDialog);
+    $('#open_story_mode_settings').on('click', () => showSettingsDialog());
 
     // Start Story from Blueprint button (in settings dialog)
     $(document).on('click', '#start_story_from_blueprint_btn', async function () {

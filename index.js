@@ -448,6 +448,7 @@ function populateConnectionProfiles(content) {
         { selector: '#opening_message_api', settingsKey: 'blueprintSettings.openingMessageApi' },
         { selector: '#epilogue_api', settingsKey: 'epilogueApi' },
         { selector: '#summary_api', settingsKey: 'summaryApi' },
+        { selector: '#next_adventure_api', settingsKey: 'nextAdventureApi' },
     ];
 
     dropdowns.forEach(({ selector, settingsKey }) => {

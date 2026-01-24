@@ -239,6 +239,12 @@ console.log('[Story Mode] All modules imported and initialized successfully');
 async function showSettingsDialog(initialTab = 'genre-style') {
     const settings = extension_settings[MODULE_NAME];
     const chatState = getChatStoryState();
+    const blueprintState = BlueprintModule.getBlueprintState();
+    const hasBlueprint = blueprintState?.blueprint && blueprintState.useBlueprint;
+    const blueprintTabDisabled = !hasBlueprint ? 'disabled' : '';
+    const blueprintTabTitle = hasBlueprint
+        ? 'View and manage the current scenario'
+        : 'No scenario loaded - load one from the Library';
     const html = `
 <div class="storymode-unified-modal">
 <!-- Modal Heading -->
@@ -255,7 +261,7 @@ async function showSettingsDialog(initialTab = 'genre-style') {
 <button class="storymode-tab" data-tab="library" title="Browse and manage your scenario blueprint collection">
 <i class="fa-solid fa-folder-open"></i> Library
 </button>
-<button class="storymode-tab" data-tab="blueprint" title="View and manage the current scenario">
+<button class="storymode-tab ${blueprintTabDisabled}" data-tab="blueprint" title="${blueprintTabTitle}">
 <i class="fa-solid fa-scroll"></i> Current Scenario
 </button>
 <button class="storymode-tab" data-tab="settings" title="Configure extension settings and API options">
@@ -301,6 +307,9 @@ ${buildSettingsTabContent()}
     const $tabs = content.find('.storymode-tab');
     const $tabPanes = content.find('.storymode-tab-pane');
     $tabs.on('click', function () {
+        // Ignore clicks on disabled tabs
+        if ($(this).hasClass('disabled')) return;
+
         const tabName = $(this).data('tab');
         console.log('[Story Mode] Tab clicked:', tabName);
 

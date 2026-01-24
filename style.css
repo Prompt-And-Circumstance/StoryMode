@@ -564,6 +564,18 @@
     opacity: 0.5;
 }
 
+/* Disabled tab (e.g., Current Scenario when no blueprint loaded) */
+.storymode-tab.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.storymode-tab.disabled:hover {
+    color: var(--SmartThemeEmColor);
+    border-bottom-color: transparent;
+}
+
 /* Tab Content */
 .storymode-tab-content {
     flex: 1;

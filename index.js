@@ -125,6 +125,7 @@ import {
     buildGenerateBlueprintSubtab,
     buildBlueprintTabContent,
     renderBlueprintOverviewSubtab,
+    renderBlueprintOpeningSubtab,
     renderBlueprintScenesSubtab,
     renderBlueprintCharactersSubtab,
     renderBlueprintJsonSubtab,
@@ -385,6 +386,8 @@ ${buildSettingsTabContent()}
             );
             if (subtabName === 'overview') {
                 contentDiv.html(renderBlueprintOverviewSubtab(blueprint, currentScene));
+            } else if (subtabName === 'opening') {
+                contentDiv.html(renderBlueprintOpeningSubtab(blueprint));
             } else if (subtabName === 'scenes') {
                 contentDiv.html(renderBlueprintScenesSubtab(blueprint));
             } else if (subtabName === 'characters') {

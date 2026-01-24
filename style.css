@@ -712,12 +712,12 @@
 .storymode-blueprint-overview-layout {
     display: flex;
     gap: 20px;
-    margin-bottom: 20px;
-    align-items: flex-start;
+    margin-bottom: 16px;
+    align-items: stretch;
 }
 
 .storymode-blueprint-overview-cover {
-    width: 240px;
+    width: 180px;
     aspect-ratio: 3 / 4;
     flex-shrink: 0;
     border-radius: var(--sm-radius-md);
@@ -729,9 +729,50 @@
     background-color: var(--black50a);
 }
 
-.storymode-blueprint-overview-layout .storymode-blueprint-info-grid {
+.storymode-blueprint-overview-text {
     flex: 1;
-    margin-bottom: 0;
+    font-size: 0.9em;
+    color: var(--SmartThemeBodyColor);
+    line-height: 1.6;
+    padding: 16px;
+    background: var(--black30a);
+    border-radius: var(--sm-radius-sm);
+    border-left: 3px solid var(--sm-warm);
+    overflow-y: auto;
+    max-height: 240px;
+}
+
+/* Meta row - horizontal cards below overview */
+.storymode-blueprint-meta-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.storymode-blueprint-meta-row .storymode-info-card {
+    flex: 1;
+    min-width: 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px;
+    background: var(--black30a);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+}
+
+.storymode-blueprint-meta-row .storymode-info-card label {
+    font-size: 0.7em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--SmartThemeEmColor);
+}
+
+.storymode-blueprint-meta-row .storymode-info-card span {
+    font-size: 0.88em;
+    font-weight: 500;
+    color: var(--SmartThemeBodyColor);
 }
 
 /* Responsive: stack vertically on smaller screens */
@@ -742,8 +783,16 @@
 
     .storymode-blueprint-overview-cover {
         width: 100%;
-        max-width: 300px;
+        max-width: 200px;
         margin: 0 auto;
+    }
+
+    .storymode-blueprint-meta-row {
+        flex-direction: column;
+    }
+
+    .storymode-blueprint-meta-row .storymode-info-card {
+        min-width: 100%;
     }
 }
 
@@ -2365,6 +2414,79 @@
     background: var(--black50a);
     border-bottom: 2px solid var(--sm-accent);
     color: var(--sm-accent);
+}
+
+/* Opening message content */
+.storymode-opening-message-content {
+    padding: 16px;
+    background: var(--black30a);
+    border-radius: var(--sm-radius-sm);
+    border: 1px solid var(--SmartThemeBorderColor);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 0.9em;
+    line-height: 1.6;
+    color: var(--SmartThemeBodyColor);
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Scenes subtab list */
+.storymode-scenes-subtab-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.storymode-scenes-subtab-card {
+    background: var(--black30a);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    padding: 14px;
+}
+
+.storymode-scenes-subtab-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.storymode-scenes-subtab-number {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--sm-accent);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.8em;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.storymode-scenes-subtab-title {
+    flex: 1;
+    font-weight: 600;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-scenes-subtab-phase {
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--SmartThemeEmColor);
+    background: var(--black50a);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.storymode-scenes-subtab-purpose {
+    margin: 0 0 8px 0;
+    font-size: 0.85em;
+    color: var(--SmartThemeEmColor);
+    line-height: 1.5;
 }
 
 /* Scene list (legacy) */

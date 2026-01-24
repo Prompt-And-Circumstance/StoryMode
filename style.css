@@ -3497,6 +3497,89 @@ details.storymode-advanced-options[open] summary {
     margin-top: 2px;
 }
 
+/* Phase badge next to round/scene label */
+.storymode-phase-badge {
+    display: inline-block;
+    background: var(--sm-accent);
+    color: white;
+    font-size: 0.85em;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+    text-transform: capitalize;
+    letter-spacing: 0;
+    font-weight: 500;
+}
+
+/* Story type and author style info */
+.storymode-style-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.storymode-style-item {
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-style-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.storymode-style-header {
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.storymode-style-header:hover {
+    opacity: 0.8;
+}
+
+.storymode-style-info .storymode-debug-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.storymode-style-info .storymode-debug-label i {
+    font-size: 0.9em;
+}
+
+.storymode-style-chevron {
+    margin-left: auto;
+    font-size: 0.8em;
+    opacity: 0.7;
+    transition: transform 0.2s;
+}
+
+.storymode-style-info .storymode-debug-value {
+    font-size: 0.95em;
+    margin-bottom: 2px;
+}
+
+.storymode-style-desc {
+    font-size: 0.75em;
+    line-height: 1.4;
+    color: var(--SmartThemeQuoteColor);
+    margin-top: 6px;
+    padding: 8px;
+    background: var(--black10a);
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease, padding 0.3s ease;
+}
+
+.storymode-style-desc.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+    padding: 0 8px;
+    overflow: hidden;
+}
+
 .storymode-debug-hint {
     font-size: 0.75em;
     color: var(--SmartThemeQuoteColor);

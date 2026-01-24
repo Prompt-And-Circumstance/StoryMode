@@ -724,3 +724,445 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ============================================================================
+   WIZARD PANEL - Collapsible AI Section Generator
+   ============================================================================ */
+
+.storymode-wizard-panel {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 280px;
+    background: var(--SmartThemeBlurTintColor);
+    border-left: 1px solid var(--SmartThemeBorderColor);
+    transition: transform 0.3s ease;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+}
+
+.storymode-wizard-panel.collapsed {
+    transform: translateX(100%); /* Hide panel content, toggle at left:-32px stays visible */
+}
+
+.storymode-wizard-toggle {
+    position: absolute;
+    left: -32px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 48px;
+    background: var(--SmartThemeBlurTintColor);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--sm-accent);
+    transition: background 0.2s ease;
+}
+
+.storymode-wizard-toggle:hover {
+    background: var(--sm-accent-subtle);
+}
+
+.storymode-wizard-content {
+    padding: 16px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.storymode-wizard-header {
+    font-size: 1.1em;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+    color: var(--SmartThemeBodyColor);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.storymode-wizard-header i {
+    color: var(--sm-accent);
+}
+
+.storymode-wizard-context {
+    margin-bottom: 20px;
+}
+
+.storymode-wizard-field {
+    margin-bottom: 12px;
+}
+
+.storymode-wizard-field label {
+    display: block;
+    font-size: 0.8em;
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: var(--SmartThemeEmColor);
+}
+
+.storymode-wizard-field select,
+.storymode-wizard-field textarea {
+    width: 100%;
+    padding: 8px 10px;
+    background: var(--SmartThemeBlurTintColor);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    color: var(--SmartThemeBodyColor);
+    font-size: 0.9em;
+}
+
+.storymode-wizard-field textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.storymode-wizard-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.storymode-wizard-sections-title {
+    font-size: 0.85em;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    color: var(--SmartThemeEmColor);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.storymode-wizard-section-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--SmartThemeBlurTintColor);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-wizard-section-btn:hover {
+    border-color: var(--sm-accent);
+    background: var(--sm-accent-subtle);
+}
+
+.storymode-wizard-section-btn .section-icon {
+    font-size: 1em;
+    color: var(--sm-accent);
+    width: 20px;
+    text-align: center;
+}
+
+.storymode-wizard-section-btn .section-label {
+    flex: 1;
+    text-align: left;
+    font-weight: 500;
+}
+
+.storymode-wizard-section-btn .status-icon {
+    opacity: 0;
+    color: var(--sm-accent);
+    transition: opacity 0.2s ease;
+}
+
+.storymode-wizard-section-btn[data-complete="true"] {
+    border-color: var(--sm-accent);
+}
+
+.storymode-wizard-section-btn[data-complete="true"] .status-icon {
+    opacity: 1;
+}
+
+.storymode-wizard-section-btn.generating {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.storymode-wizard-hint {
+    font-size: 0.8em;
+    color: var(--SmartThemeQuoteColor);
+    margin: 16px 0 0 0;
+    line-height: 1.4;
+}
+
+/* ============================================================================
+   CHARACTER ARCS DISPLAY
+   ============================================================================ */
+
+.storymode-character-arcs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.storymode-character-arc-card {
+    background: var(--SmartThemeBlurTintColor);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-md);
+    padding: 14px;
+    transition: border-color 0.2s ease;
+}
+
+.storymode-character-arc-card:hover {
+    border-color: var(--sm-accent);
+}
+
+.storymode-character-arc-card .arc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-character-arc-card .arc-character-name {
+    font-size: 1.05em;
+    font-weight: 600;
+    color: var(--SmartThemeBodyColor);
+    margin: 0;
+}
+
+.storymode-character-arc-card .arc-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.storymode-character-arc-card .arc-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.storymode-character-arc-card .arc-field {
+    font-size: 0.9em;
+}
+
+.storymode-character-arc-card .arc-field label {
+    color: var(--SmartThemeEmColor);
+    font-weight: 500;
+    margin-right: 6px;
+}
+
+.storymode-character-arc-card .arc-field span {
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-character-arc-card .arc-turning-points {
+    margin: 4px 0 0 16px;
+    padding: 0;
+    list-style: disc;
+}
+
+.storymode-character-arc-card .arc-turning-points li {
+    margin-bottom: 4px;
+    color: var(--SmartThemeBodyColor);
+}
+
+/* ============================================================================
+   CHARACTER PICKER GRID
+   ============================================================================ */
+
+.storymode-character-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 12px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 8px;
+    background: var(--SmartThemeBlurTintColor);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+}
+
+.storymode-character-pick {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px;
+    background: transparent;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.storymode-character-pick:hover:not(.selected) {
+    border-color: var(--sm-accent);
+    background: var(--sm-accent-subtle);
+}
+
+.storymode-character-pick.selected {
+    border-color: var(--sm-accent);
+    background: var(--sm-accent-subtle);
+    opacity: 0.7;
+    cursor: default;
+}
+
+.storymode-character-pick .char-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--SmartThemeBorderColor);
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--SmartThemeQuoteColor);
+}
+
+.storymode-character-pick .char-name {
+    font-size: 0.75em;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70px;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-character-pick .selected-icon {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: 0.8em;
+    color: var(--sm-accent);
+}
+
+/* ============================================================================
+   SECTION HEADER WITH ACTIONS
+   ============================================================================ */
+
+.storymode-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.storymode-section-header .storymode-section-title {
+    margin: 0;
+}
+
+/* ============================================================================
+   EMPTY STATE
+   ============================================================================ */
+
+.storymode-empty-state {
+    padding: 24px;
+    text-align: center;
+    color: var(--SmartThemeQuoteColor);
+}
+
+.storymode-empty-state p {
+    margin: 0 0 8px 0;
+}
+
+/* ============================================================================
+   ARC EDIT FORM (Modal)
+   ============================================================================ */
+
+.storymode-arc-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 8px 0;
+}
+
+.storymode-arc-edit-form .storymode-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.storymode-arc-edit-form label {
+    font-size: 0.9em;
+    font-weight: 500;
+    color: var(--SmartThemeEmColor);
+}
+
+.storymode-arc-edit-form input,
+.storymode-arc-edit-form textarea {
+    padding: 10px 12px;
+    background: var(--SmartThemeBlurTintColor);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    color: var(--SmartThemeBodyColor);
+    font-size: 0.95em;
+}
+
+.storymode-arc-edit-form textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+/* Adjust editor to make room for wizard panel */
+.storymode-blueprint-editor {
+    position: relative;
+}
+
+.storymode-editor-right-panel {
+    margin-right: 0; /* Toggle overlays scrollbar when collapsed */
+    transition: margin-right 0.3s ease;
+}
+
+/* When wizard is open, add margin for panel width */
+.storymode-blueprint-editor:has(.storymode-wizard-panel.open) .storymode-editor-right-panel {
+    margin-right: 140px;
+}
+
+/* ============================================================================
+   CHARACTERS TAB SUB-TABS
+   ============================================================================ */
+
+.storymode-char-subtabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    margin-bottom: 20px;
+}
+
+.storymode-char-subtab {
+    padding: 10px 16px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--SmartThemeEmColor);
+    font-size: 0.9em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.storymode-char-subtab:hover {
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-char-subtab.active {
+    color: var(--sm-accent);
+    border-bottom-color: var(--sm-accent);
+}
+
+.storymode-char-subtab i {
+    font-size: 0.9em;
+}
+
+.storymode-char-subtab-content {
+    /* Container for tab content */
+}

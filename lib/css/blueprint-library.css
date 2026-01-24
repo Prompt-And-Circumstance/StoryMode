@@ -1018,6 +1018,74 @@
     gap: 6px;
 }
 
+/* Override flex:1 from style.css for library generate-actions buttons */
+#tab_library .storymode-generate-actions {
+    display: inline-flex;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+}
+
+#tab_library .storymode-generate-actions button {
+    flex: none !important;
+    cursor: pointer !important;
+    position: relative;
+    z-index: 2;
+    /* Isolate hover states - prevent sibling interference */
+    isolation: isolate;
+    /* Contain any ::before animations within the button */
+    overflow: hidden;
+}
+
+/* Reset hover transforms to prevent animation bleed */
+#tab_library .storymode-generate-actions button:not(:hover) {
+    transform: none !important;
+    box-shadow: none;
+}
+
+/* Make the Generate Scenario and Add New buttons properly sized and clickable */
+#library_generate_blueprint_btn,
+#library_empty_generate_btn,
+#library_add_new_btn,
+#library_empty_add_new_btn {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+    white-space: nowrap;
+    overflow: visible !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+}
+
+/* Disable the ::before animation on library buttons - it can cause visual bleed */
+#library_add_new_btn::before,
+#library_empty_add_new_btn::before,
+#library_generate_blueprint_btn::before,
+#library_empty_generate_btn::before {
+    display: none !important;
+}
+
+/* Explicit hover states for library buttons - completely independent */
+#library_add_new_btn,
+#library_empty_add_new_btn {
+    transition: filter 0.15s ease;
+}
+
+#library_add_new_btn:hover,
+#library_empty_add_new_btn:hover {
+    filter: brightness(1.2);
+}
+
+#library_generate_blueprint_btn,
+#library_empty_generate_btn {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+#library_generate_blueprint_btn:hover,
+#library_empty_generate_btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px var(--sm-accent-glow, rgba(102, 126, 234, 0.4)) !important;
+}
+
 /* Content area with sidebar */
 #tab_library .storymode-library-content {
     display: flex;

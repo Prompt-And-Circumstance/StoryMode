@@ -40,6 +40,7 @@ Extension-StoryMode/
     │   ├── export.js        # Export to PNG
     │   ├── merger.js        # Blueprint merging
     │   ├── utils.js         # Utility functions
+    │   ├── blank-blueprint.js # Blank blueprint factory, placeholder covers
     │   └── characters/      # Character linking
     │       ├── linker.js    # Link blueprints to ST characters
     │       └── discovery.js # Character discovery
@@ -47,7 +48,10 @@ Extension-StoryMode/
     │   ├── index.js         # Re-exports public API
     │   ├── orchestration.js # Phased generation coordinator
     │   ├── prompts.js       # Prompt builders for each phase
-    │   └── templates.js     # Prompt templates
+    │   ├── templates.js     # Prompt templates
+    │   ├── section-generator.js # Section-at-a-time generation for wizard
+    │   ├── validation.js    # Phase output validation
+    │   └── metrics.js       # Token/timing metrics tracking
     ├── ui/                  # UI rendering
     │   ├── index.js         # Re-exports public API
     │   ├── components.js    # Re-export layer (imports from components/)
@@ -77,6 +81,9 @@ Extension-StoryMode/
     │       ├── cover-action-handlers.js # Cover generation, upload, prompt
     │       ├── cover-generation.js # SD cover generation
     │       ├── cover-gallery.js # Cover gallery navigation
+    │       ├── cover-handlers.js # Cover field/gallery event handlers
+    │       ├── character-handlers.js # Character tab event handlers
+    │       ├── wizard-panel.js  # AI wizard side panel
     │       ├── scene-crud.js    # Scene add/edit/delete/reorder
     │       ├── details-tab.js   # Blueprint details form
     │       ├── scenes-tab.js    # Scene list display
@@ -152,6 +159,7 @@ Note: `lib/ui/components.js` is now a thin re-export layer (~16 lines) for backw
 |------|-------|---------|
 | `blueprint-editor.js` | ~351 | Main orchestrator, wires up submodules |
 | `event-handlers.js` | ~381 | Document-level event delegation |
+| `wizard-panel.js` | ~327 | AI wizard side panel for section generation |
 | `details-tab.js` | ~318 | Blueprint details form fields |
 | `cover-action-handlers.js` | ~290 | Cover generation, upload, prompt management |
 | `editor-action-handlers.js` | ~237 | Play, export, revert, view JSON handlers |
@@ -161,10 +169,23 @@ Note: `lib/ui/components.js` is now a thin re-export layer (~16 lines) for backw
 | `panels.js` | ~131 | Left panel (info) and right panel (tabs) renderers |
 | `characters-tab.js` | ~122 | Character linking tab |
 | `cover-generation.js` | ~111 | SD cover image generation |
+| `character-handlers.js` | ~85 | Character tab event handlers |
+| `cover-handlers.js` | ~79 | Cover field and gallery event handlers |
 | `state.js` | ~74 | Getter/setter state management |
 | `scenes-tab.js` | ~63 | Scene list display |
 
 The blueprint editor uses **dependency injection** for refresh functions to avoid circular imports between modules.
+
+### Generation Modules (lib/generation/)
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `templates.js` | ~973 | LLM prompt templates |
+| `orchestration.js` | ~650 | Phased generation coordinator |
+| `prompts.js` | ~200 | Prompt builders for each phase |
+| `section-generator.js` | ~122 | Section-at-a-time generation for wizard panel |
+| `metrics.js` | ~63 | Token counting, timing, performance tracking |
+| `validation.js` | ~56 | Phase result and output validation |
 
 ## Module Dependencies
 
@@ -184,6 +205,7 @@ lib/blueprint/
 ├── manifest.js (imports file-api)
 ├── file-storage.js (imports file-api, manifest, storage)
 ├── library-adapter.js (imports file-storage, manifest)
+├── blank-blueprint.js (imports utils, normalization)
 ├── module.js (imports most core + generation modules)
 └── integration.js (imports library-adapter, storage, module, migration)
 
@@ -208,17 +230,28 @@ lib/editor/
 ├── blueprint-editor.js (orchestrator - wires up all submodules)
 └── blueprint-editor/
     ├── state.js (no deps - pure getter/setter state)
-    ├── panels.js (imports state, details-tab, scenes-tab, cover-tab, characters-tab)
-    ├── event-handlers.js (imports state, cover-action-handlers, editor-action-handlers, scene-crud, cover-gallery)
+    ├── panels.js (imports state, details-tab, scenes-tab, cover-tab, characters-tab, wizard-panel)
+    ├── event-handlers.js (imports state, cover-action-handlers, editor-action-handlers, scene-crud, cover-gallery, character-handlers, cover-handlers, wizard-panel)
     ├── editor-action-handlers.js (imports state, blueprint/module)
     ├── cover-action-handlers.js (imports state, cover-generation, cover-gallery, blueprint/storage)
     ├── cover-generation.js (imports state, blueprint/module, blueprint/storage)
     ├── cover-gallery.js (imports state, blueprint/utils)
+    ├── cover-handlers.js (imports state, blueprint/utils, blueprint/storage, cover-gallery)
+    ├── character-handlers.js (imports characters-tab)
+    ├── wizard-panel.js (imports state, blueprint/utils, blueprint/blank-blueprint, core/state-manager, event-handlers, generation/orchestration)
     ├── scene-crud.js (imports state, blueprint/utils)
     ├── details-tab.js (imports state, core/state-manager)
     ├── scenes-tab.js (imports state)
     ├── cover-tab.js (imports state, cover-gallery)
     └── characters-tab.js (imports state, blueprint/characters/*)
+
+lib/generation/
+├── templates.js (no internal deps)
+├── prompts.js (imports templates)
+├── validation.js (no internal deps)
+├── metrics.js (imports SillyTavern tokenizers)
+├── section-generator.js (imports core/constants, prompts, validation, orchestration, debug/mocks)
+└── orchestration.js (imports core/*, prompts, templates, validation, metrics, blueprint/utils)
 
 lib/dialog/
 ├── wizard.js (imports generation/orchestration, ui/components)
@@ -318,7 +351,7 @@ const url = new URL('../../data/author_styles.json', import.meta.url);
 | Blueprint PNG encode/decode | `lib/blueprint/storage.js` | `png/*.js` |
 | Blueprint file storage | `lib/blueprint/file-storage.js` | `file-api.js`, `manifest.js` |
 | Blueprint library | `lib/blueprint/library-adapter.js` | `integration.js`, `manifest.js` |
-| Blueprint editor | `lib/editor/blueprint-editor.js` | `blueprint-editor/*.js` (12 submodules) |
+| Blueprint editor | `lib/editor/blueprint-editor.js` | `blueprint-editor/*.js` (16 submodules) |
 | Settings dialog | `lib/dialog/settings-handlers.js` | `lib/ui/components/*.js` |
 | Settings tabs | `lib/ui/components/settings-tabs.js` | `blueprint-settings.js` |
 | Main panel | `lib/ui/components/main-panel.js` | `helpers.js` |
@@ -327,4 +360,7 @@ const url = new URL('../../data/author_styles.json', import.meta.url);
 | Controller panel | `lib/ui/controller-panel.js` | `wand-menu.js` |
 | Scenario Mode | `lib/scenario/injection.js` | `beats.js`, `blueprint/module.js` |
 | Scene images | `lib/scene/image-generator.js` | `image-prompt.js`, `image-storage.js` |
+| Blank blueprint factory | `lib/blueprint/blank-blueprint.js` | - |
+| Wizard panel (AI assist) | `lib/editor/blueprint-editor/wizard-panel.js` | `section-generator.js` |
+| Section generation | `lib/generation/section-generator.js` | `validation.js`, `metrics.js` |
 | Debug mocks | `lib/debug/mocks.js` | - |

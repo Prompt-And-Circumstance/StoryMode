@@ -17,16 +17,17 @@
 
 ## Overview
 
-**Story Mode** is an extension for SillyTavern that provides a stronger narrative experience while chatting with LLMs. Guide your AI through structured stories with genre conventions, author styles, and narrative pacing—or use it simply to add literary flair to any conversation.
-
+**Story Mode** is an extension for SillyTavern that provides tools for a stronger narrative experience while chatting with LLMs. 
 ## Key Features
 
 ### 📖 Story Style
-Choose from **43 pre-defined story genres** spanning Mystery, Horror, Fantasy, Sci-Fi, Romance, Action, Drama, and more. Each story type includes:
+Choose from **43 pre-defined story genres** - Mystery, Horror, Fantasy, Sci-Fi, Romance, Action, Drama, and more. Each story type includes:
 - Thematic hooks and tone guidance
 - Genre-appropriate tropes and literary devices
 - Pacing and POV suggestions
 - Three-act structure templates
+
+These can be used to provide a loose strucutre to your rolepay.
 
 ### ✍️ Author Style
 Emulate the writing style of popular authors. The LLM adopts their voice, prose rhythm, description techniques, and dialogue patterns. Includes optional NSFW/mature content guidance tailored to each author's style.
@@ -36,13 +37,12 @@ Combine any story genre with any author style:
 - Tell a **Spy Thriller** in the style of Jane Austen
 - Tell a **Romance** in the style of Hemingway
 - Tell **Cosmic Horror** in the style of Tolkien
-- Or use one without the other
 
 ### 🎬 Narrative Arc
 Set your story to follow a loose arc over any number of messages (5–50+). The LLM receives phase-specific guidance as it progresses through:
 - **Setup** (~33%): Establish world, characters, and conflict
 - **Escalation** (~33%): Raise stakes and deepen challenges
-- **Resolution** (~33%): Climax and conclusion
+- **Resolution** (~33%): Climax and conclusion.
 
 ### 🗺️ Scenario Blueprints
 Tell structured, multi-scene stories with:
@@ -54,9 +54,10 @@ Tell structured, multi-scene stories with:
 ### 🖼️ Scenario Library
 Store your scenario blueprints as **PNG images** with embedded metadata. Export them as files and share with others—import them right back into any browser.
 
-### 📜 Epilogue & Summarization
+### 📜 End of Chat tools
 - **Epilogue**: Automatically generate a story epilogue when the arc completes
 - **Summarization**: Generate a summary of any chat at any time
+- **What's Next**: The LLM will generate ideas for your next scenario.
 
 ---
 
@@ -79,6 +80,7 @@ Store your scenario blueprints as **PNG images** with embedded metadata. Export 
 The Scenario Blueprint system is a partial implementation of the **StoryVerse** approach to narrative roleplaying:
 [*StoryVerse: Towards Co-authoring Dynamic Plot with LLM-based Character Simulation via Narrative Planning*](https://dl.acm.org/doi/10.1145/3649921.3656987)
 (Wang et al., 2024, Autodesk Research)
+
 
 ---
 
@@ -103,17 +105,12 @@ See [CHANGELOG.md](./CHANGELOG.md) for detailed release notes.
 ## Planned Features (v2)
 
 ### Advanced Features
-- **World Lore Integration**: Automatically inject relevant world-building details and lore entries based on current scene and narrative context
+- **World Lore Integration**: Better incorporation of world-building details and lore entries into scenario generation
 - **World State Tracking**: Track and maintain evolving world states, locations, and ongoing events across scenes and story arcs
-- **Adaptive Pacing**: LLM-suggested phase transitions based on narrative momentum
-- **Story Analytics**: Visualize arc progression, beat completion rates, and scene transitions
-- **Custom Signals**: User-defined story signals for specialized narrative control
-- **Lorebook Integration**: Auto-generate lorebook entries from scene summaries and beat completions
+- **Lorebook Geneation**: Auto-generate lorebook entries from scene summaries and beat completions
 
 ---
 
 ## License
 
-This extension is part of the SillyTavern ecosystem.
-
-Built for SillyTavern with ❤️
+MIT

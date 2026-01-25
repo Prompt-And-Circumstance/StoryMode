@@ -1136,6 +1136,12 @@ function onChatChanged() {
     // Reset flags
     setRegenerating(false);
     setLoadingChat(true); // Set flag to prevent increment during chat load
+
+    // Debug: Log blueprint state on chat change
+    const blueprintState = BlueprintModule.getBlueprintState();
+    const summaryCount = Object.keys(blueprintState?.sceneSummaries || {}).length;
+    console.debug('[Story Mode] Chat changed - blueprintState has', summaryCount, 'summaries, useBlueprint:', blueprintState?.useBlueprint);
+
     // Update UI
     updateStoryPrompt();
     updateStatusDisplay();
@@ -1145,6 +1151,9 @@ function onChatChanged() {
     // Reset the loading flag after a short delay to allow chat to fully load
     setTimeout(() => {
         setLoadingChat(false);
+        // Refresh controller panel again after chat is fully loaded
+        // This ensures scene images and other metadata are displayed correctly
+        updateControllerPanel();
         console.debug('[Story Mode] Chat loading complete');
     }, 1000);
 }

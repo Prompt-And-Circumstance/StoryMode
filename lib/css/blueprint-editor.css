@@ -16,6 +16,12 @@
    EDITOR CONTAINER & TITLE BAR
    ============================================================================ */
 
+/* Hide scrollbar on popup containing blueprint editor */
+.popup:has(.storymode-blueprint-editor-container) .popup-content,
+.popup:has(.storymode-blueprint-editor-container) .popup-body {
+    overflow: hidden;
+}
+
 /* Outer container wrapping everything */
 .storymode-blueprint-editor-container {
     display: flex;
@@ -53,12 +59,71 @@
 
 .storymode-editor-title-actions {
     display: flex;
-    gap: 8px;
+    gap: 12px;
 }
 
 .storymode-editor-title-actions .menu_button {
     padding: 6px 12px;
     font-size: 0.85em;
+}
+
+.storymode-editor-title-actions .menu_button i {
+    margin-right: 6px;
+}
+
+/* Tab spacer to push info toggle to right */
+.storymode-editor-tabs .storymode-tab-spacer {
+    flex: 1;
+}
+
+/* Info toggle button on right side of tabs */
+.storymode-info-toggle {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    background: transparent;
+    color: var(--SmartThemeEmColor);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.storymode-info-toggle:hover {
+    background: var(--sm-accent-subtle);
+    color: var(--sm-accent);
+    border-color: var(--sm-accent);
+}
+
+.storymode-info-toggle.active {
+    background: var(--sm-accent);
+    color: white;
+    border-color: var(--sm-accent);
+}
+
+/* Metadata row in Creator Notes */
+.storymode-metadata-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--SmartThemeBorderColor);
+    font-size: 0.8em;
+    color: var(--SmartThemeEmColor);
+}
+
+.storymode-metadata-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.storymode-metadata-item i {
+    opacity: 0.7;
 }
 
 /* ============================================================================
@@ -74,15 +139,58 @@
     background: var(--SmartThemeBlurTintColor);
 }
 
-/* Left panel (fixed width) */
+/* Left panel - collapsible sidebar */
 .storymode-editor-left-panel {
-    width: 260px;
-    min-width: 260px;
-    background: var(--SmartThemeBlurTintColor);
+    width: 220px;
+    min-width: 220px;
+    /* Subtle contrast background - darkens slightly for better visibility in both light/dark themes */
+    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, black 5%);
     border-right: 1px solid var(--SmartThemeBorderColor);
     display: flex;
     flex-direction: column;
     overflow-y: auto;
+    transition: width 0.25s ease, min-width 0.25s ease, opacity 0.25s ease;
+}
+
+.storymode-editor-left-panel.collapsed {
+    width: 0;
+    min-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    border-right: none;
+}
+
+/* Toggle button for collapsing sidebar - mirrors wizard toggle style */
+.storymode-sidebar-toggle {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 48px;
+    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, black 5%);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--sm-accent);
+    z-index: 10;
+    transition: background 0.2s ease;
+}
+
+.storymode-sidebar-toggle:hover {
+    background: var(--sm-accent-subtle);
+}
+
+.storymode-editor-left-panel.collapsed + .storymode-editor-right-panel .storymode-sidebar-toggle {
+    left: 0;
+}
+
+.storymode-editor-left-panel:not(.collapsed) + .storymode-editor-right-panel .storymode-sidebar-toggle {
+    left: 220px;
 }
 
 /* Play button container in left panel */
@@ -102,13 +210,14 @@
     font-size: 1.2em;
 }
 
-/* Right panel (flexible) */
+/* Right panel (flexible) - inset shadow for depth */
 .storymode-editor-right-panel {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     background: var(--SmartThemeBlurTintColor);
+    box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.08);
 }
 
 /* Editor header (contains tabs) */
@@ -176,14 +285,17 @@
     /* Hide the "Blueprint Info" heading for cleaner look */
 }
 
-/* Blueprint title - visible override */
+/* Blueprint title - centered, clean */
 .storymode-blueprint-title {
     display: block !important;
-    margin: 0 0 4px 14px;
-    font-size: 1.1em;
+    margin: 0 0 12px 0;
+    padding: 0 10px;
+    font-size: 0.95em;
     font-weight: 600;
-    color: var(--SmartThemeEmColor);
+    color: var(--SmartThemeBodyColor);
     line-height: 1.3;
+    text-align: center;
+    border: none !important;
 }
 
 /* Individual info field */
@@ -603,8 +715,10 @@
 
 /* Thumbnail carousel container - converted to grid layout for two-column layout */
 .storymode-cover-carousel {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: flex-start;
     gap: 12px;
     overflow-y: auto;
     max-height: 450px;
@@ -735,7 +849,8 @@
     top: 0;
     bottom: 0;
     width: 280px;
-    background: var(--SmartThemeBlurTintColor);
+    /* Subtle contrast background - darkens slightly for better visibility in both light/dark themes */
+    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, black 5%);
     border-left: 1px solid var(--SmartThemeBorderColor);
     transition: transform 0.3s ease;
     z-index: 10;
@@ -754,7 +869,7 @@
     transform: translateY(-50%);
     width: 32px;
     height: 48px;
-    background: var(--SmartThemeBlurTintColor);
+    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, black 5%);
     border: 1px solid var(--SmartThemeBorderColor);
     border-right: none;
     border-radius: 8px 0 0 8px;
@@ -946,16 +1061,19 @@
 
 .storymode-character-arc-card .arc-field {
     font-size: 0.9em;
+    text-align: left;
 }
 
 .storymode-character-arc-card .arc-field label {
     color: var(--SmartThemeEmColor);
     font-weight: 500;
     margin-right: 6px;
+    display: block;
 }
 
 .storymode-character-arc-card .arc-field span {
     color: var(--SmartThemeBodyColor);
+    display: block;
 }
 
 .storymode-character-arc-card .arc-turning-points {
@@ -1165,4 +1283,34 @@
 
 .storymode-char-subtab-content {
     /* Container for tab content */
+}
+
+/* ============================================================================
+   TEXT RENDERING IMPROVEMENTS
+   Ensure crisp text in all themes, especially light themes
+   ============================================================================ */
+
+/* Apply crisp text rendering to all editor text */
+.storymode-blueprint-editor-container {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* Ensure labels and values have solid backgrounds for text clarity */
+.storymode-editor-content label,
+.storymode-editor-content input,
+.storymode-editor-content textarea,
+.storymode-editor-content select,
+.storymode-wizard-content label,
+.storymode-wizard-content select,
+.storymode-wizard-content textarea {
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Ensure left panel text is crisp */
+.storymode-editor-left-panel,
+.storymode-wizard-panel {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }

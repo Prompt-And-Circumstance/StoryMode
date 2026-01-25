@@ -59,6 +59,9 @@ Store your scenario blueprints as **PNG images** with embedded metadata. Export 
 - **Summarization**: Generate a summary of any chat at any time
 - **What's Next**: The LLM will generate ideas for your next scenario.
 
+### 🎨 Theme Integration
+Integrates seamlessly with SillyTavern theming, including specific support for **Rivelle's Moonlight Echoes** and **SpicyMarinara's RPG Companion**.
+
 ---
 
 ## Quick Start
@@ -80,6 +83,12 @@ Store your scenario blueprints as **PNG images** with embedded metadata. Export 
 The Scenario Blueprint system is a partial implementation of the **StoryVerse** approach to narrative roleplaying:
 [*StoryVerse: Towards Co-authoring Dynamic Plot with LLM-based Character Simulation via Narrative Planning*](https://dl.acm.org/doi/10.1145/3649921.3656987)
 (Wang et al., 2024, Autodesk Research)
+
+**Inspiration (and some code) borrowed from:**
+- [Moonlight Echoes](https://github.com/RivelleDays/SillyTavern-MoonlitEchoesTheme) by Rivelle
+- [RPG Companion](https://github.com/SpicyMarinara/rpg-companion-sillytavern) by SpicyMarinara and others
+- [Auto Gen Image](https://github.com/wickedcode01/st-image-auto-generation/blob/main/README_EN.md) by wickedcode01
+- and of course SillyTavern!
 
 
 ---

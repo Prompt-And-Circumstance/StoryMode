@@ -221,10 +221,10 @@
 
 .storymode-library-grid {
     display: grid;
-    gap: 16px;
+    gap: 12px;
     padding: 8px 0;
-    /* Default: 4 columns for portrait cards */
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    /* Default: compact portrait cards (reduced 30% from 160px) */
+    grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
 }
 
 /* List view mode */
@@ -232,17 +232,17 @@
     grid-template-columns: 1fr;
 }
 
-/* Grid sizes (for future size toggle) */
+/* Grid sizes (for future size toggle) - all reduced 30% */
 .storymode-library-grid.size-small {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
 }
 
 .storymode-library-grid.size-medium {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(126px, 1fr));
 }
 
 .storymode-library-grid.size-large {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(154px, 1fr));
 }
 
 /* ============================================================================
@@ -270,11 +270,11 @@
     font-family: 'Font Awesome 6 Free';
     font-weight: 900;
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 6px;
+    right: 6px;
     color: #ffd700;
-    font-size: 14px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    font-size: 11px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
     z-index: 1;
 }
 
@@ -313,15 +313,15 @@
 }
 
 .storymode-blueprint-card-content {
-    padding: 12px;
+    padding: 8px;
 }
 
 .storymode-blueprint-card-title {
-    font-size: 14px;
+    font-size: 11px;
     font-weight: 600;
     color: var(--SmartThemeBodyColor);
     line-height: 1.3;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -329,9 +329,9 @@
 }
 
 .storymode-blueprint-card-meta {
-    font-size: 12px;
+    font-size: 10px;
     color: var(--SmartThemeEmColor);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .storymode-blueprint-card-meta-divider {
@@ -340,19 +340,19 @@
 
 .storymode-blueprint-card-actions {
     display: flex;
-    gap: 4px;
+    gap: 3px;
 }
 
 .storymode-blueprint-card-action-btn {
     flex: 1;
-    padding: 6px;
+    padding: 4px;
     background: var(--black30a);
     border: 1px solid var(--SmartThemeBorderColor);
-    border-radius: 4px;
+    border-radius: 3px;
     color: var(--SmartThemeBodyColor);
     cursor: pointer;
     transition: all 0.2s ease;
-    font-size: 12px;
+    font-size: 10px;
 }
 
 .storymode-blueprint-card-action-btn:hover {
@@ -934,7 +934,7 @@
     .storymode-blueprint-grid.size-small,
     .storymode-blueprint-grid.size-medium,
     .storymode-blueprint-grid.size-large {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     }
 }
 
@@ -1102,23 +1102,9 @@
     overflow: auto;
 }
 
-/* Folder Sidebar - Collapsible on hover */
+/* Folder Sidebar - Hidden (like wizard) */
 .storymode-library-sidebar {
-    width: 48px;
-    min-width: 48px;
-    flex-shrink: 0;
-    overflow: hidden;
-    min-height: 0;
-    transition: width 0.25s ease, min-width 0.25s ease;
-    background: var(--black30a);
-    border-radius: var(--sm-radius-sm);
-    border: 1px solid var(--SmartThemeBorderColor);
-}
-
-.storymode-library-sidebar:hover {
-    width: 200px;
-    min-width: 200px;
-    overflow-y: auto;
+    display: none;
 }
 
 .storymode-folder-list {

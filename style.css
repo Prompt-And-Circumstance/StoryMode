@@ -338,16 +338,9 @@
     position: relative;
 }
 
-/* Subtle accent line on sidebar */
+/* Subtle accent line on sidebar - removed for cleaner look */
 .storymode-sidebar::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 3px;
-    background: var(--sm-accent);
-    opacity: 0.6;
+    display: none;
 }
 
 .storymode-sidebar-section {
@@ -737,7 +730,7 @@
     padding: 16px;
     background: var(--black30a);
     border-radius: var(--sm-radius-sm);
-    border-left: 3px solid var(--sm-warm);
+    text-align: left;
     overflow-y: auto;
     max-height: 240px;
 }
@@ -1259,6 +1252,14 @@
     background: var(--sm-accent-subtle);
     box-shadow: 0 2px 8px var(--sm-accent-glow);
     margin-bottom: 0px;
+}
+
+/* Current scene card in overview - simpler block layout */
+.storymode-card .storymode-scene-card.current {
+    display: block;
+    padding: 12px 16px;
+    border: none;
+    border-left: 3px solid var(--sm-accent);
 }
 
 .storymode-scene-card.dragging {
@@ -2237,7 +2238,7 @@
 
     .storymode-cover-preview {
         width: 100%;
-        max-width: 350px;
+        max-width: 245px;
         margin: 0 auto;
     }
 
@@ -2429,6 +2430,7 @@
     color: var(--SmartThemeBodyColor);
     max-height: 400px;
     overflow-y: auto;
+    text-align: left;
 }
 
 /* Scenes subtab list */
@@ -2681,16 +2683,9 @@
     padding-top: 8px;
 }
 
-/* Progress fill line */
+/* Progress fill line - hidden */
 .storymode-progress-fill {
-    position: absolute;
-    left: 16px;
-    top: 24px;
-    height: 4px;
-    background: linear-gradient(90deg, var(--sm-warm, #d4a574), var(--SmartThemeEmColor));
-    border-radius: 2px;
-    z-index: 1;
-    transition: width 0.3s ease;
+    display: none;
 }
 
 /* Scene markers */
@@ -2842,7 +2837,7 @@
 .storymode-cover-preview {
     position: relative;
     flex: 0 0 auto;
-    width: 350px;
+    width: 245px;
     aspect-ratio: 3/4;
     background: var(--black30a);
     border-radius: 8px;
@@ -2996,7 +2991,9 @@
 /* Wizard Modal Container - Remove hardcoded gradients, use ST surfaces */
 .storymode-wizard-modal {
     background: var(--SmartThemeBlurTintColor) !important;
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(8px);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     border-radius: 12px;
     padding: 10px;
 }
@@ -3017,9 +3014,10 @@
     align-items: flex-start;
     margin-bottom: 2rem;
     padding: 1.5rem;
-    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 80%, black) !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 90%, black 10%) !important;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    -webkit-font-smoothing: antialiased;
     border: 1px solid var(--SmartThemeBorderColor) !important;
     border-radius: 16px;
     box-shadow: none !important;
@@ -3539,24 +3537,468 @@ details.storymode-advanced-options[open] summary {
     padding: 14px;
 }
 
-/* Docked Drawer Styles */
-#storymode-controller-drawer .storymode-drawer-content-inner {
-    padding: 10px;
-    height: calc(100% - 50px);
-    overflow-y: auto;
+/* ============================================================================
+   DOCKED SIDEBAR PANEL
+   Fixed sidebar similar to RPG Companion for consistent UX
+   ============================================================================ */
+
+/* ----------------------------------------
+   SIDEBAR THEME VARIABLES (Default: Story Mode theme)
+   ---------------------------------------- */
+.storymode-sidebar {
+    /* Default Story Mode theme - refined teal */
+    --sm-sidebar-bg: var(--SmartThemeBlurTintColor, rgba(26, 26, 46, 0.95));
+    --sm-sidebar-accent: var(--sm-accent, #4db6ac);
+    --sm-sidebar-accent-hover: var(--sm-accent-hover, #5fcfc4);
+    --sm-sidebar-text: var(--SmartThemeBodyColor, #eaeaea);
+    --sm-sidebar-text-muted: var(--SmartThemeQuoteColor, #aaa);
+    --sm-sidebar-border: var(--sm-accent, #4db6ac);
+    --sm-sidebar-shadow: rgba(0, 0, 0, 0.5);
+    --sm-sidebar-header-bg: var(--black50a, rgba(0, 0, 0, 0.5));
+    --sm-sidebar-btn-bg: var(--black30a, rgba(0, 0, 0, 0.3));
 }
 
-#storymode-controller-drawer .storymode-debug-section {
+/* Light Theme - solid backgrounds, no blur, crisp text */
+.storymode-sidebar[data-theme="light"] {
+    --sm-sidebar-bg: #fafafc;
+    --sm-sidebar-accent: #0d9488;
+    --sm-sidebar-accent-hover: #14b8a6;
+    --sm-sidebar-text: #1f2937;
+    --sm-sidebar-text-muted: #6b7280;
+    --sm-sidebar-border: #d1d5db;
+    --sm-sidebar-shadow: rgba(0, 0, 0, 0.1);
+    --sm-sidebar-header-bg: #f3f4f6;
+    --sm-sidebar-btn-bg: #e5e7eb;
+    background: #fafafc !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* Light theme - ensure all child elements have crisp solid backgrounds */
+.storymode-sidebar[data-theme="light"] .storymode-sidebar-header,
+.storymode-sidebar[data-theme="light"] .storymode-sidebar-theme-row {
+    background: #f3f4f6 !important;
+    backdrop-filter: none !important;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-sidebar-content {
+    background: #fafafc !important;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-collapse-toggle {
+    background: #e5e7eb !important;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-debug-section {
+    border-bottom-color: #e5e7eb !important;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-debug-bar {
+    background: #e5e7eb !important;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-ooc-panel {
+    background: #f9fafb !important;
+    border-color: #e5e7eb !important;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-ooc-textarea {
+    background: #ffffff !important;
+    border-color: #d1d5db !important;
+    color: #1f2937 !important;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-mode-btn {
+    background: #e5e7eb !important;
+    border-color: #d1d5db !important;
+    color: #4b5563 !important;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-mode-btn.active {
+    background: #0d9488 !important;
+    border-color: #0d9488 !important;
+    color: white !important;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-small-btn {
+    background: #e5e7eb !important;
+    border-color: #d1d5db !important;
+    color: #374151 !important;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-small-btn:hover {
+    background: #0d9488 !important;
+    border-color: #0d9488 !important;
+    color: white !important;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-debug-value,
+.storymode-sidebar[data-theme="light"] .storymode-debug-meta {
+    color: #374151 !important;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-phase-badge {
+    background: rgba(13, 148, 136, 0.15) !important;
+    color: #0d9488 !important;
+}
+
+/* Dark Theme */
+.storymode-sidebar[data-theme="dark"] {
+    --sm-sidebar-bg: rgba(17, 17, 17, 0.98);
+    --sm-sidebar-accent: #6366f1;
+    --sm-sidebar-accent-hover: #818cf8;
+    --sm-sidebar-text: #e5e7eb;
+    --sm-sidebar-text-muted: #9ca3af;
+    --sm-sidebar-border: #6366f1;
+    --sm-sidebar-shadow: rgba(0, 0, 0, 0.7);
+    --sm-sidebar-header-bg: rgba(31, 31, 31, 0.95);
+    --sm-sidebar-btn-bg: rgba(55, 55, 55, 0.8);
+}
+
+/* RPG Companion Theme - inherits from RPG Companion's current theme */
+.storymode-sidebar[data-theme="rpg-companion"] {
+    --sm-sidebar-bg: var(--rpg-bg, rgba(26, 26, 46, 0.9));
+    --sm-sidebar-accent: var(--rpg-highlight, #e94560);
+    --sm-sidebar-accent-hover: var(--rpg-highlight, #e94560);
+    --sm-sidebar-text: var(--rpg-text, #eaeaea);
+    --sm-sidebar-text-muted: var(--rpg-text, #eaeaea);
+    --sm-sidebar-border: var(--rpg-border, #4a7ba7);
+    --sm-sidebar-shadow: var(--rpg-shadow, rgba(0, 0, 0, 0.5));
+    --sm-sidebar-header-bg: var(--rpg-accent, rgba(22, 33, 62, 0.9));
+    --sm-sidebar-btn-bg: var(--rpg-accent, rgba(22, 33, 62, 0.9));
+}
+
+/* Ensure chat stays centered when sidebar is visible */
+body:has(.storymode-sidebar.storymode-position-right:not(.storymode-collapsed)) #sheld {
+    margin: auto !important;
+}
+
+body:has(.storymode-sidebar.storymode-position-left:not(.storymode-collapsed)) #sheld {
+    margin: auto !important;
+}
+
+/* Main Sidebar Panel - Fixed position */
+.storymode-sidebar {
+    position: fixed;
+    top: var(--topBarBlockSize);
+    bottom: 0;
+    background: var(--sm-sidebar-bg);
+    box-shadow: 0 0 20px var(--sm-sidebar-shadow);
+    font-family: inherit;
+    box-sizing: border-box;
+    z-index: 1000;
+    color: var(--sm-sidebar-text);
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+    transition: width 0.3s ease, left 0.3s ease, right 0.3s ease, transform 0.3s ease, background 0.3s ease;
+}
+
+/* Right Position (Default) - Panel fills right margin space */
+.storymode-sidebar.storymode-position-right {
+    right: 0;
+    width: calc(50vw - var(--sheldWidth) / 2);
+    max-width: 320px;
+    min-width: 260px;
+    border-left: 2px solid var(--sm-sidebar-border);
+    box-shadow: -5px 0 20px var(--sm-sidebar-shadow);
+}
+
+/* Left Position - Panel fills left margin space */
+.storymode-sidebar.storymode-position-left {
+    left: 0;
+    width: calc(50vw - var(--sheldWidth) / 2);
+    max-width: 320px;
+    min-width: 240px;
+    border-right: 2px solid var(--sm-sidebar-border);
+    box-shadow: 5px 0 20px var(--sm-sidebar-shadow);
+}
+
+/* Collapsed state */
+.storymode-sidebar.storymode-collapsed {
+    max-width: 2.5rem !important;
+    min-width: 2.5rem !important;
+    width: 2.5rem !important;
+}
+
+.storymode-sidebar.storymode-collapsed.storymode-position-right {
+    right: 0 !important;
+}
+
+.storymode-sidebar.storymode-collapsed.storymode-position-left {
+    left: 0 !important;
+}
+
+.storymode-sidebar.storymode-collapsed .storymode-sidebar-container {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Collapse/Expand Toggle Button */
+.storymode-collapse-toggle {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1.875rem;
+    height: 5rem;
+    background: var(--sm-sidebar-btn-bg);
+    border: 2px solid var(--sm-sidebar-border);
+    color: var(--sm-sidebar-accent);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    box-shadow: 0 0 10px var(--sm-sidebar-shadow);
+    pointer-events: auto;
+}
+
+.storymode-collapse-toggle:hover {
+    background: var(--sm-sidebar-accent);
+    color: white;
+    box-shadow: 0 0 15px var(--sm-sidebar-shadow);
+}
+
+/* Position collapse button on the left side for right panel */
+.storymode-sidebar.storymode-position-right .storymode-collapse-toggle {
+    left: -2rem;
+    border-radius: 0.5em 0 0 0.5em;
+}
+
+/* Position collapse button on the right side for left panel */
+.storymode-sidebar.storymode-position-left .storymode-collapse-toggle {
+    right: -2rem;
+    border-radius: 0 0.5em 0.5em 0;
+}
+
+/* Sidebar Container - holds header and content */
+.storymode-sidebar-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: opacity 0.3s ease;
+}
+
+/* Sidebar Header */
+.storymode-sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    background: var(--sm-sidebar-header-bg);
+    border-bottom: none;
+    flex-shrink: 0;
+}
+
+.storymode-sidebar-header h3 {
+    margin: 0;
+    padding: 0;
+    font-size: 0.95em;
+    font-weight: 600;
+    color: var(--sm-sidebar-text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none !important;
+    border-left: none !important;
+}
+
+
+.storymode-sidebar-header-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.storymode-sidebar-action-btn {
+    background: var(--sm-sidebar-btn-bg);
+    border: 1px solid var(--sm-sidebar-border);
+    color: var(--sm-sidebar-text);
+    cursor: pointer;
+    border-radius: 4px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.storymode-sidebar-action-btn:hover {
+    background: var(--sm-sidebar-accent);
+    border-color: var(--sm-sidebar-accent);
+    color: white;
+}
+
+/* Sidebar Content */
+.storymode-sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px;
+    color: var(--sm-sidebar-text);
+}
+
+.storymode-sidebar-content .storymode-debug-section {
     margin-bottom: 12px;
-    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    border-bottom: 1px solid var(--sm-sidebar-border);
     padding-bottom: 12px;
 }
 
-#storymode-controller-drawer .storymode-debug-section:last-child {
+.storymode-sidebar-content .storymode-debug-section:last-child {
     border-bottom: none;
 }
 
-/* Docked Header Styles */
+/* Theme-aware label colors in sidebar */
+.storymode-sidebar .storymode-debug-label {
+    color: var(--sm-sidebar-accent);
+}
+
+.storymode-sidebar .storymode-debug-value {
+    color: var(--sm-sidebar-text);
+}
+
+.storymode-sidebar .storymode-debug-meta {
+    color: var(--sm-sidebar-text-muted);
+}
+
+/* Mobile responsiveness - hide sidebar on small screens */
+@media (max-width: 1000px) {
+    .storymode-sidebar {
+        display: none;
+    }
+}
+
+/* ----------------------------------------
+   RPG COMPANION COEXISTENCE
+   When RPG Companion is installed, position Story Mode to the left of it
+   ---------------------------------------- */
+
+/*
+ * RPG Companion uses class .rpg-collapsed when collapsed (width: 2.5rem)
+ * When open, width is ~280px (varies by viewport)
+ *
+ * Story Mode sits to the LEFT of RPG Companion, so both panels are visible
+ */
+
+/* Base: Lower z-index so RPG Companion stays on top layer */
+body:has(#rpg-companion-panel) .storymode-sidebar {
+    z-index: 999;
+}
+
+/* Move our collapse toggle higher to avoid overlap with RPG's toggle */
+body:has(#rpg-companion-panel) .storymode-sidebar .storymode-collapse-toggle {
+    top: 25%;
+}
+
+/* RIGHT SIDE POSITIONING */
+/* RPG Companion is OPEN - offset Story Mode by RPG's width (~321px) */
+body:has(#rpg-companion-panel:not(.rpg-collapsed)) .storymode-sidebar.storymode-position-right {
+    right: 321px !important;
+}
+
+/* RPG Companion is COLLAPSED - offset by collapsed width (~77px) */
+body:has(#rpg-companion-panel.rpg-collapsed) .storymode-sidebar.storymode-position-right {
+    right: 77px !important;
+}
+
+/* LEFT SIDE POSITIONING (if both use left) */
+body:has(#rpg-companion-panel.rpg-position-left:not(.rpg-collapsed)) .storymode-sidebar.storymode-position-left {
+    left: 321px !important;
+}
+
+body:has(#rpg-companion-panel.rpg-position-left.rpg-collapsed) .storymode-sidebar.storymode-position-left {
+    left: 77px !important;
+}
+
+/* JavaScript-set class fallback for browsers without :has() support */
+body.rpg-companion-active .storymode-sidebar.storymode-position-right {
+    right: 321px !important;
+}
+
+body.rpg-companion-collapsed .storymode-sidebar.storymode-position-right {
+    right: 77px !important;
+}
+
+/* Theme Selector in Header */
+.storymode-theme-selector {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.storymode-theme-btn {
+    background: var(--sm-sidebar-btn-bg);
+    border: 1px solid transparent;
+    color: var(--sm-sidebar-text-muted);
+    cursor: pointer;
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 0.75em;
+    padding: 0;
+}
+
+.storymode-theme-btn:hover {
+    color: var(--sm-sidebar-accent);
+    border-color: var(--sm-sidebar-accent);
+}
+
+.storymode-theme-btn.active {
+    background: var(--sm-sidebar-accent);
+    color: white;
+    border-color: var(--sm-sidebar-accent);
+}
+
+.storymode-theme-btn[data-theme="storymode"] i { color: var(--sm-accent, #4db6ac); }
+.storymode-theme-btn[data-theme="light"] i { color: #f59e0b; }
+.storymode-theme-btn[data-theme="dark"] i { color: #6366f1; }
+.storymode-theme-btn[data-theme="rpg-companion"] i { color: #e94560; }
+
+.storymode-theme-btn.active i {
+    color: white !important;
+}
+
+/* Theme row below header */
+.storymode-sidebar-theme-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 6px 14px;
+    background: var(--sm-sidebar-header-bg);
+    border-bottom: 1px solid var(--sm-sidebar-border);
+}
+
+.storymode-theme-label {
+    font-size: 0.75em;
+    color: var(--sm-sidebar-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Theme selector - no separator needed now */
+.storymode-theme-selector {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Ensure header actions have proper layout */
+.storymode-sidebar-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Legacy Docked Header Styles (kept for backwards compatibility) */
 .storymode-docked-header {
     display: flex;
     justify-content: space-between;
@@ -3599,11 +4041,15 @@ details.storymode-advanced-options[open] summary {
 }
 
 .storymode-debug-section {
-    margin-bottom: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
 }
 
 .storymode-debug-section:last-child {
     margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
 }
 
 .storymode-debug-label {
@@ -4114,8 +4560,10 @@ details.storymode-advanced-options[open] summary {
     left: 50%;
     transform: translate(-50%, -50%);
     background: var(--SmartThemeBlurTintColor);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid var(--SmartThemeBorderColor);
-    border-radius: 8px;
+    border-radius: 12px;
     min-width: 500px;
     max-width: 700px;
     max-height: 85vh;
@@ -4127,10 +4575,17 @@ details.storymode-advanced-options[open] summary {
 .storymode-arc-history-popout-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     padding: 12px 16px;
-    background: var(--SmartThemeQuoteColor);
+    background: var(--sm-accent);
+    color: white;
+    font-weight: 600;
+    flex-shrink: 0;
     cursor: grab;
+}
+
+.storymode-arc-history-popout-header i {
+    font-size: 0.9em;
 }
 
 .storymode-arc-history-popout-header span {
@@ -4139,11 +4594,18 @@ details.storymode-advanced-options[open] summary {
 }
 
 .storymode-arc-history-popout-close {
-    background: none;
+    margin-left: auto;
+    background: transparent;
     border: none;
-    color: inherit;
+    color: rgba(255, 255, 255, 0.7);
     cursor: pointer;
-    padding: 4px 8px;
+    padding: 4px 6px;
+    font-size: 1em;
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-arc-history-popout-close:hover {
+    color: white;
 }
 
 .storymode-arc-history-popout-body {
@@ -4152,41 +4614,48 @@ details.storymode-advanced-options[open] summary {
     max-height: calc(85vh - 50px);
 }
 
+/* Arc History Sections - matches .storymode-popout-section styling */
 .storymode-arc-history-section {
-    margin-bottom: 20px;
-    border: 1px solid var(--SmartThemeBorderColor);
-    border-radius: 6px;
-    overflow: hidden;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
 }
 
 .storymode-arc-history-section:last-child {
     margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
 }
 
 .storymode-arc-history-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 14px;
-    background: var(--SmartThemeQuoteColor);
+    margin-bottom: 8px;
 }
 
 .storymode-arc-history-header h4 {
     margin: 0;
-    font-size: 1em;
+    color: var(--sm-accent);
+    font-size: 0.8em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .storymode-arc-history-timestamp {
-    font-size: 0.85em;
-    opacity: 0.7;
+    font-size: 0.75em;
+    opacity: 0.6;
+    text-transform: none;
+    letter-spacing: normal;
 }
 
 .storymode-arc-history-content {
-    padding: 14px;
-    line-height: 1.6;
+    margin: 0;
+    line-height: 1.5;
+    color: var(--SmartThemeEmColor);
     white-space: pre-wrap;
     word-wrap: break-word;
 }
@@ -4225,9 +4694,15 @@ details.storymode-advanced-options[open] summary {
 
 .storymode-next-adventure-option {
     border: 1px solid var(--SmartThemeBorderColor);
-    border-radius: 6px;
+    border-radius: 8px;
     padding: 12px;
-    background: color-mix(in srgb, var(--SmartThemeQuoteColor) 20%, transparent);
+    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 50%, transparent);
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.storymode-next-adventure-option:hover {
+    border-color: var(--sm-accent);
+    background: color-mix(in srgb, var(--sm-accent) 8%, transparent);
 }
 
 .storymode-scenario-header {
@@ -4258,7 +4733,8 @@ details.storymode-advanced-options[open] summary {
 }
 
 .storymode-tone-badge {
-    background: var(--SmartThemeQuoteColor);
+    background: color-mix(in srgb, var(--sm-accent) 20%, transparent);
+    color: var(--sm-accent);
     padding: 2px 8px;
     border-radius: 12px;
     font-size: 0.8em;
@@ -4297,8 +4773,10 @@ details.storymode-advanced-options[open] summary {
     left: 50%;
     transform: translate(-50%, -50%);
     background: var(--SmartThemeBlurTintColor);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid var(--SmartThemeBorderColor);
-    border-radius: 8px;
+    border-radius: 12px;
     min-width: 400px;
     max-width: 600px;
     max-height: 80vh;
@@ -4310,10 +4788,17 @@ details.storymode-advanced-options[open] summary {
 .storymode-summary-popout-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     padding: 12px 16px;
-    background: var(--SmartThemeQuoteColor);
+    background: var(--sm-accent);
+    color: white;
+    font-weight: 600;
+    flex-shrink: 0;
     cursor: grab;
+}
+
+.storymode-summary-popout-header i {
+    font-size: 0.9em;
 }
 
 .storymode-summary-popout-header span {
@@ -4322,11 +4807,18 @@ details.storymode-advanced-options[open] summary {
 }
 
 .storymode-summary-popout-close {
-    background: none;
+    margin-left: auto;
+    background: transparent;
     border: none;
-    color: inherit;
+    color: rgba(255, 255, 255, 0.7);
     cursor: pointer;
-    padding: 4px 8px;
+    padding: 4px 6px;
+    font-size: 1em;
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-summary-popout-close:hover {
+    color: white;
 }
 
 .storymode-summary-popout-body {
@@ -5260,6 +5752,133 @@ details.storymode-advanced-options[open] summary {
     border-radius: 3px;
 }
 
+/* Empty thumbnail placeholder (no image yet) */
+.storymode-scene-thumb-empty {
+    background: var(--SmartThemeBlurTintColor);
+    border: 2px dashed var(--SmartThemeBorderColor);
+}
+
+.storymode-scene-thumb-empty:hover {
+    border-color: var(--sm-accent);
+    background: color-mix(in srgb, var(--sm-accent) 10%, transparent);
+}
+
+.storymode-scene-thumb-empty.generating {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.storymode-scene-thumb-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    color: var(--SmartThemeQuoteColor);
+    font-size: 1rem;
+}
+
+.storymode-scene-thumb-placeholder .fa-image {
+    opacity: 0.5;
+}
+
+.storymode-thumb-generate-icon {
+    font-size: 0.6rem;
+    color: var(--sm-accent);
+}
+
+.storymode-scene-thumb-empty:hover .storymode-thumb-generate-icon {
+    transform: scale(1.2);
+}
+
+/* Main image placeholder (when no image exists for current scene) */
+.storymode-image-container.storymode-image-placeholder {
+    background: var(--SmartThemeBlurTintColor);
+    border: 2px dashed var(--SmartThemeBorderColor);
+    border-radius: 8px;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.storymode-placeholder-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 30px;
+    text-align: center;
+    color: var(--SmartThemeQuoteColor);
+}
+
+.storymode-placeholder-content .fa-image {
+    font-size: 3rem;
+    opacity: 0.4;
+}
+
+.storymode-placeholder-content p {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.storymode-generate-first-btn,
+.storymode-generate-first-btn-alt {
+    background: var(--sm-accent) !important;
+    color: white !important;
+    border: none !important;
+    padding: 10px 20px !important;
+    border-radius: 6px !important;
+    font-size: 0.9rem !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.storymode-generate-first-btn:hover,
+.storymode-generate-first-btn-alt:hover {
+    background: var(--sm-accent-hover) !important;
+    transform: translateY(-1px);
+}
+
+.storymode-generate-first-btn:disabled,
+.storymode-generate-first-btn-alt:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Centered actions bar (when no image) */
+.storymode-image-preview-actions.storymode-actions-centered {
+    justify-content: center;
+    padding: 16px;
+}
+
+/* Cover thumbnail styling - distinct from scene thumbnails */
+.storymode-cover-thumb {
+    border-color: var(--sm-accent) !important;
+    opacity: 0.9;
+}
+
+.storymode-cover-thumb:hover {
+    opacity: 1;
+}
+
+.storymode-cover-thumb .storymode-scene-thumb-label {
+    background: var(--sm-accent);
+    font-size: 0.6rem;
+    padding: 3px 5px;
+}
+
+.storymode-cover-thumb .storymode-scene-thumb-label i {
+    font-size: 0.6rem;
+}
+
 /* ============================================================================
    PACING MODE TOGGLE
    ============================================================================ */
@@ -5304,6 +5923,19 @@ details.storymode-advanced-options[open] summary {
 
 .storymode-mode-btn i {
     font-size: 10px;
+}
+
+/* Arc History Indicators (icons showing what content is available) */
+.storymode-arc-history-indicators {
+    display: flex;
+    gap: 12px;
+    font-size: 1.2em;
+    color: var(--sm-accent);
+    margin-top: 4px;
+}
+
+.storymode-arc-history-indicators i {
+    opacity: 0.9;
 }
 
 /* OOC (Out of Context) Panel Styles */
@@ -5440,28 +6072,7 @@ details.storymode-advanced-options[open] summary {
     cursor: not-allowed;
 }
 
-/* Docked Drawer Header */
-.storymode-docked-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 14px;
-    background: var(--sm-accent);
-    /* Match floating panel teal */
-    color: white;
-    font-weight: 600;
-    border-bottom: 1px solid var(--black30a);
-    flex: 0 0 auto;
-}
-
-.storymode-docked-header h3 {
-    margin: 0;
-    font-size: 1em;
-    font-weight: 600;
-    color: white;
-}
-
-/* Ensure inner content scrolls independently */
+/* Legacy drawer content styles (kept for backwards compatibility) */
 .storymode-drawer-content-inner {
     flex: 1;
     overflow-y: auto;

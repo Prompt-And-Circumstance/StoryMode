@@ -345,6 +345,9 @@
 .storymode-modal-heading {
     padding: 18px 24px;
     border-bottom: 1px solid var(--SmartThemeBorderColor);
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
 .storymode-modal-heading h2 {
@@ -360,6 +363,38 @@
 .storymode-modal-heading h2 i {
     color: var(--sm-accent);
     font-size: 0.9em;
+}
+
+/* Header Close Button */
+.storymode-header-close {
+    padding: 8px 14px;
+    background: transparent;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    cursor: pointer;
+    font-size: 0.8em;
+    font-weight: 500;
+    color: var(--SmartThemeEmColor);
+    transition: var(--sm-transition);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.storymode-header-close:hover {
+    background: var(--black30a);
+    color: var(--SmartThemeBodyColor);
+    border-color: var(--sm-accent);
+}
+
+/* Modal Footer */
+.storymode-modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--SmartThemeBorderColor);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--black10a);
 }
 
 /* ============================================================================

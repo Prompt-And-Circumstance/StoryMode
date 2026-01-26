@@ -254,6 +254,9 @@ async function showSettingsDialog(initialTab = 'genre-style') {
 <!-- Modal Heading -->
 <div class="storymode-modal-heading">
 <h2><i class="fa-solid fa-book-open"></i> Story Mode</h2>
+<button id="storymode_settings_close_btn" class="storymode-header-close" style="margin-left: auto;">
+<i class="fa-solid fa-times"></i> Close
+</button>
 </div>
 <!-- Content Area -->
 <div class="storymode-content-area">

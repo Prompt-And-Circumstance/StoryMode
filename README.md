@@ -14,6 +14,9 @@
 ```
 
 ---
+## Scenario Blueprint Schemea
+Details of the schema for the scenario cards implemented in this extension are available here:
+https://github.com/Prompt-And-Circumstance/scenario-card-spec-v1
 
 ## Overview
 

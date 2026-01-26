@@ -438,6 +438,7 @@ ${buildSettingsTabContent()}
         wide: true,
         large: true,
         allowVerticalScrolling: true,
+        okButton: false,
     });
 
     // Store popup reference globally so event handlers can close it

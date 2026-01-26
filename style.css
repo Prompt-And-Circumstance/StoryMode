@@ -1126,6 +1126,29 @@
     background: var(--black50a);
 }
 
+/* Custom Input (text, number, etc.) - Matches storymode-select styling */
+.storymode-input {
+    width: 100%;
+    padding: 11px 14px;
+    background: var(--black30a);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    color: var(--SmartThemeBodyColor);
+    font-size: 0.9em;
+    transition: var(--sm-transition);
+}
+
+.storymode-input:hover {
+    border-color: var(--sm-accent);
+    background-color: var(--black50a);
+}
+
+.storymode-input:focus {
+    outline: none;
+    border-color: var(--sm-accent);
+    box-shadow: 0 0 0 3px var(--sm-accent-glow);
+}
+
 /* ============================================================================
    CARDS AND SECTIONS
    ============================================================================ */
@@ -1972,6 +1995,11 @@
     box-shadow: none;
 }
 
+/* Advanced Options drawer in blueprint generation wizard */
+#blueprint_prompt_drawer .storymode-section-title {
+    font-size: 0.95em;
+}
+
 /* Config modal versions (from blueprint-module.js) */
 #blueprint_advanced_drawer_config .inline-drawer-content {
     border: none;
@@ -2389,28 +2417,7 @@
     letter-spacing: 0.5px;
 }
 
-.storymode-character-list {
-    max-height: 160px;
-    overflow-y: auto;
-    border: 1px solid var(--SmartThemeBorderColor);
-    padding: 12px;
-    background: var(--black30a);
-    border-radius: var(--sm-radius-sm);
-    text-align: left;
-}
-
-.storymode-character-list .checkbox_label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px;
-    border-radius: var(--sm-radius-sm);
-    transition: var(--sm-transition-fast);
-}
-
-.storymode-character-list .checkbox_label:hover {
-    background: var(--black50a);
-}
+/* Old .storymode-character-list removed - replaced by .storymode-picker-* */
 
 .storymode-advanced-section {
     margin-top: 14px;
@@ -6214,4 +6221,164 @@ body.rpg-companion-collapsed .storymode-sidebar.storymode-position-right {
 .storymode-summaries-note i {
     color: var(--sm-accent);
     opacity: 0.6;
+}
+
+/* ============================================================================
+   UNIFIED CHARACTER PICKER - VERTICAL LIST
+   Used by blueprint wizard for chat characters, personas, and library characters
+   ============================================================================ */
+
+.storymode-picker-container {
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    overflow: hidden;
+    background: var(--SmartThemeBlurTintColor);
+    max-width: 300px;
+}
+
+.storymode-picker-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 90%, black 10%);
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-picker-search i {
+    color: var(--SmartThemeQuoteColor);
+    font-size: 0.9em;
+}
+
+.storymode-picker-search input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--SmartThemeBodyColor);
+    outline: none;
+    font-size: 0.95em;
+}
+
+.storymode-picker-search input::placeholder {
+    color: var(--SmartThemeQuoteColor);
+}
+
+.storymode-picker-list {
+    max-height: 180px;
+    overflow-y: auto;
+    padding: 4px;
+}
+
+/* Individual picker item row */
+.storymode-picker-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    margin: 2px 0;
+    border-radius: var(--sm-radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+}
+
+.storymode-picker-item:hover {
+    background: var(--sm-accent-subtle);
+    border-color: var(--SmartThemeBorderColor);
+}
+
+/* Uses .checked class toggled by JavaScript for browser compatibility */
+.storymode-picker-item.checked {
+    background: var(--sm-accent-subtle);
+    border-color: var(--sm-accent);
+}
+
+/* Hide the actual checkbox input */
+.storymode-picker-item input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Avatar */
+.storymode-picker-avatar {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    background-color: var(--SmartThemeBorderColor);
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--SmartThemeQuoteColor);
+    font-size: 1.1em;
+}
+
+/* Info section */
+.storymode-picker-info {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.storymode-picker-primary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.storymode-picker-name {
+    font-weight: 500;
+    color: var(--SmartThemeBodyColor);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.storymode-picker-secondary {
+    font-size: 0.85em;
+    color: var(--SmartThemeQuoteColor);
+    white-space: nowrap;
+}
+
+.storymode-picker-subtitle {
+    font-size: 0.8em;
+    color: var(--SmartThemeQuoteColor);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Checkmark indicator */
+.storymode-picker-check {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--sm-accent);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.storymode-picker-item.checked .storymode-picker-check {
+    opacity: 1;
+}
+
+/* Empty state */
+.storymode-picker-empty,
+.storymode-picker-no-results {
+    padding: 16px;
+    text-align: center;
+    color: var(--SmartThemeQuoteColor);
+    font-style: italic;
+    font-size: 0.9em;
+}
+
+.storymode-picker-empty i,
+.storymode-picker-no-results i {
+    margin-right: 6px;
 }

@@ -1,5 +1,34 @@
 [
   {
+  "id": "jane_austen",
+  "name": "Jane Austen",
+  "category": ["Regency Romance", "Classic", "Social Comedy"],
+  "authorPrompt": "Write in a style inspired by Jane Austen.\nEmploy a third-person narrative voice that moves fluidly between objective observation and intimate access to a protagonist's thoughts, using free indirect discourse to blur the line between narrator and character consciousness. Favor balanced, periodic sentences with subordinate clauses that build toward witty conclusions or ironic reversals. Let the narrative voice maintain an amused, slightly detached perspective that nonetheless invites genuine emotional investment.\n\nDistinctive techniques to employ:\n- Free indirect discourse: slip into characters' thoughts without 'she thought' tags, letting their vocabulary and concerns color the narration\n- Ironic understatement: praise that damns, observations that expose vanity or folly through apparent innocence\n- Dialogue as character revelation: let conversations crackle with subtext, misunderstanding, and social maneuvering\n- Social precision: rank, income, property, and propriety matter—render these details with the casual authority of one who knows the rules intimately\n- Moral growth arcs: protagonists who must overcome pride, prejudice, or self-deception to achieve happiness\n- The marriage plot as social analysis: romantic tension inseparable from questions of security, class, and compatibility\n- Drawing rooms and country walks: intimate domestic spaces where momentous conversations occur\n- Secondary characters as comic types: obsequious clergymen, scheming rivals, indulgent parents, sensible confidantes",
+  "nsfwPrompt": "Keep physical intimacy entirely offstage and implied through heightened emotional language. A lingering glance, an unexpected touch of hands, a letter read and reread—these carry erotic charge through restraint. If the story ventures beyond Regency propriety, maintain the period voice: let characters experience desire through the lens of duty, reputation, and genuine feeling rather than explicit physical description. Focus on the exquisite tension of attraction constrained by social rules.",
+  "keywords": ["Regency", "irony", "free indirect discourse", "marriage plot", "social comedy", "wit", "Pride and Prejudice", "romantic tension"]
+  },
+  {
+    "id": "jrr_tolkien",
+    "name": "J.R.R. Tolkien",
+    "category": [
+      "High Fantasy",
+      "Epic",
+      "Literary Fantasy"
+    ],
+    "authorPrompt": "Write in a style inspired by J.R.R. Tolkien.\n\nEmploy an elevated, mythopoeic prose that echoes medieval chronicles and Northern European sagas. Sentences should flow with measured dignity—complex yet clear, often building through dependent clauses toward moments of revelation or sorrow. Vary rhythm deliberately: formal narration gives way to archaic gravitas in moments of high import.\n\nDistinctive techniques to employ:\n- Deep-time perspective: events feel weighted by ages of history; reference ancient deeds, fallen kingdoms, and languages half-remembered\n- Landscape as character: describe terrain with loving geographic precision—hills, rivers, forests—as though the land itself carries memory and meaning\n- Eucatastrophe: allow moments of unexpected grace or deliverance at the darkest hour, earning joy through peril survived\n- Interlaced verse and song: weave poetry into narrative naturally, characters singing or reciting as cultural expression\n- Moral clarity without simplicity: good and evil are real, yet temptation, pity, and mercy complicate every choice\n- Names that resonate: places and people carry linguistic weight suggesting meaning beyond translation\n- Walking and journey as structure: travel sequences build camaraderie, reveal character, and develop the world\n- Register shifts: hobbits speak warmly and colloquially; elves with formal beauty; men of Gondor with noble gravity; villains with cold or seductive menace\n\nNarrative voice remains third-person omniscient but intimate—an unseen chronicler who loves these characters and grieves their losses. Descriptions favor the visual and the auditory: firelight on faces, wind in grass, distant horns, the weight of silence in ancient places.",
+    "nsfwPrompt": "Tolkien's work is famously chaste; romance appears through devotion, sacrifice, and the binding of fates across ages rather than physical intimacy. If mature content must be addressed, handle it with courtly restraint—a clasped hand, a farewell kiss, the ache of separation. Intimacy between bonded partners should feel sacred and implied rather than depicted. Focus on the spiritual and emotional dimensions of love: loyalty tested, reunion earned, mortality faced together.",
+    "keywords": [
+      "epic fantasy",
+      "mythopoeic",
+      "Middle-earth",
+      "high fantasy",
+      "eucatastrophe",
+      "archaic",
+      "world-building",
+      "quest"
+    ]
+  },
+  {
     "id": "charles_dickens",
     "name": "Charles Dickens",
     "category": [

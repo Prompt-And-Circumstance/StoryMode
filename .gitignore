@@ -1,6 +1,13 @@
 # macOS system files
 .DS_Store
 
+# Node.js
+node_modules/
+package-lock.json
+
+# Test coverage
+coverage/
+
 # Backup files
 *.backup
 *.backup*

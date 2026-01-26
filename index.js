@@ -506,6 +506,19 @@ const libraryCallbacks = {
     showLibraryGridView,
     loadBlueprintsForFolder: (content, folderId) => loadBlueprintsForFolder(content, folderId, libraryCallbacks),
     refreshLibraryView: (content) => refreshLibraryView(content, libraryCallbacks),
+    switchToTab: (content, tabName) => {
+        const $tab = content.find(`.storymode-tab[data-tab="${tabName}"]`);
+        // Enable the tab if it was disabled (e.g., blueprint tab with no scenario loaded)
+        if ($tab.hasClass('disabled')) {
+            $tab.removeClass('disabled');
+            $tab.attr('title', 'View and manage the current scenario');
+        }
+        // Switch to the tab
+        content.find('.storymode-tab').removeClass('active');
+        $tab.addClass('active');
+        content.find('.storymode-tab-pane').removeClass('active');
+        content.find(`#tab_${tabName}`).addClass('active');
+    },
 };
 
 /**

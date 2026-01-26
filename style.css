@@ -99,6 +99,45 @@
     font-weight: 500;
 }
 
+/* ============================================================================
+   AUTHOR STYLE OVERRIDE BADGES
+   ============================================================================ */
+
+/* Override badge base style */
+.override-badge {
+    font-size: 0.75em;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.override-badge i {
+    margin-right: 2px;
+}
+
+/* Source-specific badge colors */
+.override-badge.blueprint-badge {
+    background: var(--SmartThemeBotMesBlurTintColor, #9b59b6); /* Purple for blueprint */
+}
+
+.override-badge.character-badge {
+    background: var(--SmartThemeQuoteColor, #e67e22); /* Orange for character */
+}
+
+.override-badge.group-badge {
+    background: var(--SmartThemeEmColor, #3498db); /* Blue for group */
+}
+
+/* Source name badge in settings */
+.source-name-badge {
+    font-weight: normal;
+    color: var(--SmartThemeBodyColor, #888);
+}
+
 #story_mode_settings_btn {
     margin-left: auto;
 }

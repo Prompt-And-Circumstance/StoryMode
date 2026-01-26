@@ -20,12 +20,15 @@ import {
     saveChatConditional,
     main_api,
     doNewChat,
+    characters,
+    this_chid,
 } from '/script.js';
 
 import {
     extension_settings,
     getContext,
 } from '/scripts/extensions.js';
+import { groups, selected_group } from '/scripts/group-chats.js';
 import { getFileText, download } from '/scripts/utils.js';
 import { callGenericPopup, Popup, POPUP_TYPE, POPUP_RESULT } from '/scripts/popup.js';
 import { Popper } from '/lib.js';
@@ -703,13 +706,16 @@ function setupDialogEventListeners(content) {
         const query = $(this).val();
         updateAuthorStyleDropdownInDialog(content, query);
     });
-    // Author style selection
+    // Default author style selection (global setting for new chats)
+    content.find('#default_author_style_select').on('change', function () {
+        const selectedStyle = $(this).val();
+        extension_settings[MODULE_NAME].defaultAuthorStyle = selectedStyle;
+        saveSettingsDebounced();
+    });
+    // Author style selection (per-chat only, does not affect global default)
     content.find('#author_style_select').on('change', async function () {
         const selectedStyle = $(this).val();
-        // Update global settings (default for new chats)
-        extension_settings[MODULE_NAME].selectedAuthorStyle = selectedStyle;
-        saveSettingsDebounced();
-        // Update current chat metadata
+        // Update current chat metadata only
         const chatState = getChatStoryState();
         chatState.selectedAuthorStyle = selectedStyle;
         await saveChatStoryState(chatState);
@@ -721,6 +727,99 @@ function setupDialogEventListeners(content) {
         updatePreviewInDialog(content);
         updateStatusDisplay();
     });
+
+    // Character author style selection (just updates dropdown, save button saves to character)
+    content.find('#character_author_style_select').on('change', function () {
+        // Just update the dropdown value, don't save yet
+    });
+
+    // Save character author style button
+    content.find('#save_character_author_style_btn').on('click', async function () {
+        if (this_chid === undefined || !characters?.[this_chid]) {
+            toastr.error('No character selected');
+            return;
+        }
+
+        const selectedStyle = content.find('#character_author_style_select').val();
+        const char = characters[this_chid];
+
+        // Initialize extension data if needed (for local state)
+        if (!char.data) char.data = {};
+        if (!char.data.extensions) char.data.extensions = {};
+        if (!char.data.extensions.story_mode) char.data.extensions.story_mode = {};
+
+        // Set author style locally (empty string means "none")
+        char.data.extensions.story_mode.authorStyle = selectedStyle || '';
+
+        // Save to server using merge-attributes API (proper way to save extension data)
+        try {
+            const { getRequestHeaders } = await import('/script.js');
+            const saveDataRequest = {
+                avatar: char.avatar,
+                data: {
+                    extensions: {
+                        story_mode: {
+                            authorStyle: selectedStyle || '',
+                        },
+                    },
+                },
+            };
+            const mergeResponse = await fetch('/api/characters/merge-attributes', {
+                method: 'POST',
+                headers: getRequestHeaders(),
+                body: JSON.stringify(saveDataRequest),
+            });
+
+            if (!mergeResponse.ok) {
+                throw new Error(`Server returned ${mergeResponse.status}`);
+            }
+
+            toastr.success(`Author style saved to ${char.name}`);
+            updateStoryPrompt();
+            updateStatusDisplay();
+            if (window.updateControllerPanel) window.updateControllerPanel();
+        } catch (error) {
+            toastr.error('Failed to save character');
+            console.error('[Story Mode] Failed to save character author style:', error);
+        }
+    });
+
+    // Group author style selection (just updates dropdown, save button saves to settings)
+    content.find('#group_author_style_select').on('change', function () {
+        // Just update the dropdown value, don't save yet
+    });
+
+    // Save group author style button
+    content.find('#save_group_author_style_btn').on('click', async function () {
+        if (selected_group === null) {
+            toastr.error('No group selected');
+            return;
+        }
+
+        const selectedStyle = content.find('#group_author_style_select').val();
+        const group = groups?.find(g => g.id === selected_group);
+
+        // Initialize groupAuthorStyles if needed
+        if (!extension_settings[MODULE_NAME].groupAuthorStyles) {
+            extension_settings[MODULE_NAME].groupAuthorStyles = {};
+        }
+
+        // Set group author style (empty string means "none")
+        extension_settings[MODULE_NAME].groupAuthorStyles[selected_group] = selectedStyle || '';
+
+        // Save settings
+        try {
+            saveSettingsDebounced();
+            toastr.success(`Author style saved to group: ${group?.name || 'Group'}`);
+            updateStoryPrompt();
+            updateStatusDisplay();
+            if (window.updateControllerPanel) window.updateControllerPanel();
+        } catch (error) {
+            toastr.error('Failed to save group author style');
+            console.error('[Story Mode] Failed to save group author style:', error);
+        }
+    });
+
     // NSFW toggle
     content.find('#nsfw_enabled').on('change', function () {
         extension_settings[MODULE_NAME].nsfwEnabled = $(this).is(':checked');
@@ -1000,6 +1099,24 @@ function updateAuthorStyleDropdownInDialog(content, searchQuery = '') {
     const descriptionEl = content.find('#author_style_description');
     if (descriptionEl.length > 0) {
         descriptionEl.text(description);
+    }
+
+    // Also populate the default author style dropdown
+    const defaultDropdown = content.find('#default_author_style_select');
+    if (defaultDropdown.length > 0) {
+        const settings = extension_settings[MODULE_NAME];
+        const defaultSelected = settings.defaultAuthorStyle;
+        defaultDropdown.empty();
+        defaultDropdown.append('<option value="">None</option>');
+        filteredStyles.forEach(style => {
+            const option = $('<option></option>')
+                .val(style.id)
+                .text(style.name + ' (' + style.category.join(', ') + ')');
+            if (style.id === defaultSelected) {
+                option.prop('selected', true);
+            }
+            defaultDropdown.append(option);
+        });
     }
 }
 

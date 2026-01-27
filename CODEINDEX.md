@@ -68,7 +68,9 @@ Extension-StoryMode/
     │       ├── wizard.js    # Wizard progress/preview components
     │       ├── library.js   # Library tab, blueprint cards
     │       ├── sidebar.js   # Settings sidebar
-    │       └── misc.js      # Additional tab content
+    │       ├── misc.js      # Additional tab content
+    │       ├── character-picker.js # Character picker component
+    │       └── phase-override-panel.js # Per-phase API profile overrides
     ├── editor/              # Editors
     │   ├── index.js         # Re-exports public API
     │   ├── blueprint-editor.js # Split-panel blueprint editor (orchestrator)
@@ -96,7 +98,8 @@ Extension-StoryMode/
     ├── scenario/            # Scenario Mode runtime
     │   ├── index.js         # Re-exports public API
     │   ├── injection.js     # Scenario prompt injection
-    │   └── beats.js         # Beat state management
+    │   ├── beats.js         # Beat state management
+    │   └── character-injection.js # Character detection and injection
     ├── scene/               # Scene image generation
     │   ├── index.js         # Re-exports public API
     │   ├── image-generator.js
@@ -111,6 +114,8 @@ Extension-StoryMode/
     ├── debug/               # Debug utilities
     │   ├── index.js
     │   └── mocks.js
+    ├── utils/               # Shared utilities
+    │   └── import-helpers.js # Import sanitization and deduplication
     └── css/                 # Stylesheets
         ├── base.css
         ├── settings-dialog.css
@@ -143,7 +148,9 @@ Extension-StoryMode/
 | `blueprint-tabs.js` | ~431 | Blueprint generation and display tabs |
 | `blueprint-settings.js` | ~382 | Blueprint settings subtab |
 | `settings-tabs.js` | ~359 | Settings dialog subtabs |
+| `character-picker.js` | ~300 | Character picker component |
 | `wizard.js` | ~298 | Wizard progress/preview components |
+| `phase-override-panel.js` | ~240 | Per-phase API profile and token limit overrides |
 | `main-panel.js` | ~206 | Main panel and blueprint preview |
 | `library.js` | ~205 | Library tab, blueprint cards |
 | `index.js` | ~90 | Re-exports all components |
@@ -220,11 +227,13 @@ lib/ui/
     ├── main-panel.js (imports state-manager, blueprint/module)
     ├── settings-tabs.js (imports state-manager, arc-engine, helpers)
     ├── blueprint-settings.js (imports state-manager, helpers)
-    ├── blueprint-tabs.js (imports state-manager, blueprint/module, helpers, wizard)
+    ├── blueprint-tabs.js (imports state-manager, blueprint/module, helpers, wizard, phase-override-panel)
     ├── wizard.js (imports component-system)
     ├── library.js (imports blueprint/utils, blueprint-tabs)
     ├── sidebar.js (imports component-system)
-    └── misc.js (imports state-manager)
+    ├── misc.js (imports state-manager)
+    ├── character-picker.js (imports component-system, blueprint/characters/*)
+    └── phase-override-panel.js (imports core/constants, helpers)
 
 lib/editor/
 ├── blueprint-editor.js (orchestrator - wires up all submodules)
@@ -252,6 +261,14 @@ lib/generation/
 ├── metrics.js (imports SillyTavern tokenizers)
 ├── section-generator.js (imports core/constants, prompts, validation, orchestration, debug/mocks)
 └── orchestration.js (imports core/*, prompts, templates, validation, metrics, blueprint/utils)
+
+lib/scenario/
+├── injection.js (imports state-manager, character-injection)
+├── beats.js (imports state-manager)
+└── character-injection.js (imports blueprint/characters/*, scenario/injection)
+
+lib/utils/
+└── import-helpers.js (no deps - pure functions)
 
 lib/dialog/
 ├── wizard.js (imports generation/orchestration, ui/components)
@@ -358,8 +375,10 @@ const url = new URL('../../data/author_styles.json', import.meta.url);
 | Blueprint tabs | `lib/ui/components/blueprint-tabs.js` | `wizard.js` |
 | Library tab | `lib/ui/components/library.js` | `blueprint-tabs.js` |
 | Controller panel | `lib/ui/controller-panel.js` | `wand-menu.js` |
-| Scenario Mode | `lib/scenario/injection.js` | `beats.js`, `blueprint/module.js` |
+| Scenario Mode | `lib/scenario/injection.js` | `beats.js`, `character-injection.js`, `blueprint/module.js` |
+| Character injection | `lib/scenario/character-injection.js` | `blueprint/characters/*` |
 | Scene images | `lib/scene/image-generator.js` | `image-prompt.js`, `image-storage.js` |
+| Per-phase API profiles | `lib/ui/components/phase-override-panel.js` | `core/constants.js` |
 | Blank blueprint factory | `lib/blueprint/blank-blueprint.js` | - |
 | Wizard panel (AI assist) | `lib/editor/blueprint-editor/wizard-panel.js` | `section-generator.js` |
 | Section generation | `lib/generation/section-generator.js` | `validation.js`, `metrics.js` |

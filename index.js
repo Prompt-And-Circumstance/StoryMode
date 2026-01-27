@@ -19,7 +19,6 @@ import {
     system_message_types,
     saveChatConditional,
     main_api,
-    doNewChat,
     characters,
     this_chid,
 } from '/script.js';
@@ -29,9 +28,7 @@ import {
     getContext,
 } from '/scripts/extensions.js';
 import { groups, selected_group } from '/scripts/group-chats.js';
-import { getFileText, download } from '/scripts/utils.js';
 import { callGenericPopup, Popup, POPUP_TYPE, POPUP_RESULT } from '/scripts/popup.js';
-import { Popper } from '/lib.js';
 
 // Import Blueprint module (Story Blueprints feature)
 import * as BlueprintModule from './lib/blueprint/module.js';
@@ -50,17 +47,10 @@ import {
     getBlueprintsFromFolder,
     setBlueprintFavorite,
     encodeBlueprintAsPNG,
-    decodeBlueprintFromPNG,
-    isBlueprintPNG,
-    saveCurrentBlueprintToLibrary,
 } from './lib/blueprint/integration.js';
 
 // Import Scene Image Generation modules
 import * as SceneImageStorage from './lib/scene/image-storage.js';
-import * as SceneImageGenerator from './lib/scene/image-generator.js';
-
-// Import Blueprint Export module (extended PNG format)
-import { exportBlueprintAsPNG } from './lib/blueprint/export.js';
 
 // Import Controller Panel module
 import { updateControllerPanel } from './lib/ui/controller-panel.js';
@@ -87,12 +77,9 @@ import {
     loadFuseJS,
     loadOriginalStoryTypes,
     loadOriginalAuthorStyles,
-    getOriginalStoryType,
-    getOriginalAuthorStyle,
     getConnectionProfiles,
     migrateFromExtensionSettings,
     getCurrentSceneIndex,
-    setCurrentSceneIndex,
 } from './lib/core/state-manager.js';
 
 // Import Arc Engine module
@@ -110,14 +97,10 @@ import {
     updateWandMenuStatus,
 } from './lib/ui/wand-menu.js';
 
-// Import UI Component System module (for utilities)
-import { escapeHtml } from './lib/ui/component-system.js';
-
 // Import UI Components module
 import {
     renderMainPanel,
     renderBlueprintPreview,
-    buildSidebarContent,
     buildStoryArcSubtab,
     buildAuthorStyleSubtab,
     buildBlueprintSettingsSubtab,
@@ -134,9 +117,7 @@ import {
     renderBlueprintCharactersSubtab,
     renderBlueprintJsonSubtab,
     buildLibraryTabContent,
-    showLibraryGenerateView,
     showLibraryGridView,
-    renderBlueprintCard,
 } from './lib/ui/components.js';
 
 // Import Type Editors module
@@ -204,11 +185,6 @@ import {
 // Import Settings Handlers module
 import { setupUnifiedDialogEventListeners } from './lib/dialog/settings-handlers.js';
 
-// Local aliases for backward compatibility with existing code
-// These will be replaced as we extract more modules
-const getStoryTypesLocal = () => getStoryTypes();
-const getAuthorStylesLocal = () => getAuthorStyles();
-
 // Convenience accessors that return the arrays directly for existing code
 let storyTypes = [];
 let authorStyles = [];
@@ -226,7 +202,6 @@ function syncDataReferences() {
 // Track regeneration state (now managed by event-handlers module)
 // Use getter functions to access: getIsRegenerating(), getIsLoadingChat()
 // Use setter functions to modify: setRegenerating(value), setLoadingChat(value)
-let lastMessageId = null;
 
 // Arc engine functions now imported from arc-engine.js
 // UI rendering functions now imported from ui-components.js
@@ -301,21 +276,6 @@ ${buildSettingsTabContent()}
 </div>
 `;
     const content = $(html);
-
-    /**
-     * Return to library grid view if generation was initiated from library context.
-     * Clears the context flag and switches views.
-     * @returns {boolean} True if returned to library, false if not from library context
-     */
-    function returnToLibraryIfNeeded() {
-        const wasFromLibrary = content.data('generateFromLibrary');
-        if (wasFromLibrary) {
-            content.removeData('generateFromLibrary');
-            showLibraryGridView(content);
-            return true;
-        }
-        return false;
-    }
 
     // Tab switching - attached to content BEFORE showing popup
     const $tabs = content.find('.storymode-tab');
@@ -633,311 +593,6 @@ function setupEventListeners() {
             btn.html(originalText);
         }
     });
-}
-/**
-* Setup event listeners for the settings dialog.
-* Handles all form inputs including toggles, dropdowns, sliders, and buttons.
-*
-* @param {jQuery} content - The jQuery content object containing the dialog UI.
-* @returns {void}
-*/
-function setupDialogEventListeners(content) {
-    // Master toggle in dialog (syncs with main)
-    content.find('#story_mode_enabled').on('change', function () {
-        const enabled = $(this).is(':checked');
-        extension_settings[MODULE_NAME].enabled = enabled;
-        $('#story_mode_enabled').prop('checked', enabled); // Sync with main panel
-        content.find('#story_mode_content').toggle(enabled);
-        saveSettingsDebounced();
-        updateStoryPrompt();
-        updateStatusDisplay();
-    });
-    // Story arc toggle
-    content.find('#story_arc_enabled').on('change', function () {
-        const enabled = $(this).is(':checked');
-        extension_settings[MODULE_NAME].storyArcEnabled = enabled;
-        content.find('#story_arc_controls').toggle(enabled);
-        saveSettingsDebounced();
-        updateStoryPrompt();
-        updateStatusDisplay();
-    });
-    // Story type selection
-    content.find('#story_type_select').on('change', async function () {
-        const selectedType = $(this).val();
-        // Update global settings (default for new chats)
-        extension_settings[MODULE_NAME].selectedStoryType = selectedType;
-        saveSettingsDebounced();
-        // Update current chat metadata
-        const chatState = getChatStoryState();
-        chatState.selectedStoryType = selectedType;
-        await saveChatStoryState(chatState);
-        // Update story type description
-        const selectedStoryType = storyTypes.find(t => t.id === selectedType);
-        const description = selectedStoryType ? selectedStoryType.storyPrompt : 'Select a story type to see its description';
-        content.find('#story_type_description').text(description);
-        updateStoryPrompt();
-        updateStatusDisplay();
-    });
-    // Arc length slider
-    content.find('#arc_length_slider').on('input', async function () {
-        const value = parseInt($(this).val());
-        // Update global settings (default for new chats)
-        extension_settings[MODULE_NAME].arcLength = value;
-        content.find('#arc_length_value').text(value);
-        saveSettingsDebounced();
-        // Update current chat metadata
-        const chatState = getChatStoryState();
-        chatState.arcLength = value;
-        await saveChatStoryState(chatState);
-        updateArcBadgeInDialog(content);
-        updateStatusDisplay();
-    });
-    // Reset arc
-    content.find('#reset_arc_btn').on('click', function () {
-        if (confirm('Reset the story arc? This will set the round counter back to 0.')) {
-            const chatState = getChatStoryState();
-            chatState.currentStep = 0;
-            chatState.arcStarted = false;
-            chatState.epilogueShown = false;
-            chatState.summaryShown = false;
-            chatState.endNoticeShown = false;
-            saveChatStoryState(chatState);
-            updateArcBadgeInDialog(content);
-            updateStoryPrompt();
-            updateStatusDisplay();
-            toastr.success('Story arc reset');
-        }
-    });
-    // Author style toggle
-    content.find('#author_style_enabled').on('change', function () {
-        const enabled = $(this).is(':checked');
-        extension_settings[MODULE_NAME].authorStyleEnabled = enabled;
-        content.find('#author_style_controls').toggle(enabled);
-        saveSettingsDebounced();
-        updateStoryPrompt();
-    });
-    // Author style search
-    content.find('#author_style_search').on('input', function () {
-        const query = $(this).val();
-        updateAuthorStyleDropdownInDialog(content, query);
-    });
-    // Default author style selection (global setting for new chats)
-    content.find('#default_author_style_select').on('change', function () {
-        const selectedStyle = $(this).val();
-        extension_settings[MODULE_NAME].defaultAuthorStyle = selectedStyle;
-        saveSettingsDebounced();
-    });
-    // Author style selection (per-chat only, does not affect global default)
-    content.find('#author_style_select').on('change', async function () {
-        const selectedStyle = $(this).val();
-        // Update current chat metadata only
-        const chatState = getChatStoryState();
-        chatState.selectedAuthorStyle = selectedStyle;
-        await saveChatStoryState(chatState);
-        // Update author style description
-        const selectedAuthorStyle = authorStyles.find(s => s.id === selectedStyle);
-        const description = selectedAuthorStyle ? selectedAuthorStyle.authorPrompt : 'Select an author style to see its guidance';
-        content.find('#author_style_description').text(description);
-        updateStoryPrompt();
-        updateStatusDisplay();
-    });
-
-    // Character author style selection (just updates dropdown, save button saves to character)
-    content.find('#character_author_style_select').on('change', function () {
-        // Just update the dropdown value, don't save yet
-    });
-
-    // Save character author style button
-    content.find('#save_character_author_style_btn').on('click', async function () {
-        if (this_chid === undefined || !characters?.[this_chid]) {
-            toastr.error('No character selected');
-            return;
-        }
-
-        const selectedStyle = content.find('#character_author_style_select').val();
-        const char = characters[this_chid];
-
-        // Initialize extension data if needed (for local state)
-        if (!char.data) char.data = {};
-        if (!char.data.extensions) char.data.extensions = {};
-        if (!char.data.extensions.story_mode) char.data.extensions.story_mode = {};
-
-        // Set author style locally (empty string means "none")
-        char.data.extensions.story_mode.authorStyle = selectedStyle || '';
-
-        // Save to server using merge-attributes API (proper way to save extension data)
-        try {
-            const { getRequestHeaders } = await import('/script.js');
-            const saveDataRequest = {
-                avatar: char.avatar,
-                data: {
-                    extensions: {
-                        story_mode: {
-                            authorStyle: selectedStyle || '',
-                        },
-                    },
-                },
-            };
-            const mergeResponse = await fetch('/api/characters/merge-attributes', {
-                method: 'POST',
-                headers: getRequestHeaders(),
-                body: JSON.stringify(saveDataRequest),
-            });
-
-            if (!mergeResponse.ok) {
-                throw new Error(`Server returned ${mergeResponse.status}`);
-            }
-
-            toastr.success(`Author style saved to ${char.name}`);
-            updateStoryPrompt();
-            updateStatusDisplay();
-            if (window.updateControllerPanel) window.updateControllerPanel();
-        } catch (error) {
-            toastr.error('Failed to save character');
-            console.error('[Story Mode] Failed to save character author style:', error);
-        }
-    });
-
-    // Group author style selection (just updates dropdown, save button saves to settings)
-    content.find('#group_author_style_select').on('change', function () {
-        // Just update the dropdown value, don't save yet
-    });
-
-    // Save group author style button
-    content.find('#save_group_author_style_btn').on('click', async function () {
-        if (selected_group === null) {
-            toastr.error('No group selected');
-            return;
-        }
-
-        const selectedStyle = content.find('#group_author_style_select').val();
-        const group = groups?.find(g => g.id === selected_group);
-
-        // Initialize groupAuthorStyles if needed
-        if (!extension_settings[MODULE_NAME].groupAuthorStyles) {
-            extension_settings[MODULE_NAME].groupAuthorStyles = {};
-        }
-
-        // Set group author style (empty string means "none")
-        extension_settings[MODULE_NAME].groupAuthorStyles[selected_group] = selectedStyle || '';
-
-        // Save settings
-        try {
-            saveSettingsDebounced();
-            toastr.success(`Author style saved to group: ${group?.name || 'Group'}`);
-            updateStoryPrompt();
-            updateStatusDisplay();
-            if (window.updateControllerPanel) window.updateControllerPanel();
-        } catch (error) {
-            toastr.error('Failed to save group author style');
-            console.error('[Story Mode] Failed to save group author style:', error);
-        }
-    });
-
-    // NSFW toggle
-    content.find('#nsfw_enabled').on('change', function () {
-        extension_settings[MODULE_NAME].nsfwEnabled = $(this).is(':checked');
-        saveSettingsDebounced();
-        updateStoryPrompt();
-    });
-    // Epilogue toggle
-    content.find('#epilogue_enabled').on('change', function () {
-        extension_settings[MODULE_NAME].epilogueEnabled = $(this).is(':checked');
-        saveSettingsDebounced();
-    });
-    // Summary toggle
-    content.find('#summary_enabled').on('change', function () {
-        extension_settings[MODULE_NAME].summaryEnabled = $(this).is(':checked');
-        saveSettingsDebounced();
-    });
-    // Summary message count slider
-    content.find('#summary_message_count_slider').on('input', function () {
-        const value = parseInt($(this).val());
-        extension_settings[MODULE_NAME].summaryMessageCount = value;
-        content.find('#summary_message_count_value').text(value === 0 ? 'Entire Chat' : value);
-        saveSettingsDebounced();
-    });
-    // Debug mode toggle
-    content.find('#debug_mode_enabled').on('change', function () {
-        extension_settings[MODULE_NAME].debugMode = $(this).is(':checked');
-        saveSettingsDebounced();
-        updateStoryPrompt();
-    });
-    // Blueprint settings
-    content.find('#blueprint_enabled').on('change', function () {
-        const enabled = $(this).is(':checked');
-        if (!extension_settings[MODULE_NAME].blueprintSettings) {
-            extension_settings[MODULE_NAME].blueprintSettings = {};
-        }
-        extension_settings[MODULE_NAME].blueprintSettings.enabled = enabled;
-        content.find('#blueprint_controls').toggle(enabled);
-        saveSettingsDebounced();
-        updateStoryPrompt();
-        updateStatusDisplay();
-        // Refresh main panel to show/hide generate button
-        $('#story_mode_panel').replaceWith(renderMainPanel());
-        setupEventListeners();
-    });
-    content.find('#blueprint_use_scene_prompts').on('change', function () {
-        const enabled = $(this).is(':checked');
-        if (!extension_settings[MODULE_NAME].blueprintSettings) {
-            extension_settings[MODULE_NAME].blueprintSettings = {};
-        }
-        extension_settings[MODULE_NAME].blueprintSettings.useScenePrompts = enabled;
-        saveSettingsDebounced();
-        updateStoryPrompt();
-    });
-    content.find('#blueprint_beat_tracking').on('change', function () {
-        updateBlueprintSetting('beatTrackingEnabled', $(this).is(':checked'));
-        // Refresh main panel to show/hide beat progress
-        $('#story_mode_panel').replaceWith(renderMainPanel());
-        setupEventListeners();
-    });
-    content.find('#blueprint_generation_api').on('change', function () {
-        const selectedApi = $(this).val() || null;
-        if (!extension_settings[MODULE_NAME].blueprintSettings) {
-            extension_settings[MODULE_NAME].blueprintSettings = {};
-        }
-        extension_settings[MODULE_NAME].blueprintSettings.generationApi = selectedApi;
-        saveSettingsDebounced();
-        console.log('[Story Mode] Generation API changed to:', selectedApi || 'main API');
-    });
-    content.find('#edit_blueprint_master_prompt').on('click', async function () {
-        const currentPrompt = BlueprintModule.getEffectiveMasterPrompt();
-        const result = await Popup.show.input(
-            'Edit Blueprint Master Prompt Template',
-            'Enter the master prompt template for blueprint generation. Variables like {{STORY_TYPE_JSON}}, {{METAPHOR_LEVEL}}, etc. will be replaced at generation time.',
-            currentPrompt,
-            { rows: 15, okButton: 'Save', wide: true, large: true }
-        );
-        if (result) {
-            if (!extension_settings[MODULE_NAME].blueprintSettings) {
-                extension_settings[MODULE_NAME].blueprintSettings = {};
-            }
-            extension_settings[MODULE_NAME].blueprintSettings.masterPrompt = result;
-            saveSettingsDebounced();
-            toastr.success('Blueprint master prompt template updated');
-        }
-    });
-    // Injection settings
-    content.find('#injection_position').on('change', function () {
-        extension_settings[MODULE_NAME].position = parseInt($(this).val());
-        saveSettingsDebounced();
-        updateStoryPrompt();
-    });
-    content.find('#injection_depth').on('change', function () {
-        extension_settings[MODULE_NAME].depth = parseInt($(this).val());
-        saveSettingsDebounced();
-        updateStoryPrompt();
-    });
-    content.find('#injection_role').on('change', function () {
-        extension_settings[MODULE_NAME].role = parseInt($(this).val());
-        saveSettingsDebounced();
-        updateStoryPrompt();
-    });
-    // Edit buttons
-    content.find('#edit_story_types_btn').on('click', showStoryTypesEditor);
-    content.find('#edit_author_styles_btn').on('click', showAuthorStylesEditor);
 }
 
 // Make setupEventListeners globally accessible for blueprint-module.js

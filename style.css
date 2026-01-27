@@ -6550,16 +6550,18 @@ body.rpg-companion-collapsed .storymode-sidebar.storymode-position-right {
 }
 
 .storymode-mode-section .storymode-mode-btn.active {
-    background: linear-gradient(135deg, var(--sm-accent-subtle) 0%, var(--sm-accent-glow) 100%);
-    border-color: var(--sm-accent);
+    background: var(--black30a);
+    border-color: var(--SmartThemeQuoteColor);
+    border-left: 3px solid var(--sm-accent);
 }
 
 .storymode-mode-section .storymode-mode-btn.active i {
-    color: var(--sm-accent);
+    color: var(--SmartThemeEmColor);
 }
 
 .storymode-mode-section .storymode-mode-btn.active .storymode-mode-title {
-    color: var(--sm-accent);
+    color: var(--SmartThemeBodyColor);
+    font-weight: 600;
 }
 
 /* Scenario mode info panels */

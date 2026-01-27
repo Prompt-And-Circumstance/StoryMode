@@ -409,7 +409,6 @@ ${buildSettingsTabContent()}
         storyTypes,
         authorStyles,
         updateStatusDisplay,
-        updatePreviewInDialog,
         refreshBlueprintPreview,
         setupEventListeners,
         populateConnectionProfiles,
@@ -418,9 +417,6 @@ ${buildSettingsTabContent()}
 
     // Populate connection profiles dropdown
     populateConnectionProfiles(content);
-
-    // Update prompt preview
-    updatePreviewInDialog(content);
 
     // Activate initial tab if specified
     if (initialTab && initialTab !== 'genre-style') {
@@ -656,7 +652,6 @@ function setupDialogEventListeners(content) {
         content.find('#story_arc_controls').toggle(enabled);
         saveSettingsDebounced();
         updateStoryPrompt();
-        updatePreviewInDialog(content);
         updateStatusDisplay();
     });
     // Story type selection
@@ -674,7 +669,6 @@ function setupDialogEventListeners(content) {
         const description = selectedStoryType ? selectedStoryType.storyPrompt : 'Select a story type to see its description';
         content.find('#story_type_description').text(description);
         updateStoryPrompt();
-        updatePreviewInDialog(content);
         updateStatusDisplay();
     });
     // Arc length slider
@@ -689,7 +683,6 @@ function setupDialogEventListeners(content) {
         chatState.arcLength = value;
         await saveChatStoryState(chatState);
         updateArcBadgeInDialog(content);
-        updatePreviewInDialog(content);
         updateStatusDisplay();
     });
     // Reset arc
@@ -704,7 +697,6 @@ function setupDialogEventListeners(content) {
             saveChatStoryState(chatState);
             updateArcBadgeInDialog(content);
             updateStoryPrompt();
-            updatePreviewInDialog(content);
             updateStatusDisplay();
             toastr.success('Story arc reset');
         }
@@ -716,7 +708,6 @@ function setupDialogEventListeners(content) {
         content.find('#author_style_controls').toggle(enabled);
         saveSettingsDebounced();
         updateStoryPrompt();
-        updatePreviewInDialog(content);
     });
     // Author style search
     content.find('#author_style_search').on('input', function () {
@@ -741,7 +732,6 @@ function setupDialogEventListeners(content) {
         const description = selectedAuthorStyle ? selectedAuthorStyle.authorPrompt : 'Select an author style to see its guidance';
         content.find('#author_style_description').text(description);
         updateStoryPrompt();
-        updatePreviewInDialog(content);
         updateStatusDisplay();
     });
 
@@ -842,7 +832,6 @@ function setupDialogEventListeners(content) {
         extension_settings[MODULE_NAME].nsfwEnabled = $(this).is(':checked');
         saveSettingsDebounced();
         updateStoryPrompt();
-        updatePreviewInDialog(content);
     });
     // Epilogue toggle
     content.find('#epilogue_enabled').on('change', function () {
@@ -1158,23 +1147,6 @@ function updateArcBadgeInDialog(content) {
 }
 
 /**
-* Update the prompt preview section in the settings dialog.
-* Shows the full injection text with arc length ignored for preview purposes.
-*
-* @param {jQuery} content - The jQuery content object containing the dialog.
-* @returns {void}
-*/
-function updatePreviewInDialog(content) {
-    const preview = content.find('#prompt_preview');
-    const promptText = buildFullInjection(true);
-    if (promptText) {
-        preview.text(promptText);
-    } else {
-        preview.text('(No prompt will be injected with current settings)');
-    }
-}
-
-/**
 * Update story type dropdown
 */
 function updateStoryTypeDropdown() {
@@ -1244,19 +1216,6 @@ function updateArcBadge() {
     } else {
         const phaseInfo = getPhaseInfo(chatState.currentStep, chatState.arcLength);
         badge.text(`Step ${chatState.currentStep}/${chatState.arcLength} | ${phaseInfo.phase}`);
-    }
-}
-
-/**
-* Update prompt preview
-*/
-function updatePreview() {
-    const preview = $('#prompt_preview');
-    const promptText = buildFullInjection(true);
-    if (promptText) {
-        preview.text(promptText);
-    } else {
-        preview.text('(No prompt will be injected with current settings)');
     }
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "sillytavern-story-mode",
-  "version": "1.0.6",
+  "version": "1.0.9",
   "description": "Story Mode extension for SillyTavern - narrative structure through three-act story arcs and author style emulation",
   "type": "module",
   "scripts": {

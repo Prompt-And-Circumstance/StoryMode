@@ -6552,7 +6552,6 @@ body.rpg-companion-collapsed .storymode-sidebar.storymode-position-right {
 .storymode-mode-section .storymode-mode-btn.active {
     background: var(--black30a);
     border-color: var(--SmartThemeQuoteColor);
-    border-left: 3px solid var(--sm-accent);
 }
 
 .storymode-mode-section .storymode-mode-btn.active i {

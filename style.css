@@ -6575,6 +6575,65 @@ body.rpg-companion-collapsed .storymode-sidebar.storymode-position-right {
     border-radius: var(--sm-radius-md);
 }
 
+/* Scenario Info Panel - shown in Story Arc tab when in Scenario Mode */
+.storymode-scenario-info-panel {
+    margin-bottom: 16px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-md);
+    background: var(--black20a);
+    overflow: hidden;
+}
+
+.storymode-scenario-info-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--black30a);
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    font-weight: 500;
+    font-size: 0.9em;
+    color: var(--SmartThemeEmColor);
+}
+
+.storymode-scenario-info-header i {
+    color: var(--sm-accent);
+}
+
+.storymode-scenario-info-body {
+    padding: 12px 14px;
+}
+
+.storymode-scenario-info-message {
+    margin: 0 0 12px 0;
+    font-size: 0.85em;
+    color: var(--SmartThemeEmColor);
+    line-height: 1.4;
+}
+
+.storymode-scenario-info-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.storymode-scenario-info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85em;
+}
+
+.storymode-scenario-info-label {
+    color: var(--SmartThemeEmColor);
+    min-width: 80px;
+}
+
+.storymode-scenario-info-value {
+    color: var(--SmartThemeBodyColor);
+    font-weight: 500;
+}
+
 .storymode-mode-blueprint-info {
     display: flex;
     align-items: center;

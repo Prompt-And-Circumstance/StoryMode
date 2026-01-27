@@ -5,6 +5,42 @@ All notable changes to Story Mode will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-01-28
+
+### Added
+- **Overview Tab**: New landing page in settings dialog with quick mode switching and status summary
+- **Per-Phase API Profiles**: Wizard now supports selecting different API presets for each generation phase (Foundation, Characters, Scenes, Resolutions)
+- **Smart Character Injection**: Automatically injects character data for scene-focused characters even when they're not in the current chat roster
+- **Author Style Overrides**: Character-specific and group-specific author style settings with global default fallback
+- **Current Scenario Tab**: Quick view and edit interface for active scenarios without opening full editor
+- **JSON Export**: Export blueprints with full metadata for backup or sharing
+- **Character Picker Component**: Dedicated UI component for character selection in blueprints
+- **Real-Time Wizard Logging**: Generation wizard displays live status updates during LLM operations
+- **Import Deduplication**: Improved import flow with duplicate detection and conflict resolution
+
+### Changed
+- **Settings Organization**: Separated Story Mode and Scenario Mode controls into distinct sections for clarity
+- **Unsaved Changes Indicator**: Now properly scoped to editor tabs only (no longer shows on unrelated UI elements)
+- **Library Auto-Import**: Embedded resources (covers, character data) now automatically imported when loading scenarios
+- **Modal Behavior**: Improved dialog closing and edit discarding on load
+
+### Fixed
+- **Cover Image Persistence**: Resolved blob URL issues causing covers to disappear after reload
+- **Round Display**: Corrected UI to show actual rounds instead of scene count in all locations
+- **Beat Validation**: Now correctly accepts all 13 beat types during validation
+- **Modal Closing**: Fixed blueprint editor modal closing behavior and proper discard of unsaved edits
+- **Nested Field Loss**: Prevented loss of nested blueprint fields when editing multiple sections
+- **Wizard Token Doubling**: Generalized retry token doubling logic for all generation phases (not just phase 1)
+- **Beat Type Migration**: Added migration to convert disallowed beat types to core types
+- **SD Initialization**: Fixed Stable Diffusion init bug for cover generation
+
+### Technical
+- New modules: `lib/scenario/character-injection.js`, `lib/ui/components/character-picker.js`, `lib/ui/components/phase-override-panel.js`, `lib/utils/import-helpers.js`
+- Enhanced security: Added prototype pollution prevention in import helpers
+- Improved code organization with extracted helper functions
+
+---
+
 ## [1.0.0] - 2025-01-22
 
 ### Added

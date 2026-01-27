@@ -37,9 +37,11 @@ Extension-StoryMode/
     │   ├── library-adapter.js # FileBackedLibrary class
     │   ├── migration.js     # IndexedDB → file storage migration
     │   ├── import.js        # Import from PNG/JSON
+    │   ├── import-ui.js     # Import dialogs and UI components
     │   ├── export.js        # Export to PNG
     │   ├── merger.js        # Blueprint merging
     │   ├── utils.js         # Utility functions
+    │   ├── placeholders.js  # Placeholder resolution ([Protagonist], etc.)
     │   ├── blank-blueprint.js # Blank blueprint factory, placeholder covers
     │   └── characters/      # Character linking
     │       ├── linker.js    # Link blueprints to ST characters
@@ -87,6 +89,7 @@ Extension-StoryMode/
     │       ├── character-handlers.js # Character tab event handlers
     │       ├── wizard-panel.js  # AI wizard side panel
     │       ├── scene-crud.js    # Scene add/edit/delete/reorder
+    │       ├── scene-beats-editor.js # Beat editor within scenes
     │       ├── details-tab.js   # Blueprint details form
     │       ├── scenes-tab.js    # Scene list display
     │       ├── cover-tab.js     # Cover tab with gallery
@@ -113,7 +116,8 @@ Extension-StoryMode/
     │   └── chunk-handler.js # PNG chunk manipulation
     ├── debug/               # Debug utilities
     │   ├── index.js
-    │   └── mocks.js
+    │   ├── mocks.js         # Mock LLM responses for testing
+    │   └── test-data-loader.js # Blueprint test data loader (disabled)
     ├── utils/               # Shared utilities
     │   └── import-helpers.js # Import sanitization and deduplication
     └── css/                 # Stylesheets
@@ -171,6 +175,7 @@ Note: `lib/ui/components.js` is now a thin re-export layer (~16 lines) for backw
 | `cover-action-handlers.js` | ~290 | Cover generation, upload, prompt management |
 | `editor-action-handlers.js` | ~237 | Play, export, revert, view JSON handlers |
 | `cover-tab.js` | ~224 | Cover tab with gallery and prompt editor |
+| `scene-beats-editor.js` | ~216 | Beat rendering and editing within scenes |
 | `cover-gallery.js` | ~174 | Gallery navigation and image management |
 | `scene-crud.js` | ~146 | Scene add/edit/delete/reorder |
 | `panels.js` | ~131 | Left panel (info) and right panel (tabs) renderers |
@@ -207,12 +212,16 @@ lib/blueprint/
 ├── schema.js (no internal deps)
 ├── validation.js (imports schema)
 ├── utils.js (imports state-manager)
+├── placeholders.js (no internal deps)
 ├── storage.js (imports utils, validation, png/*)
 ├── file-api.js (no internal deps, wraps fetch)
 ├── manifest.js (imports file-api)
 ├── file-storage.js (imports file-api, manifest, storage)
 ├── library-adapter.js (imports file-storage, manifest)
 ├── blank-blueprint.js (imports utils, normalization)
+├── import.js (imports storage, validation, utils)
+├── import-ui.js (imports utils, popup.js)
+├── export.js (imports storage)
 ├── module.js (imports most core + generation modules)
 └── integration.js (imports library-adapter, storage, module, migration)
 
@@ -240,7 +249,7 @@ lib/editor/
 └── blueprint-editor/
     ├── state.js (no deps - pure getter/setter state)
     ├── panels.js (imports state, details-tab, scenes-tab, cover-tab, characters-tab, wizard-panel)
-    ├── event-handlers.js (imports state, cover-action-handlers, editor-action-handlers, scene-crud, cover-gallery, character-handlers, cover-handlers, wizard-panel)
+    ├── event-handlers.js (imports state, cover-action-handlers, editor-action-handlers, scene-crud, scene-beats-editor, cover-gallery, character-handlers, cover-handlers, wizard-panel)
     ├── editor-action-handlers.js (imports state, blueprint/module)
     ├── cover-action-handlers.js (imports state, cover-generation, cover-gallery, blueprint/storage)
     ├── cover-generation.js (imports state, blueprint/module, blueprint/storage)
@@ -248,7 +257,8 @@ lib/editor/
     ├── cover-handlers.js (imports state, blueprint/utils, blueprint/storage, cover-gallery)
     ├── character-handlers.js (imports characters-tab)
     ├── wizard-panel.js (imports state, blueprint/utils, blueprint/blank-blueprint, core/state-manager, event-handlers, generation/orchestration)
-    ├── scene-crud.js (imports state, blueprint/utils)
+    ├── scene-crud.js (imports state, blueprint/utils, scene-beats-editor)
+    ├── scene-beats-editor.js (imports blueprint/utils, blueprint/schema)
     ├── details-tab.js (imports state, core/state-manager)
     ├── scenes-tab.js (imports state)
     ├── cover-tab.js (imports state, cover-gallery)
@@ -368,6 +378,9 @@ const url = new URL('../../data/author_styles.json', import.meta.url);
 | Blueprint PNG encode/decode | `lib/blueprint/storage.js` | `png/*.js` |
 | Blueprint file storage | `lib/blueprint/file-storage.js` | `file-api.js`, `manifest.js` |
 | Blueprint library | `lib/blueprint/library-adapter.js` | `integration.js`, `manifest.js` |
+| Blueprint import UI | `lib/blueprint/import-ui.js` | `import.js`, `utils.js` |
+| Placeholder resolution | `lib/blueprint/placeholders.js` | - |
+| Scene beat editor | `lib/editor/blueprint-editor/scene-beats-editor.js` | `schema.js`, `utils.js` |
 | Blueprint editor | `lib/editor/blueprint-editor.js` | `blueprint-editor/*.js` (16 submodules) |
 | Settings dialog | `lib/dialog/settings-handlers.js` | `lib/ui/components/*.js` |
 | Settings tabs | `lib/ui/components/settings-tabs.js` | `blueprint-settings.js` |

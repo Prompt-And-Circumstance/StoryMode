@@ -6417,3 +6417,135 @@ body.rpg-companion-collapsed .storymode-sidebar.storymode-position-right {
 .storymode-picker-no-results i {
     margin-right: 6px;
 }
+
+/* ============================================================================
+   PACING MODE SEPARATION - New UI Styles
+   ============================================================================ */
+
+/* Pacing Mode Toggle - Compact two-column layout */
+.storymode-mode-toggle {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.storymode-toggle-buttons {
+    display: flex;
+    gap: 6px;
+}
+
+.storymode-mode-btn {
+    padding: 5px 10px;
+    font-size: 0.8em;
+    border-radius: var(--sm-radius-sm);
+    background: var(--black30a);
+    border: 1px solid var(--SmartThemeBorderColor);
+    color: var(--SmartThemeBodyColor);
+    transition: all var(--sm-transition-fast);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.storymode-mode-btn:hover:not(.active) {
+    background: var(--black50a);
+    border-color: var(--SmartThemeQuoteColor);
+}
+
+.storymode-mode-btn.active {
+    background: var(--sm-accent);
+    border-color: var(--sm-accent);
+    color: white;
+    font-weight: 500;
+}
+
+.storymode-mode-btn i {
+    font-size: 0.9em;
+}
+
+.storymode-mode-info {
+    flex: 1;
+    padding: 5px 10px;
+    border-radius: var(--sm-radius-sm);
+    background: var(--black20a);
+    border: 1px solid var(--SmartThemeBorderColor);
+    font-size: 0.78em;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-mode-sublabel {
+    font-size: 0.9em;
+    color: var(--SmartThemeEmColor);
+    margin-bottom: 2px;
+}
+
+.storymode-mode-info .storymode-button-row {
+    margin-top: 8px;
+    gap: 16px;
+}
+
+.storymode-mode-info .storymode-button-row .menu_button {
+    padding: 5px 12px;
+    font-size: 0.85em;
+}
+
+/* Section Headers - Left aligned, compact */
+.storymode-section {
+    margin-bottom: 16px;
+}
+
+.storymode-section-header {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: var(--SmartThemeEmColor);
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.storymode-section-header i {
+    color: var(--sm-accent);
+    font-size: 0.9em;
+}
+
+/* Disabled state for Story Features in Scenario Mode */
+.storymode-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.storymode-notice-info {
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    border-left: 3px solid var(--SmartThemeQuoteColor);
+    background: var(--black30a);
+    border-radius: var(--sm-radius-sm);
+    font-size: 0.9em;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-notice-info i {
+    color: var(--SmartThemeQuoteColor);
+    margin-right: 6px;
+}
+
+/* Button row for blueprint actions */
+.storymode-button-row {
+    display: flex;
+    gap: 8px;
+}
+
+.storymode-button-row button {
+    flex: 1;
+}

@@ -6494,6 +6494,10 @@ body.rpg-companion-collapsed .storymode-sidebar.storymode-position-right {
     font-size: 0.85em;
 }
 
+.storymode-mode-info .storymode-button-row .menu_button i {
+    margin-right: 6px;
+}
+
 /* Section Headers - Left aligned, compact */
 .storymode-section {
     margin-bottom: 16px;

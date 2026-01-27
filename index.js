@@ -123,6 +123,7 @@ import {
     buildBlueprintSettingsSubtab,
     buildPostArcOptionsSubtab,
     buildAPIOptionsSubtab,
+    buildOverviewTabContent,
     buildGenreStyleTabContent,
     buildSettingsTabContent,
     buildGenerateBlueprintSubtab,
@@ -240,7 +241,7 @@ console.log('[Story Mode] All modules imported and initialized successfully');
 * @async
 * @returns {Promise<void>}
 */
-async function showSettingsDialog(initialTab = 'genre-style') {
+async function showSettingsDialog(initialTab = 'overview') {
     const settings = extension_settings[MODULE_NAME];
     const chatState = getChatStoryState();
     const blueprintState = BlueprintModule.getBlueprintState();
@@ -262,7 +263,10 @@ async function showSettingsDialog(initialTab = 'genre-style') {
 <div class="storymode-content-area">
 <!-- Tab Navigation -->
 <div class="storymode-tabs">
-<button class="storymode-tab active" data-tab="genre-style" title="Configure story arc and writing style">
+<button class="storymode-tab active" data-tab="overview" title="Mode selection and current configuration overview">
+<i class="fa-solid fa-home"></i> Overview
+</button>
+<button class="storymode-tab" data-tab="genre-style" title="Configure story arc and writing style">
 <i class="fa-solid fa-book-open"></i> Genre & Style
 </button>
 <button class="storymode-tab" data-tab="library" title="Browse and manage your scenario blueprint collection">
@@ -277,7 +281,10 @@ async function showSettingsDialog(initialTab = 'genre-style') {
 </div>
 <!-- Tab Content -->
 <div class="storymode-tab-content">
-<div id="tab_genre-style" class="storymode-tab-pane active">
+<div id="tab_overview" class="storymode-tab-pane active">
+${buildOverviewTabContent()}
+</div>
+<div id="tab_genre-style" class="storymode-tab-pane">
 ${buildGenreStyleTabContent()}
 </div>
 <div id="tab_library" class="storymode-tab-pane">

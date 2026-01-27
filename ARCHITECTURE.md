@@ -31,6 +31,23 @@ The extension supports two distinct pacing modes. See `Planning/v2/ARCHITECTURE-
 - `buildScenarioModeInjection()` in blueprint-module.js - builds Abstract Act prompt
 - `startStoryFromBlueprint()` in blueprint-module.js - activates Scenario Mode
 
+**Pacing Mode Exports** (from `lib/core/state-manager.js`):
+```javascript
+import { getPacingMode, PACING_MODES } from '../core/state-manager.js';
+
+// Check current mode (returns 'story' or 'scenario')
+const mode = getPacingMode();
+
+// Use constants for type-safe comparisons
+if (mode === PACING_MODES.STORY) { /* round-based UI */ }
+if (mode === PACING_MODES.SCENARIO) { /* signal-based UI */ }
+```
+
+**UI Mode Awareness:**
+- Arc controls (Go Forward/Back, Reset Arc) → only in Story Mode
+- Scene/beat displays → primarily Scenario Mode (optional in Story Mode with blueprint)
+- Status text → "Round X/Y" (Story) vs "Scene X/Y" (Scenario)
+
 ## Core Concepts
 
 **Rounds:** Increment on USER message submission (not AI response). Enables group chat where multiple AI characters respond per round. Only used in Story Mode.

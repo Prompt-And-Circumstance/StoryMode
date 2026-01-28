@@ -516,6 +516,11 @@ async function addUI() {
 * @returns {void}
 */
 function setupEventListeners() {
+    // Clean up existing delegated handlers to prevent stacking
+    $(document).off('click.storymode');
+    $('#story_mode_enabled').off('change');
+    $('#open_story_mode_settings').off('click');
+
     // Master toggle
     $('#story_mode_enabled').on('change', function () {
         const enabled = $(this).is(':checked');
@@ -529,7 +534,7 @@ function setupEventListeners() {
     $('#open_story_mode_settings').on('click', () => showSettingsDialog());
 
     // Start Story from Blueprint button (in settings dialog)
-    $(document).on('click', '#start_story_from_blueprint_btn', async function () {
+    $(document).on('click.storymode', '#start_story_from_blueprint_btn', async function () {
         const btn = $(this);
         const originalText = btn.html();
         const blueprintState = getBlueprintState();
@@ -584,8 +589,7 @@ function setupEventListeners() {
                 window.storyModeSettingsPopup.complete(POPUP_RESULT.AFFIRMATIVE);
             }
 
-            // Update main panel UI
-            updateStatusDisplay();
+            // Update main panel UI (renderMainPanel handles its own state reads)
             $('#story_mode_panel').replaceWith(renderMainPanel());
             setupEventListeners();
         } catch (error) {

@@ -24,7 +24,12 @@ Story Mode is a SillyTavern extension providing narrative structure through thre
 **Key Entry Points:**
 - `index.js` - Main entry, UI setup, event wiring
 - `lib/core/event-handlers.js` - Message events, signal parsing
-- `lib/blueprint/module.js` - Blueprint operations, Scenario Mode
+- `lib/blueprint/module.js` - Blueprint operations, re-exports extracted modules
+
+**Extracted Blueprint Modules** (from module.js for maintainability):
+- `lib/blueprint/injection.js` - Blueprint prompt injection XML builder
+- `lib/blueprint/scene-pacing.js` - Scene pacing calculations
+- `lib/blueprint/summarization.js` - Scene summarization logic
 
 **Blueprint Storage** (file-backed, browser-agnostic):
 - `lib/blueprint/file-api.js` - SillyTavern `/api/files/*` wrapper
@@ -35,13 +40,29 @@ Story Mode is a SillyTavern extension providing narrative structure through thre
 ## Code Patterns
 
 ### Document-Level Event Delegation
-For dynamic content (popups), attach to document:
+For dynamic content (popups), attach to document with **namespaced events** to prevent stacking:
 ```javascript
-$(document).on('change', '[data-field]', function(e) {
+// Clean up before re-binding to prevent duplicate handlers
+$(document).off('click.myNamespace');
+
+// Use namespaced event
+$(document).on('click.myNamespace', '[data-field]', function(e) {
     if (!$(this).closest('.my-editor-container').length) return;
     // Handle event
 });
 ```
+
+### Re-export Pattern for Extracted Modules
+When functions are extracted to separate files, use **import-then-export** (not direct re-export):
+```javascript
+// ✅ CORRECT - creates local binding for use in default export
+import { getScenePacingInfo, getCurrentScene } from './scene-pacing.js';
+export { getScenePacingInfo, getCurrentScene };
+
+// ❌ WRONG - no local binding, causes ReferenceError if used in default export
+export { getScenePacingInfo } from './scene-pacing.js';
+```
+Direct re-exports don't create local variables. If the function is referenced elsewhere in the file (e.g., in a default export object), you'll get a ReferenceError.
 
 ### UI Button Loading State
 ```javascript
@@ -217,6 +238,8 @@ window.StoryModeDebug.setCoverDebug(true/false)
 26. Navigate gallery → previous/next images work correctly
 27. Delete cover from gallery → verify removal
 28. Scene image generation (if SD configured) → verify image appears
+29. Scene transition with auto-generate → verify preview popup appears automatically
+30. Start story from library → verify cover appears in controller panel
 
 ### Epilogue & Summary Generation
 29. Arc completes with auto-epilogue enabled → epilogue message appears
@@ -244,7 +267,7 @@ Bad Request {"error":{"message":"Invalid option: expected one of \"xhigh\"|\"hig
 
 **Cause:** SillyTavern presets with `reasoning: { effort: 'auto' }` - GLM 4.7 needs explicit effort levels.
 
-**Automatic Fix:** `generateWithPreset()` in `lib/blueprint/module.js` retries with `includePreset: false` and `reasoning: { effort: 'high' }`.
+**Automatic Fix:** `generateWithPreset()` in `lib/generation/orchestration.js` retries with `includePreset: false` and `reasoning: { effort: 'high' }`.
 
 **Manual Fix:** Edit connection profile preset, change reasoning effort from "auto" to "high".
 

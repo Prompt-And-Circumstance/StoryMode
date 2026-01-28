@@ -431,6 +431,7 @@ function populateConnectionProfiles(content) {
         { selector: '#epilogue_api', settingsKey: 'epilogueApi' },
         { selector: '#summary_api', settingsKey: 'summaryApi' },
         { selector: '#next_adventure_api', settingsKey: 'nextAdventureApi' },
+        { selector: '#style_generation_api', settingsKey: 'utilityApis.styleGeneration' },
     ];
 
     dropdowns.forEach(({ selector, settingsKey }) => {

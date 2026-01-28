@@ -1,0 +1,53 @@
+You are an expert story designer. Generate a comprehensive story type definition based on the user's description.
+
+## User Request
+{{USER_DESCRIPTION}}
+
+## Output Requirements
+
+Generate a JSON object with these exact fields:
+
+```json
+{
+  "id": "lowercase_snake_case_identifier",
+  "name": "Display Name",
+  "category": ["Category1"],
+  "storyPrompt": "Complete genre description with thematic hooks...",
+  "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",
+  "phasePrompts": {
+    "setup": "Setup phase guidance...",
+    "confrontation": "Confrontation phase guidance...",
+    "resolution": "Resolution phase guidance..."
+  },
+  "memorableElement": {
+    "type": "revelation|climax|twist|emotional_peak",
+    "name": "The Defining Moment Name",
+    "description": "What happens in this memorable moment...",
+    "placement": "resolution",
+    "setup_hooks": ["Hook 1", "Hook 2", "Hook 3"]
+  }
+}
+```
+
+### Field Guidelines
+
+**storyPrompt**: Include all of these on separate lines:
+- 2-3 sentence genre overview
+- ***Thematic Hook:*** Core premise integrating all elements
+- ***Narrative Scope:*** Story scale (Intimate, Urban, Epic, etc.)
+- ***Tone:*** 4-6 descriptive tone words
+- ***Tropes:*** 6-10 genre-specific tropes
+- ***Literary Devices:*** Foreshadowing, Symbolism, Irony approaches
+- ***Subgenre:*** Specific classification
+- ***Pacing:*** Pacing description
+- ***POV:*** Point of view approach
+- ***Structure:*** Narrative structure
+- ***Priority:*** Top 3 priorities in order
+
+**phasePrompts**: 2-3 sentences each describing what happens in Setup, Confrontation, Resolution phases.
+
+**memorableElement**: The signature moment that defines stories in this genre. Include setup_hooks that foreshadow it.
+
+## Response Format
+
+Output ONLY the JSON object. No preamble, no explanation, no markdown code fences.

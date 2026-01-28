@@ -24,7 +24,10 @@ Extension-StoryMode/
     │   └── event-handlers.js# Message events, signal parsing
     ├── blueprint/           # Blueprint system
     │   ├── index.js         # Re-exports public API
-    │   ├── module.js        # Core blueprint operations (large)
+    │   ├── module.js        # Core blueprint operations, re-exports extracted modules
+    │   ├── injection.js     # Blueprint prompt injection (extracted from module.js)
+    │   ├── scene-pacing.js  # Scene pacing calculations (extracted from module.js)
+    │   ├── summarization.js # Scene summarization (extracted from module.js)
     │   ├── schema.js        # Blueprint field definitions
     │   ├── validation.js    # Blueprint validation
     │   ├── normalization.js # Data normalization
@@ -133,10 +136,10 @@ Extension-StoryMode/
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `lib/blueprint/module.js` | ~2,165 | Core blueprint operations, Scenario Mode |
 | `index.js` | ~1,264 | Entry point, UI setup, settings dialog |
 | `lib/editor/type-editors.js` | ~1,052 | Story type/author style CRUD |
 | `lib/ui/controller-panel.js` | ~1,007 | Floating/docked Story Controller |
+| `lib/blueprint/module.js` | ~990 | Core blueprint operations, re-exports extracted modules |
 | `lib/generation/templates.js` | ~973 | LLM prompt templates |
 | `lib/dialog/settings-handlers.js` | ~929 | Settings dialog event handlers |
 | `lib/blueprint/library.js` | ~926 | Blueprint library management |
@@ -144,6 +147,16 @@ Extension-StoryMode/
 | `lib/core/state-manager.js` | ~673 | Settings, chat state, data storage |
 | `lib/core/event-handlers.js` | ~656 | Message events, signal parsing |
 | `lib/generation/orchestration.js` | ~650 | Phased generation coordinator |
+
+### Extracted Blueprint Modules (lib/blueprint/)
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `summarization.js` | ~300 | Scene summarization, auto-summary triggers |
+| `scene-pacing.js` | ~150 | Scene pacing calculations, scene boundary logic |
+| `injection.js` | ~250 | Blueprint prompt injection XML builder |
+
+These modules were extracted from `module.js` to improve maintainability. They are re-exported from `module.js` for backward compatibility.
 
 ### Split Component Modules (lib/ui/components/)
 
@@ -188,6 +201,21 @@ Note: `lib/ui/components.js` is now a thin re-export layer (~16 lines) for backw
 
 The blueprint editor uses **dependency injection** for refresh functions to avoid circular imports between modules.
 
+### Re-export Pattern for Extracted Modules
+
+When functions are extracted from a large module, the original module re-exports them for backward compatibility:
+
+```javascript
+// In module.js - MUST use import-then-export pattern
+import { getScenePacingInfo, getCurrentScene } from './scene-pacing.js';
+export { getScenePacingInfo, getCurrentScene };
+
+// NOT direct re-export (breaks if functions are used locally)
+// export { getScenePacingInfo } from './scene-pacing.js'; // ❌ No local binding
+```
+
+Direct re-exports (`export { x } from './foo.js'`) don't create local bindings, so if the function is referenced elsewhere in the file (e.g., in a default export object), use the import-then-export pattern.
+
 ### Generation Modules (lib/generation/)
 
 | File | Lines | Purpose |
@@ -211,7 +239,7 @@ lib/core/
 lib/blueprint/
 ├── schema.js (no internal deps)
 ├── validation.js (imports schema)
-├── utils.js (imports state-manager)
+├── utils.js (imports file-api for blueprintFilename)
 ├── placeholders.js (no internal deps)
 ├── storage.js (imports utils, validation, png/*)
 ├── file-api.js (no internal deps, wraps fetch)
@@ -221,8 +249,11 @@ lib/blueprint/
 ├── blank-blueprint.js (imports utils, normalization)
 ├── import.js (imports storage, validation, utils)
 ├── import-ui.js (imports utils, popup.js)
-├── export.js (imports storage)
-├── module.js (imports most core + generation modules)
+├── export.js (imports storage, utils)
+├── injection.js (imports state-manager, storage) [extracted from module.js]
+├── scene-pacing.js (imports state-manager, storage) [extracted from module.js]
+├── summarization.js (imports state-manager, storage, generation/*) [extracted from module.js]
+├── module.js (imports + re-exports injection, scene-pacing, summarization; imports core/*, generation/*)
 └── integration.js (imports library-adapter, storage, module, migration)
 
 lib/ui/
@@ -389,6 +420,9 @@ const url = new URL('../../data/author_styles.json', import.meta.url);
 | Library tab | `lib/ui/components/library.js` | `blueprint-tabs.js` |
 | Controller panel | `lib/ui/controller-panel.js` | `wand-menu.js` |
 | Scenario Mode | `lib/scenario/injection.js` | `beats.js`, `character-injection.js`, `blueprint/module.js` |
+| Blueprint injection | `lib/blueprint/injection.js` | `storage.js`, `state-manager.js` |
+| Scene pacing | `lib/blueprint/scene-pacing.js` | `storage.js`, `state-manager.js` |
+| Scene summarization | `lib/blueprint/summarization.js` | `storage.js`, `generation/*` |
 | Character injection | `lib/scenario/character-injection.js` | `blueprint/characters/*` |
 | Scene images | `lib/scene/image-generator.js` | `image-prompt.js`, `image-storage.js` |
 | Per-phase API profiles | `lib/ui/components/phase-override-panel.js` | `core/constants.js` |

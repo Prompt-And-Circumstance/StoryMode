@@ -1314,3 +1314,81 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
+
+/* ============================================================================
+   JSON TREE VIEWER
+   Interactive collapsible tree for viewing blueprint JSON structure
+   ============================================================================ */
+
+/* Tree node container */
+.json-tree-node {
+    padding: 3px 0;
+    line-height: 1.6;
+    white-space: nowrap;
+    user-select: none;
+}
+
+/* Leaf nodes (primitives) */
+.json-tree-leaf {
+    padding-left: 20px;
+}
+
+/* Parent nodes (objects/arrays) - highlight on hover */
+.json-tree-parent:hover {
+    background: var(--black30a);
+    border-radius: 3px;
+}
+
+/* Toggle icon */
+.json-tree-toggle {
+    transition: transform 0.2s ease;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.json-tree-toggle:hover {
+    color: var(--SmartThemeEmColor);
+}
+
+/* Keys */
+.json-tree-key {
+    font-weight: 500;
+    margin-right: 4px;
+}
+
+/* Preview text for collapsed nodes */
+.json-tree-preview {
+    font-style: italic;
+    opacity: 0.7;
+}
+
+/* Selection styling for copy operations */
+#blueprint_json_tree {
+    user-select: text;
+    -webkit-user-select: text;
+    text-align: left;
+}
+
+#blueprint_json_tree .json-tree-key {
+    user-select: text;
+}
+
+/* Scrollbar styling for tree container */
+#blueprint_json_tree::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+#blueprint_json_tree::-webkit-scrollbar-track {
+    background: var(--black30a);
+    border-radius: 5px;
+}
+
+#blueprint_json_tree::-webkit-scrollbar-thumb {
+    background: var(--SmartThemeBorderColor);
+    border-radius: 5px;
+}
+
+#blueprint_json_tree::-webkit-scrollbar-thumb:hover {
+    background: var(--SmartThemeEmColor);
+}

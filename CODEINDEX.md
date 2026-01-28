@@ -41,6 +41,7 @@ Extension-StoryMode/
     │   ├── migration.js     # IndexedDB → file storage migration
     │   ├── import.js        # Import from PNG/JSON
     │   ├── import-ui.js     # Import dialogs and UI components
+    │   ├── missing-style-handler.js # Handle missing story types/author styles
     │   ├── export.js        # Export to PNG
     │   ├── merger.js        # Blueprint merging
     │   ├── utils.js         # Utility functions

@@ -31,9 +31,11 @@ WORKFLOW-STATE-*.json
 # Planning documents (private development notes)
 Planning/
 
-# Root-level plan documents at project root
+# Root-level plan and test documents at project root
 PLAN-*.md
-TESTING-*.md
+TEST-*.md
+TESTING-*
+test-*.log
 
 # But keep README and documentation
 !README.md

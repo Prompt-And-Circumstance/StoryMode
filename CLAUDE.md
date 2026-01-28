@@ -188,6 +188,18 @@ window.StoryModeDebug.setBlueprintDebug(true/false)
 window.StoryModeDebug.setCoverDebug(true/false)
 ```
 
+Audit event handlers for broken bindings (run with settings dialog open):
+```javascript
+// Check for handlers using direct binding on non-existent elements
+window.StoryModeDebug.auditHandlers()
+
+// Include lazy-loaded subtab content in the check
+window.StoryModeDebug.auditHandlers({ includeSubtabs: true })
+
+// Show all handlers (not just broken ones)
+window.StoryModeDebug.auditHandlers({ showAll: true })
+```
+
 ## Code Style
 
 - JSDoc comments (`/**`)
@@ -217,6 +229,7 @@ window.StoryModeDebug.setCoverDebug(true/false)
 11. Verify persistence across chat changes
 12. Verify modules load without errors
 13. Check both state locations stay in sync
+14. Run `window.StoryModeDebug.auditHandlers()` → verify 0 broken handlers
 
 ### Blueprint Library (File-Backed)
 14. Create blueprint via wizard → saves to library
@@ -246,6 +259,13 @@ window.StoryModeDebug.setCoverDebug(true/false)
 30. Arc completes with auto-summary enabled → summary generated
 31. Manual "Generate Summary" from wand menu → summary appears
 32. Manual "Generate Epilogue" from wand menu → epilogue appears
+
+### Missing Style Handling
+33. Load blueprint with missing story type (embedded) → warning shown, "Add" imports it
+34. Load blueprint with missing author style (embedded) → warning shown, "Add" imports it
+35. Load blueprint with missing story type (NOT embedded) → warning dialog shown, form opens with ID prefilled
+36. Load blueprint with missing author style (NOT embedded) → warning dialog shown, form opens with ID prefilled
+37. Both story type AND author style missing (not embedded) → forms shown in succession
 
 ## Known Limitations
 

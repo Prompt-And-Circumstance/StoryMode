@@ -215,6 +215,19 @@ LLM-generated story structure with scenes, character arcs, antagonistic forces, 
 
 **Start Story from Blueprint:** Syncs settings, enables Scenario Mode (`pacingMode = 'scenario'`), sets `sceneMode = 'manual'`, prompts to use stored opening message. See `lib/blueprint/module.js:startStoryFromBlueprint()`.
 
+**Pure State Modification Pattern:** Settings and scenario state changes use pure functions that modify objects in memory without saving to disk. The caller is responsible for a single `saveMetadata()` call after all changes are accumulated. This prevents redundant network writes.
+```javascript
+// Pure functions (no side effects, no saves):
+calculateBlueprintSettingsChanges(currentState, blueprint) // → { proposedChanges, changes, detailChanges }
+applyBlueprintSettingsToState(state, proposedChanges)      // mutates state in place
+applyScenarioModeToState(chatState, blueprintState, bp)    // mutates both in place
+
+// syncBlueprintSettings() delegates to these internally (dialog + apply + save)
+// startStoryFromBlueprint() uses them directly for single-save optimization
+```
+
+**⚠️ When adding new state fields to the startup flow:** Add them to the appropriate pure function, not as a separate save call. Both `syncBlueprintSettings` and `startStoryFromBlueprint` will pick up the change automatically.
+
 ## Connection Manager Integration
 
 **Loading Profiles:**

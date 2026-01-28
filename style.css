@@ -750,6 +750,32 @@
     color: var(--SmartThemeBodyColor);
 }
 
+/* Missing style warning state */
+.storymode-blueprint-info-grid .storymode-info-card.storymode-missing-style {
+    border: 1px solid var(--SmartThemeWarningColor);
+    background: rgba(255, 193, 7, 0.08);
+    align-items: center;
+}
+
+.storymode-blueprint-info-grid .storymode-info-card.storymode-missing-style span {
+    color: var(--SmartThemeWarningColor);
+}
+
+.storymode-add-style-btn {
+    margin-top: 6px;
+    padding: 3px 8px;
+    font-size: 0.75em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    align-self: center;
+}
+
+.storymode-add-style-btn i {
+    font-size: 0.9em;
+}
+
 /* 3-column layout on wide screens - premise in third column */
 @media (min-width: 1200px) {
     .storymode-blueprint-info-grid {
@@ -840,6 +866,17 @@
     font-size: 0.88em;
     font-weight: 500;
     color: var(--SmartThemeBodyColor);
+}
+
+/* Missing style warning state (meta-row variant) */
+.storymode-blueprint-meta-row .storymode-info-card.storymode-missing-style {
+    border: 1px solid var(--SmartThemeWarningColor);
+    background: rgba(255, 193, 7, 0.08);
+    align-items: center;
+}
+
+.storymode-blueprint-meta-row .storymode-info-card.storymode-missing-style span {
+    color: var(--SmartThemeWarningColor);
 }
 
 /* Responsive: stack vertically on smaller screens */
@@ -5267,7 +5304,15 @@ body.rpg-companion-collapsed .storymode-sidebar.storymode-position-right {
 
 /* Form container */
 .storymode-edit-form {
+    position: relative;
     width: 100%;
+}
+
+.storymode-revert-btn--top {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
 }
 
 /* Column within the grid */
@@ -5371,7 +5416,7 @@ body.rpg-companion-collapsed .storymode-sidebar.storymode-position-right {
 }
 
 /* Revert button styling */
-.storymode-form-card .storymode-revert-btn {
+.storymode-revert-btn {
     margin-top: 8px;
     padding: 8px 14px;
     font-size: 0.85em;
@@ -5386,7 +5431,7 @@ body.rpg-companion-collapsed .storymode-sidebar.storymode-position-right {
     gap: 6px;
 }
 
-.storymode-form-card .storymode-revert-btn:hover {
+.storymode-revert-btn:hover {
     background: var(--black50a);
     border-color: var(--sm-accent);
     color: var(--sm-accent);
@@ -5410,6 +5455,134 @@ body.rpg-companion-collapsed .storymode-sidebar.storymode-position-right {
 
 .storymode-form-card .checkbox_label span {
     font-size: 0.9em;
+}
+
+/* ============================================================================
+   COLLAPSIBLE PANEL (Drawer-style expandable sections)
+   ============================================================================ */
+
+.storymode-collapsible-panel {
+    margin-top: 20px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-md);
+    overflow: hidden;
+}
+
+.storymode-collapsible-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--black30a);
+    cursor: pointer;
+    transition: var(--sm-transition-fast);
+    user-select: none;
+}
+
+.storymode-collapsible-header:hover {
+    background: var(--black50a);
+}
+
+.storymode-collapsible-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.storymode-collapsible-title > i {
+    color: var(--sm-accent);
+    font-size: 0.9em;
+}
+
+.storymode-collapsible-title h4 {
+    margin: 0;
+    font-size: 0.85em;
+    font-weight: 600;
+    color: var(--SmartThemeBodyColor);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.storymode-collapsible-badge {
+    font-size: 0.7em;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--black30a);
+    color: var(--SmartThemeQuoteColor);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.storymode-collapsible-panel.open .storymode-collapsible-badge {
+    background: var(--black50a);
+    color: var(--sm-accent);
+}
+
+.storymode-collapsible-icon {
+    color: var(--SmartThemeQuoteColor);
+    font-size: 0.8em;
+    transition: transform 0.2s ease;
+}
+
+.storymode-collapsible-panel.open .storymode-collapsible-icon {
+    transform: rotate(180deg);
+}
+
+.storymode-collapsible-content {
+    padding: 16px;
+    border-top: 1px solid var(--SmartThemeBorderColor);
+}
+
+/* ============================================================================
+   MEMORABLE ELEMENT PANEL (inside collapsible drawer)
+   ============================================================================ */
+
+.storymode-memorable-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.storymode-memorable-info {
+    display: flex;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--black20a);
+    border-radius: var(--sm-radius-sm);
+    border-left: 3px solid var(--sm-accent);
+    margin-bottom: 4px;
+    text-align: left;
+}
+
+.storymode-memorable-info > i {
+    color: var(--sm-accent);
+    font-size: 1.1em;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.storymode-memorable-info strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--SmartThemeEmColor);
+    font-size: 0.9em;
+}
+
+.storymode-memorable-info p {
+    margin: 0;
+    font-size: 0.82em;
+    line-height: 1.5;
+    color: var(--SmartThemeQuoteColor);
+}
+
+.storymode-memorable-toggle {
+    padding: 0 2px;
+}
+
+.storymode-memorable-fields {
+    flex-direction: column;
+    gap: 12px;
 }
 
 /* ============================================================================

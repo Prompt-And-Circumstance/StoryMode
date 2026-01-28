@@ -692,10 +692,10 @@
   },
   {
     "id": "action_thriller",
-    "name": "Action Thriller - test name change",
+    "name": "Action Thriller",
     "category": [
       "Action",
-      "Thriller. test category"
+      "Thriller"
     ],
     "storyPrompt": "High-octane action drives relentless narratives of ordinary people in extraordinary danger. Die-hard heroes face terrorists, criminals, or disasters with explosive set-pieces and non-stop tension.\n***Thematic Hook:*** An ordinary person or action hero finds themselves in extreme danger—terrorists, disasters, or criminal plots—and must use resourcefulness, guts, and relentless determination to survive and save others.\n***Narrative Scope:*** Contained crisis or expanding threat.\n***Tone:*** Intense, Fast-paced, Explosive, Heroic.\n***Tropes:*** Wrong place/wrong time, One-man army, Ticking clock, Explosive set-pieces, Determined hero, Escalating stakes.\n***Literary Devices:*** Foreshadowing: Action setup, Symbolism: Minimal, Irony: Situational tension.\n***Subgenre:*** Action thriller, Die-hard style.\n***Pacing:*** Relentless and explosive.\n***POV:*** Close third-person or first-person hero.\n***Structure:*** Escalating action set-pieces.\n***Priority:*** Action spectacle > Tension > Hero determination.",
     "progressTemplate": "Arc Progress: Step {currentStep}/{arcLength} ({arcPercent}% complete). Phase: {phase} - Message {positionInPhase}/{totalInPhase} ({phasePercent}% through {phase}).",

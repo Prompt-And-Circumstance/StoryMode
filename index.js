@@ -32,6 +32,7 @@ import { callGenericPopup, Popup, POPUP_TYPE, POPUP_RESULT } from '/scripts/popu
 
 // Import Blueprint module (Story Blueprints feature)
 import * as BlueprintModule from './lib/blueprint/module.js';
+import { getBlueprintState } from './lib/blueprint/storage.js';
 
 // Import Blueprint Editor module
 import { openBlueprintEditor, generateCoverFromSD, addCoverToGallery, setCoverImageUrl } from './lib/editor/blueprint-editor.js';
@@ -219,7 +220,7 @@ console.log('[Story Mode] All modules imported and initialized successfully');
 async function showSettingsDialog(initialTab = 'overview') {
     const settings = extension_settings[MODULE_NAME];
     const chatState = getChatStoryState();
-    const blueprintState = BlueprintModule.getBlueprintState();
+    const blueprintState = getBlueprintState();
     const hasBlueprint = blueprintState?.blueprint && blueprintState.useBlueprint;
     const blueprintTabDisabled = !hasBlueprint ? 'disabled' : '';
     const blueprintTabTitle = hasBlueprint
@@ -343,7 +344,7 @@ ${buildSettingsTabContent()}
             contentDiv.html(buildGenerateBlueprintSubtab());
         } else {
             // Show blueprint detail tabs
-            const blueprintState = BlueprintModule.getBlueprintState();
+            const blueprintState = getBlueprintState();
             const blueprint = blueprintState.blueprint;
             if (!blueprint) {
                 contentDiv.html('<p class="storymode-form-hint">No scenario blueprint available. Generate one first.</p>');
@@ -520,6 +521,7 @@ function setupEventListeners() {
         const enabled = $(this).is(':checked');
         extension_settings[MODULE_NAME].enabled = enabled;
         saveSettingsDebounced();
+        toastr.success('Settings saved');
         updateStoryPrompt();
         updateStatusDisplay();
     });
@@ -530,7 +532,7 @@ function setupEventListeners() {
     $(document).on('click', '#start_story_from_blueprint_btn', async function () {
         const btn = $(this);
         const originalText = btn.html();
-        const blueprintState = BlueprintModule.getBlueprintState();
+        const blueprintState = getBlueprintState();
 
         if (!blueprintState.blueprint) {
             toastr.error('No scenario loaded', 'Scenario Error');
@@ -627,7 +629,7 @@ function updateStatusDisplay() {
         statusText = `Story: ${storyName} | Author: ${authorName} | Arc ${chatState.currentStep}/${chatState.arcLength}`;
         // Add blueprint indicator if enabled and active
         if (settings.blueprintSettings?.enabled) {
-            const blueprintState = BlueprintModule.getBlueprintState();
+            const blueprintState = getBlueprintState();
             if (blueprintState.useBlueprint && blueprintState.blueprint) {
                 const currentScene = BlueprintModule.getCurrentScene(
                     blueprintState.blueprint,
@@ -676,7 +678,7 @@ function updateStatusDisplay() {
 */
 function refreshBlueprintPreview() {
     const settings = extension_settings[MODULE_NAME];
-    const blueprintState = BlueprintModule.getBlueprintState();
+    const blueprintState = getBlueprintState();
     const baseSettings = $('#story_mode_base_settings');
 
     // Remove existing blueprint preview if present
@@ -894,7 +896,7 @@ function onChatChanged() {
     setLoadingChat(true); // Set flag to prevent increment during chat load
 
     // Debug: Log blueprint state on chat change
-    const blueprintState = BlueprintModule.getBlueprintState();
+    const blueprintState = getBlueprintState();
     const summaryCount = Object.keys(blueprintState?.sceneSummaries || {}).length;
     console.debug('[Story Mode] Chat changed - blueprintState has', summaryCount, 'summaries, useBlueprint:', blueprintState?.useBlueprint);
 
@@ -945,10 +947,6 @@ jQuery(async function () {
 
     // Initialize Blueprint module
     await BlueprintModule.initBlueprintSettings();
-
-    // Pass loaded story types and author styles to blueprint module
-    BlueprintModule.setStoryTypes(storyTypes);
-    BlueprintModule.setAuthorStyles(authorStyles);
     console.log('[Story Mode] Blueprint module initialized');
 
     // Initialize Loading Indicator module

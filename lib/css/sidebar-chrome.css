@@ -296,3 +296,54 @@
         opacity: 0.5;
     }
 }
+
+/* ============================================================================
+   LIGHT THEME OVERRIDES FOR SIDEBAR CHROME
+   ============================================================================ */
+
+.storymode-sidebar[data-theme="light"] .storymode-debug-interactable:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-detail-section h4 {
+    border-bottom-color: #d1d5db;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-detail-row {
+    border-top-color: #d1d5db;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-beat-item {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-docked-header {
+    background: #f3f4f6;
+    border-bottom-color: #d1d5db;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-docked-action-btn {
+    background: #e5e7eb;
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-debug-section {
+    border-bottom-color: #d1d5db;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-style-item {
+    border-bottom-color: #d1d5db;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-style-desc {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-debug-hint {
+    border-top-color: #d1d5db;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-debug-bar {
+    background: rgba(0, 0, 0, 0.08);
+}

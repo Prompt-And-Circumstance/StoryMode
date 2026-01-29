@@ -296,3 +296,81 @@
     opacity: 0.6;
 }
 
+/* ============================================================================
+   LIGHT THEME OVERRIDES FOR PACING CONTROLS
+   ============================================================================ */
+
+.storymode-sidebar[data-theme="light"] .storymode-mode-toggle {
+    border-top-color: #d1d5db;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-mode-btn {
+    border-color: #d1d5db;
+    background: #e5e7eb;
+    color: #4b5563;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-mode-btn:hover {
+    background: #d1d5db;
+    color: #1f2937;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-mode-btn.active {
+    background: rgba(13, 148, 136, 0.15);
+    border-color: #0d9488;
+    color: #0d9488;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-ooc-textarea {
+    border-color: #d1d5db;
+    background: #ffffff;
+    color: #1f2937;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-ooc-textarea::placeholder {
+    color: #9ca3af;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-ooc-clear-btn {
+    border-color: #d1d5db;
+    color: #374151;
+    background: #ffffff;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-summaries-panel {
+    border-color: #d1d5db;
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-summaries-header {
+    background: #f3f4f6;
+    border-bottom-color: #d1d5db;
+    color: #1f2937;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-summaries-list {
+    background: #d1d5db;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-summary-item {
+    background: #fafafc;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-summary-item:hover {
+    background: #f3f4f6;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-summary-title {
+    color: #374151;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-summary-text {
+    color: #6b7280;
+}
+
+.storymode-sidebar[data-theme="light"] .storymode-summaries-note {
+    background: #f3f4f6;
+    border-top-color: #d1d5db;
+    color: #6b7280;
+}
+

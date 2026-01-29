@@ -1,0 +1,298 @@
+/* Theme Selector in Header */
+.storymode-theme-selector {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.storymode-theme-btn {
+    background: var(--sm-sidebar-btn-bg);
+    border: 1px solid transparent;
+    color: var(--sm-sidebar-text-muted);
+    cursor: pointer;
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 0.75em;
+    padding: 0;
+}
+
+.storymode-theme-btn:hover {
+    color: var(--sm-sidebar-accent);
+    border-color: var(--sm-sidebar-accent);
+}
+
+.storymode-theme-btn.active {
+    background: var(--sm-sidebar-accent);
+    color: white;
+    border-color: var(--sm-sidebar-accent);
+}
+
+.storymode-theme-btn[data-theme="storymode"] i { color: var(--sm-accent, #4db6ac); }
+.storymode-theme-btn[data-theme="light"] i { color: #f59e0b; }
+.storymode-theme-btn[data-theme="dark"] i { color: #6366f1; }
+.storymode-theme-btn[data-theme="rpg-companion"] i { color: #e94560; }
+
+.storymode-theme-btn.active i {
+    color: white !important;
+}
+
+/* Theme row below header */
+.storymode-sidebar-theme-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 6px 14px;
+    background: var(--sm-sidebar-header-bg);
+    border-bottom: 1px solid var(--sm-sidebar-border);
+}
+
+.storymode-theme-label {
+    font-size: 0.75em;
+    color: var(--sm-sidebar-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Theme selector - no separator needed now */
+.storymode-theme-selector {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Ensure header actions have proper layout */
+.storymode-sidebar-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Legacy Docked Header Styles (kept for backwards compatibility) */
+.storymode-docked-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    background: var(--black50a);
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-docked-header h3 {
+    margin: 0;
+    font-size: 0.95em;
+    font-weight: 600;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-docked-header-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.storymode-docked-action-btn {
+    background: var(--black30a);
+    border: 1px solid var(--SmartThemeBorderColor);
+    color: var(--SmartThemeBodyColor);
+    cursor: pointer;
+    border-radius: 4px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.storymode-docked-action-btn:hover {
+    background: var(--sm-accent);
+    border-color: var(--sm-accent);
+    color: white;
+}
+
+.storymode-debug-section {
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-debug-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.storymode-debug-label {
+    font-size: 0.7em;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--sm-accent);
+    margin-bottom: 4px;
+}
+
+.storymode-debug-value {
+    color: var(--SmartThemeBodyColor);
+    font-weight: 500;
+    font-size: 1em;
+}
+
+.storymode-debug-round {
+    font-size: 1.4em;
+    font-weight: 700;
+}
+
+.storymode-debug-meta {
+    font-size: 0.8em;
+    color: var(--SmartThemeQuoteColor);
+    margin-top: 2px;
+}
+
+/* Phase badge next to round/scene label */
+.storymode-phase-badge {
+    display: inline-block;
+    background: var(--sm-accent);
+    color: white;
+    font-size: 0.85em;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+    text-transform: capitalize;
+    letter-spacing: 0;
+    font-weight: 500;
+}
+
+/* Story type and author style info */
+.storymode-style-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.storymode-style-item {
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-style-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.storymode-style-header {
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.storymode-style-header:hover {
+    opacity: 0.8;
+}
+
+.storymode-style-info .storymode-debug-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.storymode-style-info .storymode-debug-label i {
+    font-size: 0.9em;
+}
+
+.storymode-style-chevron {
+    margin-left: auto;
+    font-size: 0.8em;
+    opacity: 0.7;
+    transition: transform 0.2s;
+}
+
+.storymode-style-info .storymode-debug-value {
+    font-size: 0.95em;
+    margin-bottom: 2px;
+}
+
+.storymode-style-desc {
+    font-size: 0.75em;
+    line-height: 1.4;
+    color: var(--SmartThemeQuoteColor);
+    margin-top: 6px;
+    padding: 8px;
+    background: var(--black10a);
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease, padding 0.3s ease;
+}
+
+.storymode-style-desc.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+    padding: 0 8px;
+    overflow: hidden;
+}
+
+.storymode-debug-hint {
+    font-size: 0.75em;
+    color: var(--SmartThemeQuoteColor);
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px dashed var(--SmartThemeBorderColor);
+    opacity: 0.85;
+}
+
+.storymode-debug-hint i {
+    margin-right: 4px;
+    opacity: 0.7;
+}
+
+.storymode-debug-bar {
+    height: 4px;
+    background: var(--black30a);
+    border-radius: 2px;
+    margin-top: 6px;
+    overflow: hidden;
+}
+
+.storymode-debug-bar-fill {
+    height: 100%;
+    background: var(--sm-accent);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.storymode-debug-beats {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    font-size: 1.1em;
+    margin-top: 4px;
+}
+
+.storymode-debug-beats .beat-done {
+    color: var(--sm-phase-setup);
+}
+
+.storymode-debug-beats .beat-current {
+    color: var(--sm-warm);
+    animation: beatPulse 1.5s ease-in-out infinite;
+}
+
+.storymode-debug-beats .beat-pending {
+    color: var(--SmartThemeQuoteColor);
+}
+
+@keyframes beatPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}

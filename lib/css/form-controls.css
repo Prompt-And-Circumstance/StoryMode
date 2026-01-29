@@ -1,0 +1,283 @@
+/* ============================================================================
+   TOGGLE SWITCH COMPONENT - Refined
+   ============================================================================ */
+
+.storymode-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-toggle:hover {
+    padding-left: 8px;
+    background: var(--black20a);
+}
+
+.storymode-toggle:last-child {
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-toggle-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    text-align: left;
+}
+
+.storymode-toggle-label {
+    font-size: 0.95em;
+    font-weight: 500;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-toggle-description {
+    font-size: 0.78em;
+    color: var(--SmartThemeEmColor);
+    line-height: 1.4;
+}
+
+/* The switch container */
+.storymode-switch {
+    position: relative;
+    width: 46px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.storymode-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.storymode-switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--black60a);
+    transition: var(--sm-transition);
+    border-radius: 24px;
+    border: 1px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 2px;
+    bottom: 2px;
+    background: var(--SmartThemeEmColor);
+    transition: var(--sm-transition);
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.storymode-switch input:checked+.storymode-switch-slider {
+    background: var(--sm-accent);
+    border-color: var(--sm-accent);
+    box-shadow: 0 0 12px var(--sm-accent-glow);
+}
+
+.storymode-switch input:checked+.storymode-switch-slider:before {
+    transform: translateX(22px);
+    background: white;
+}
+
+.storymode-switch input:focus+.storymode-switch-slider {
+    box-shadow: 0 0 0 3px var(--sm-accent-glow);
+}
+
+/* ============================================================================
+   FORM CONTROLS - Polished
+   ============================================================================ */
+
+.storymode-form-group {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 0px 10px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    text-align: left;
+}
+
+.storymode-form-label {
+    display: block;
+    font-size: 0.8em;
+    font-weight: 600;
+    color: var(--SmartThemeBodyColor);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.storymode-form-hint {
+    font-size: 0.78em;
+    color: var(--SmartThemeEmColor);
+    margin-top: 6px;
+    font-style: italic;
+    line-height: 1.4;
+}
+
+.storymode-info-box {
+    padding: 16px;
+    background: var(--black30a);
+    border-left: 3px solid var(--sm-accent);
+    border-radius: var(--sm-radius-sm);
+    margin-top: 16px;
+}
+
+.storymode-info-box p {
+    margin: 8px 0;
+    color: var(--SmartThemeBodyColor);
+    line-height: 1.5;
+}
+
+.storymode-info-box p:first-child {
+    margin-top: 0;
+}
+
+.storymode-info-box p:last-child {
+    margin-bottom: 0;
+}
+
+/* Custom Slider - Refined track and thumb */
+.storymode-slider-container {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.storymode-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: var(--black50a);
+    border-radius: 3px;
+    outline: none;
+    position: relative;
+}
+
+.storymode-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--sm-accent);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: var(--sm-transition);
+    box-shadow: 0 2px 6px var(--sm-accent-glow);
+}
+
+.storymode-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 3px 10px var(--sm-accent-glow);
+}
+
+.storymode-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: var(--sm-accent);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 6px var(--sm-accent-glow);
+}
+
+.storymode-slider-value {
+    min-width: 70px;
+    padding: 8px 12px;
+    background: var(--black30a);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    text-align: center;
+    font-size: 0.85em;
+    font-weight: 500;
+    color: var(--SmartThemeBodyColor);
+}
+
+/* Custom Select */
+.storymode-select {
+    width: 100%;
+    padding: 11px 14px;
+    background: var(--black30a);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    color: var(--SmartThemeBodyColor);
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: var(--sm-transition);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+}
+
+.storymode-select:hover {
+    border-color: var(--sm-accent);
+    background-color: var(--black50a);
+}
+
+.storymode-select:focus {
+    outline: none;
+    border-color: var(--sm-accent);
+    box-shadow: 0 0 0 3px var(--sm-accent-glow);
+}
+
+/* Select with edit button */
+.storymode-select-group {
+    display: flex;
+    gap: 8px;
+}
+
+.storymode-select-group .storymode-select {
+    flex: 1;
+}
+
+.storymode-select-group button {
+    padding: 10px 14px;
+    flex-shrink: 0;
+    background: var(--black30a);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    color: var(--SmartThemeEmColor);
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-select-group button:hover {
+    border-color: var(--sm-accent);
+    color: var(--sm-accent);
+    background: var(--black50a);
+}
+
+/* Custom Input (text, number, etc.) - Matches storymode-select styling */
+.storymode-input {
+    width: 100%;
+    padding: 11px 14px;
+    background: var(--black30a);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    color: var(--SmartThemeBodyColor);
+    font-size: 0.9em;
+    transition: var(--sm-transition);
+}
+
+.storymode-input:hover {
+    border-color: var(--sm-accent);
+    background-color: var(--black50a);
+}
+
+.storymode-input:focus {
+    outline: none;
+    border-color: var(--sm-accent);
+    box-shadow: 0 0 0 3px var(--sm-accent-glow);
+}
+

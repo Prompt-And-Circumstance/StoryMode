@@ -1,0 +1,249 @@
+/* CSS Custom Properties - Rich, sophisticated palette */
+:root {
+    /* Primary accent - refined teal */
+    --sm-accent: #4db6ac;
+    --sm-accent-hover: #5fcfc4;
+    --sm-accent-dark: #00897b;
+    --sm-accent-glow: rgba(77, 182, 172, 0.25);
+    --sm-accent-subtle: rgba(77, 182, 172, 0.1);
+
+    /* Secondary accent - warm amber for "stage lighting" */
+    --sm-warm: #d4a574;
+    --sm-warm-glow: rgba(212, 165, 116, 0.2);
+
+    /* Phase colors - theatrical */
+    --sm-phase-setup: #66bb6a;
+    --sm-phase-confrontation: #ffa726;
+    --sm-phase-resolution: #ef5350;
+
+    /* Layout */
+    --sm-sidebar-width: 260px;
+    --sm-radius-sm: 6px;
+    --sm-radius-md: 10px;
+    --sm-radius-lg: 14px;
+
+    /* Timing */
+    --sm-transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --sm-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --sm-transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Z-index scale — replaces all magic numbers */
+    --sm-z-local: 1;
+    --sm-z-above: 10;
+    --sm-z-sidebar-below: 999;
+    --sm-z-sidebar: 1000;
+    --sm-z-modal: 9999;
+    --sm-z-floating: 10000;
+    --sm-z-popout: 10001;
+    --sm-z-popout-above: 10002;
+    --sm-z-dropdown: 30000;
+    --sm-z-overlay: 100001;
+}
+
+/* ============================================================================
+   MAIN PANEL (Sidebar Extension Panel)
+   Compact, elegant, informative at a glance
+   ============================================================================ */
+
+#story_mode_panel {
+    position: relative;
+}
+
+#story_mode_panel .inline-drawer-header {
+    padding: 12px 14px;
+    border-radius: var(--sm-radius-md) var(--sm-radius-md) 0 0;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    transition: var(--sm-transition);
+}
+
+#story_mode_panel .inline-drawer-header b {
+    letter-spacing: 0.3px;
+    color: var(--SmartThemeBodyColor);
+}
+
+#story_mode_panel .inline-drawer-content {
+    padding: 14px;
+}
+
+.storymode-panel {
+    padding: 0;
+    margin-bottom: 0;
+}
+
+/* Settings panel row */
+.storymode-settings-panel {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.storymode-settings-panel .checkbox_label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: var(--sm-radius-sm);
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-settings-panel .checkbox_label input[type="checkbox"] {
+    accent-color: var(--sm-accent);
+    width: 16px;
+    height: 16px;
+}
+
+.storymode-settings-panel .checkbox_label span {
+    font-size: 0.85em;
+    font-weight: 500;
+}
+
+/* ============================================================================
+   AUTHOR STYLE OVERRIDE BADGES
+   ============================================================================ */
+
+/* Override badge base style */
+.override-badge {
+    font-size: 0.75em;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.override-badge i {
+    margin-right: 2px;
+}
+
+/* Source-specific badge colors */
+.override-badge.blueprint-badge {
+    background: var(--SmartThemeBotMesBlurTintColor, #9b59b6); /* Purple for blueprint */
+}
+
+.override-badge.character-badge {
+    background: var(--SmartThemeQuoteColor, #e67e22); /* Orange for character */
+}
+
+.override-badge.group-badge {
+    background: var(--SmartThemeEmColor, #3498db); /* Blue for group */
+}
+
+/* Source name badge in settings */
+.source-name-badge {
+    font-weight: normal;
+    color: var(--SmartThemeBodyColor, #888);
+}
+
+#story_mode_settings_btn {
+    margin-left: auto;
+}
+
+#story_mode_settings_btn button,
+#open_story_mode_settings {
+    padding: 6px 12px;
+    font-size: 0.8em;
+    border-radius: var(--sm-radius-sm);
+    background: var(--black30a);
+    border: 1px solid var(--SmartThemeBorderColor);
+    color: var(--SmartThemeBodyColor);
+    transition: var(--sm-transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 280px;
+    /* About twice the original width */
+    justify-content: center;
+}
+
+#story_mode_settings_btn button:hover,
+#open_story_mode_settings:hover {
+    background: var(--sm-accent);
+    border-color: var(--sm-accent);
+    color: white;
+    box-shadow: 0 2px 8px var(--sm-accent-glow);
+}
+
+/* Status display - elegant info card */
+.storymode-status {
+    padding: 12px 14px;
+    border-radius: var(--sm-radius-md);
+    border: 1px solid var(--SmartThemeBorderColor);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.storymode-status::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    /*  background: linear-gradient(90deg, var(--sm-accent) 0%, var(--sm-warm) 100%); */
+}
+
+.storymode-status small {
+    font-size: 0.82em;
+    color: var(--SmartThemeBodyColor);
+    line-height: 1.5;
+    display: block;
+}
+
+/* Blueprint indicator - subtle glow effect */
+.storymode-blueprint-indicator {
+    color: var(--sm-accent);
+    font-weight: 500;
+}
+
+.storymode-blueprint-indicator i {
+    margin-right: 4px;
+    animation: subtle-pulse 3s ease-in-out infinite;
+}
+
+@keyframes subtle-pulse {
+
+    0%,
+    100% {
+        opacity: 0.7;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Configure Blueprint button in main panel */
+#generate_blueprint_btn {
+    margin-top: 12px;
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--black50a);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-md);
+    color: var(--SmartThemeBodyColor);
+    font-size: 0.85em;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: var(--sm-transition);
+    cursor: pointer;
+}
+
+#generate_blueprint_btn:hover {
+    background: var(--sm-accent);
+    border-color: var(--sm-accent);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--sm-accent-glow);
+}
+
+#generate_blueprint_btn i {
+    font-size: 0.95em;
+}

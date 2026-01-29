@@ -1,0 +1,317 @@
+/* ============================================================================
+   SCENE IMAGE GENERATION STYLES
+   ============================================================================ */
+
+/* Scene image section in controller panel */
+.storymode-debug-thumb {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    /* Cap height to avoid taking up full panel */
+    overflow: hidden;
+    border-radius: 4px;
+    margin: 4px 0;
+    border: 1px solid var(--black30a);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    background: var(--black50a);
+}
+
+.storymode-debug-thumb img {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: contain;
+    /* Ensure full image is visible */
+    transition: transform 0.2s;
+}
+
+.storymode-debug-thumb:hover img {
+    transform: scale(1.05);
+}
+
+.storymode-small-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+    background: var(--black30a);
+    border: 1px solid var(--black50a);
+    border-radius: 4px;
+    color: var(--white);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.storymode-small-btn:hover:not(:disabled) {
+    background: var(--sm-accent);
+    border-color: var(--sm-accent);
+}
+
+.storymode-small-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Image preview popup */
+.storymode-image-preview {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, black);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-md);
+    max-width: 90vw;
+    max-height: 90vh;
+    z-index: var(--sm-z-overlay);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 9999px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(12px);
+}
+
+.storymode-image-preview-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--sm-accent);
+    border-radius: var(--sm-radius-md) var(--sm-radius-md) 0 0;
+    color: white;
+}
+
+.storymode-preview-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: inherit;
+}
+
+.storymode-preview-close {
+    background: transparent;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 4px;
+    transition: background 0.2s;
+    opacity: 0.8;
+}
+
+.storymode-preview-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    opacity: 1;
+}
+
+.storymode-image-preview-body {
+    padding: 16px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.storymode-image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--black30a);
+    border-radius: var(--sm-radius-sm);
+    padding: 8px;
+}
+
+.storymode-image-preview-img {
+    max-width: 100%;
+    max-height: 60vh;
+    border-radius: 4px;
+    object-fit: contain;
+}
+
+.storymode-image-prompt {
+    padding: 0;
+}
+
+.storymode-prompt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-prompt-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.storymode-edit-prompt-btn,
+.storymode-copy-prompt-btn {
+    background: transparent;
+    border: 1px solid var(--black50a);
+    color: var(--SmartThemeBodyColor);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.storymode-edit-prompt-btn:hover,
+.storymode-copy-prompt-btn:hover {
+    background: var(--sm-accent);
+    border-color: var(--sm-accent);
+}
+
+.storymode-prompt-text {
+    color: var(--SmartThemeEmColor);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    word-break: break-word;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: var(--sm-radius-sm);
+    border: 1px dashed transparent;
+    transition: all 0.15s;
+}
+
+.storymode-prompt-text:hover {
+    border-color: var(--SmartThemeBorderColor);
+    background: var(--black30a);
+}
+
+.storymode-prompt-edit {
+    width: 100%;
+    min-height: 80px;
+    padding: 8px;
+    border: 1px solid var(--sm-accent);
+    border-radius: var(--sm-radius-sm);
+    background: var(--SmartThemeBlurTintColor);
+    color: var(--SmartThemeBodyColor);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.storymode-prompt-edit:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sm-accent-glow);
+}
+
+.storymode-prompt-edit-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    justify-content: flex-end;
+}
+
+.storymode-prompt-text.hidden,
+.storymode-prompt-edit.hidden,
+.storymode-prompt-edit-actions.hidden {
+    display: none;
+}
+
+.storymode-image-meta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.storymode-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85rem;
+    color: var(--SmartThemeQuoteColor);
+}
+
+.storymode-image-preview-actions {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--SmartThemeBorderColor);
+    flex-wrap: wrap;
+    background: var(--black30a);
+    border-radius: 0 0 var(--sm-radius-md) var(--sm-radius-md);
+}
+
+.storymode-add-to-gallery {
+    display: flex;
+    gap: 8px;
+    flex: 1 1 auto;
+    min-width: min(200px, 100%);
+    /* On narrow displays, take full width */
+}
+
+/* Make buttons wrap nicely on narrow displays */
+@media (max-width: 600px) {
+    .storymode-add-to-gallery {
+        flex-basis: 100%;
+        width: 100%;
+    }
+
+    .storymode-image-preview-actions > button {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+}
+
+.storymode-gallery-select {
+    flex: 1;
+    padding: 6px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--black50a);
+    background: var(--black30a);
+    color: var(--SmartThemeBodyColor);
+    cursor: pointer;
+}
+
+.storymode-add-gallery-btn,
+.storymode-add-to-chat-btn,
+.storymode-download-btn,
+.storymode-regenerate-btn,
+.storymode-delete-btn {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--black50a);
+    background: var(--black30a);
+    color: var(--SmartThemeBodyColor);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.storymode-download-btn:hover {
+    background: var(--sm-accent);
+    border-color: var(--sm-accent);
+}
+
+.storymode-regenerate-btn:hover {
+    background: var(--sm-warm);
+    border-color: var(--sm-warm);
+}
+
+.storymode-delete-btn:hover {
+    background: var(--sm-phase-resolution);
+    border-color: var(--sm-phase-resolution);
+}
+
+.storymode-add-to-chat-btn:hover {
+    background: var(--sm-phase-setup);
+    border-color: var(--sm-phase-setup);
+}
+
+.storymode-add-gallery-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+

@@ -1,0 +1,288 @@
+/* ============================================================================
+   EDIT FORM - FLAT CARD DESIGN
+   Reuses .storymode-form-grid and .storymode-form-section from blueprint-editor.css
+   ============================================================================ */
+
+/* Form container */
+.storymode-edit-form {
+    position: relative;
+    width: 100%;
+}
+
+.storymode-revert-btn--top {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: var(--sm-z-local);
+}
+
+/* Column within the grid */
+.storymode-form-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Card section - simple form section with label header */
+.storymode-form-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.storymode-form-card-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 0 6px 0;
+}
+
+.storymode-form-card-header i {
+    color: var(--sm-accent);
+    font-size: 0.8em;
+}
+
+.storymode-form-card-header h4 {
+    margin: 0;
+    font-size: 0.8em;
+    font-weight: 600;
+    color: var(--SmartThemeBodyColor);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.storymode-form-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Form field styling within cards */
+.storymode-form-card .storymode-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.storymode-form-card .storymode-field label {
+    font-weight: 500;
+    color: var(--SmartThemeEmColor);
+    font-size: 0.85em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.storymode-form-card .storymode-field .text_pole {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    background: var(--SmartThemeBlurTintColor);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    color: var(--SmartThemeBodyColor);
+    font-size: 0.9em;
+    transition: border-color 0.2s ease;
+}
+
+.storymode-form-card .storymode-field .text_pole:focus {
+    outline: none;
+    border-color: var(--sm-accent);
+}
+
+.storymode-form-card .storymode-field textarea.text_pole {
+    resize: vertical;
+    min-height: 60px;
+    max-height: 300px;
+    line-height: 1.4;
+}
+
+.storymode-form-card .storymode-field .notes {
+    font-size: 0.75em;
+    color: var(--SmartThemeQuoteColor);
+    margin-top: 2px;
+    line-height: 1.3;
+}
+
+/* Two-column layout for fields within a single card */
+.storymode-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+@media (max-width: 500px) {
+    .storymode-form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Revert button styling */
+.storymode-revert-btn {
+    margin-top: 8px;
+    padding: 8px 14px;
+    font-size: 0.85em;
+    background: transparent;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    color: var(--SmartThemeBodyColor);
+    cursor: pointer;
+    transition: var(--sm-transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.storymode-revert-btn:hover {
+    background: var(--black50a);
+    border-color: var(--sm-accent);
+    color: var(--sm-accent);
+}
+
+/* Checkbox styling in forms */
+.storymode-form-card .checkbox_label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--black30a);
+    border-radius: var(--sm-radius-sm);
+    cursor: pointer;
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-form-card .checkbox_label:hover {
+    background: var(--black50a);
+}
+
+.storymode-form-card .checkbox_label span {
+    font-size: 0.9em;
+}
+
+/* ============================================================================
+   COLLAPSIBLE PANEL (Drawer-style expandable sections)
+   ============================================================================ */
+
+.storymode-collapsible-panel {
+    margin-top: 20px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-md);
+    overflow: hidden;
+}
+
+.storymode-collapsible-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--black30a);
+    cursor: pointer;
+    transition: var(--sm-transition-fast);
+    user-select: none;
+}
+
+.storymode-collapsible-header:hover {
+    background: var(--black50a);
+}
+
+.storymode-collapsible-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.storymode-collapsible-title > i {
+    color: var(--sm-accent);
+    font-size: 0.9em;
+}
+
+.storymode-collapsible-title h4 {
+    margin: 0;
+    font-size: 0.85em;
+    font-weight: 600;
+    color: var(--SmartThemeBodyColor);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.storymode-collapsible-badge {
+    font-size: 0.7em;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--black30a);
+    color: var(--SmartThemeQuoteColor);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.storymode-collapsible-panel.open .storymode-collapsible-badge {
+    background: var(--black50a);
+    color: var(--sm-accent);
+}
+
+.storymode-collapsible-icon {
+    color: var(--SmartThemeQuoteColor);
+    font-size: 0.8em;
+    transition: transform 0.2s ease;
+}
+
+.storymode-collapsible-panel.open .storymode-collapsible-icon {
+    transform: rotate(180deg);
+}
+
+.storymode-collapsible-content {
+    padding: 16px;
+    border-top: 1px solid var(--SmartThemeBorderColor);
+}
+
+/* ============================================================================
+   MEMORABLE ELEMENT PANEL (inside collapsible drawer)
+   ============================================================================ */
+
+.storymode-memorable-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.storymode-memorable-info {
+    display: flex;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--black20a);
+    border-radius: var(--sm-radius-sm);
+    border-left: 3px solid var(--sm-accent);
+    margin-bottom: 4px;
+    text-align: left;
+}
+
+.storymode-memorable-info > i {
+    color: var(--sm-accent);
+    font-size: 1.1em;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.storymode-memorable-info strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--SmartThemeEmColor);
+    font-size: 0.9em;
+}
+
+.storymode-memorable-info p {
+    margin: 0;
+    font-size: 0.82em;
+    line-height: 1.5;
+    color: var(--SmartThemeQuoteColor);
+}
+
+.storymode-memorable-toggle {
+    padding: 0 2px;
+}
+
+.storymode-memorable-fields {
+    flex-direction: column;
+    gap: 12px;
+}
+

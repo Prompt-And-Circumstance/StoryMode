@@ -1,0 +1,348 @@
+/* ============================================================================
+   SUMMARY TAB
+   ============================================================================ */
+
+.storymode-summary-empty {
+    text-align: center;
+    padding: 50px 24px;
+    color: var(--SmartThemeEmColor);
+}
+
+.storymode-summary-empty i {
+    font-size: 3.5em;
+    margin-bottom: 18px;
+    opacity: 0.3;
+    color: var(--sm-accent);
+}
+
+.storymode-summary-empty p {
+    font-size: 0.9em;
+    line-height: 1.6;
+}
+
+.storymode-summary-content {
+    padding: 20px;
+    background: var(--black30a);
+    border-radius: var(--sm-radius-md);
+    line-height: 1.7;
+    color: var(--SmartThemeBodyColor);
+    border-left: 3px solid var(--sm-warm);
+    font-size: 0.92em;
+}
+
+/* ============================================================================
+   GENERATE/LOAD TAB
+   ============================================================================ */
+
+.storymode-generate-section {
+    margin-bottom: 28px;
+}
+
+.storymode-generate-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.storymode-generate-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.storymode-generate-actions button {
+    flex: 1;
+    padding: 14px 20px;
+    font-weight: 500;
+}
+
+#blueprint_reset_prompt {
+    width: 150px;
+}
+
+/* Character selection in generate tab */
+.storymode-character-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 12px;
+    background: var(--black30a);
+    border-radius: var(--sm-radius-sm);
+    border: 1px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-character-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--black30a);
+    border-radius: var(--sm-radius-sm);
+    cursor: pointer;
+    transition: var(--sm-transition-fast);
+    border: 1px solid transparent;
+}
+
+.storymode-character-checkbox:hover {
+    background: var(--black50a);
+    border-color: var(--SmartThemeBorderColor);
+}
+
+.storymode-character-checkbox input {
+    accent-color: var(--sm-accent);
+    width: 16px;
+    height: 16px;
+}
+
+.storymode-character-checkbox span {
+    font-size: 0.85em;
+    color: var(--SmartThemeBodyColor);
+}
+
+/* ============================================================================
+   BUTTONS - Refined
+   ============================================================================ */
+
+.storymode-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 18px;
+    border: none;
+    border-radius: var(--sm-radius-sm);
+    font-size: 0.88em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--sm-transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.storymode-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    transition: var(--sm-transition-slow);
+}
+
+.storymode-btn:hover::before {
+    left: 100%;
+}
+
+.storymode-btn-primary {
+    background: var(--sm-accent);
+    color: white;
+    box-shadow: 0 2px 8px var(--sm-accent-glow);
+}
+
+.storymode-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px var(--sm-accent-glow);
+}
+
+/* Warning button - amber/orange for retry/caution actions */
+.storymode-btn-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border: none;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.storymode-btn-warning:hover {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.5);
+}
+
+/* Start Story button - distinctive green/teal for "go/start" action */
+.storymode-btn-start {
+    background: linear-gradient(135deg, #26a69a, #00897b);
+    color: #ffffff;
+    border: none;
+    font-weight: 600;
+    padding: 10px 16px;
+    border-radius: var(--sm-radius-sm);
+    box-shadow: 0 2px 8px rgba(38, 166, 154, 0.3);
+    transition: var(--sm-transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    font-size: 0.82em;
+}
+
+.storymode-btn-start:hover {
+    background: linear-gradient(135deg, #2bbbad, #00a693);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(38, 166, 154, 0.5);
+    color: #ffffff;
+}
+
+.storymode-btn-start:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Subtab spacer for right-aligned buttons */
+.storymode-subtab-spacer {
+    flex-grow: 1;
+}
+
+.storymode-btn-secondary {
+    background: var(--black50a);
+    color: var(--SmartThemeBodyColor);
+    border: 1px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-btn-secondary:hover {
+    background: var(--black60a);
+    border-color: var(--sm-accent);
+    color: var(--sm-accent);
+}
+
+.storymode-btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.storymode-btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.storymode-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.storymode-btn:disabled::before {
+    display: none;
+}
+
+/* ============================================================================
+   ADVANCED SECTION (Collapsible)
+   ============================================================================ */
+
+.storymode-advanced {
+    margin-top: 20px;
+}
+
+.storymode-advanced summary {
+    cursor: pointer;
+    padding: 12px 14px;
+    background: var(--black30a);
+    border-radius: var(--sm-radius-sm);
+    font-size: 0.88em;
+    font-weight: 500;
+    color: var(--SmartThemeBodyColor);
+    user-select: none;
+    transition: var(--sm-transition-fast);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.storymode-advanced summary::before {
+    content: '\f054';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: 0.7em;
+    transition: var(--sm-transition);
+    color: var(--SmartThemeEmColor);
+}
+
+.storymode-advanced[open] summary::before {
+    transform: rotate(90deg);
+}
+
+.storymode-advanced summary:hover {
+    background: var(--black50a);
+}
+
+.storymode-advanced[open] summary {
+    border-radius: var(--sm-radius-sm) var(--sm-radius-sm) 0 0;
+}
+
+.storymode-advanced-content {
+    padding: 18px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-top: none;
+    border-radius: 0 0 var(--sm-radius-sm) var(--sm-radius-sm);
+}
+
+/* Blueprint advanced drawer - remove borders from inner elements */
+#blueprint_advanced_inner {
+    border: none;
+    border-radius: 0;
+    padding: 0;
+}
+
+#blueprint_prompt_group {
+    border: none;
+    border-bottom: none;
+    border-radius: 0;
+    padding: 0;
+    margin-bottom: 0;
+}
+
+#blueprint_prompt_group .storymode-form-label {
+    margin-bottom: 8px;
+}
+
+#blueprompt_prompt_wrapper {
+    border: none;
+    border-radius: 0;
+}
+
+#blueprint_master_prompt_edit {
+    border: none;
+    border-radius: 0;
+}
+
+#blueprint_master_prompt_edit:focus {
+    border: none;
+    box-shadow: none;
+}
+
+/* Advanced Options drawer in blueprint generation wizard */
+#blueprint_prompt_drawer .storymode-section-title {
+    font-size: 0.95em;
+}
+
+/* Config modal versions (from blueprint-module.js) */
+#blueprint_advanced_drawer_config .inline-drawer-content {
+    border: none;
+    padding: 0;
+}
+
+#blueprint_prompt_group_config {
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+#blueprint_advanced_content_config .storymode-advanced-section {
+    border: none;
+}
+
+#blueprint_advanced_content_config .storymode-advanced-section[open] {
+    border: none;
+}
+
+#blueprint_advanced_content_config textarea {
+    border: none;
+    border-radius: 0;
+}
+

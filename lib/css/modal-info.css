@@ -1,0 +1,221 @@
+/* ============================================================================
+   BLUEPRINT INFO GRID (2-column responsive)
+   ============================================================================ */
+
+.storymode-blueprint-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.storymode-blueprint-info-grid .storymode-info-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px 8px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+}
+
+.storymode-blueprint-info-grid .storymode-info-card label {
+    font-size: 0.7em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--SmartThemeEmColor);
+}
+
+.storymode-blueprint-info-grid .storymode-info-card span {
+    font-size: 0.88em;
+    font-weight: 500;
+    color: var(--SmartThemeBodyColor);
+}
+
+/* Missing style warning state */
+.storymode-blueprint-info-grid .storymode-info-card.storymode-missing-style {
+    border: 1px solid var(--SmartThemeWarningColor);
+    background: rgba(255, 193, 7, 0.08);
+    align-items: center;
+}
+
+.storymode-blueprint-info-grid .storymode-info-card.storymode-missing-style span {
+    color: var(--SmartThemeWarningColor);
+}
+
+.storymode-add-style-btn {
+    margin-top: 6px;
+    padding: 3px 8px;
+    font-size: 0.75em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    align-self: center;
+}
+
+.storymode-add-style-btn i {
+    font-size: 0.9em;
+}
+
+/* 3-column layout on wide screens - premise in third column */
+@media (min-width: 1200px) {
+    .storymode-blueprint-info-grid {
+        grid-template-columns: 1fr 1fr auto;
+    }
+
+    .storymode-blueprint-info-grid .storymode-premise {
+        grid-column: 3;
+        grid-row: 1 / 3;
+        max-width: 300px;
+        margin: 0;
+    }
+}
+
+/* Fallback: 2-column + full-width premise below */
+@media (max-width: 1199px) {
+    .storymode-blueprint-info-grid .storymode-premise {
+        grid-column: 1 / 3;
+        margin-top: 4px;
+    }
+}
+
+/* ============================================================================
+   BLUEPRINT OVERVIEW LAYOUT
+   ============================================================================ */
+
+.storymode-blueprint-overview-layout {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 16px;
+    align-items: stretch;
+}
+
+.storymode-blueprint-overview-cover {
+    width: 180px;
+    aspect-ratio: 3 / 4;
+    flex-shrink: 0;
+    border-radius: var(--sm-radius-md);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border: 1px solid var(--SmartThemeBorderColor);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    background-color: var(--black50a);
+}
+
+.storymode-blueprint-overview-text {
+    flex: 1;
+    font-size: 0.9em;
+    color: var(--SmartThemeBodyColor);
+    line-height: 1.6;
+    padding: 16px;
+    background: var(--black30a);
+    border-radius: var(--sm-radius-sm);
+    text-align: left;
+    overflow-y: auto;
+    max-height: 240px;
+}
+
+/* Meta row - horizontal cards below overview */
+.storymode-blueprint-meta-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.storymode-blueprint-meta-row .storymode-info-card {
+    flex: 1;
+    min-width: 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px;
+    background: var(--black30a);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+}
+
+.storymode-blueprint-meta-row .storymode-info-card label {
+    font-size: 0.7em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--SmartThemeEmColor);
+}
+
+.storymode-blueprint-meta-row .storymode-info-card span {
+    font-size: 0.88em;
+    font-weight: 500;
+    color: var(--SmartThemeBodyColor);
+}
+
+/* Missing style warning state (meta-row variant) */
+.storymode-blueprint-meta-row .storymode-info-card.storymode-missing-style {
+    border: 1px solid var(--SmartThemeWarningColor);
+    background: rgba(255, 193, 7, 0.08);
+    align-items: center;
+}
+
+.storymode-blueprint-meta-row .storymode-info-card.storymode-missing-style span {
+    color: var(--SmartThemeWarningColor);
+}
+
+/* Responsive: stack vertically on smaller screens */
+@media (max-width: 768px) {
+    .storymode-blueprint-overview-layout {
+        flex-direction: column;
+    }
+
+    .storymode-blueprint-overview-cover {
+        width: 100%;
+        max-width: 200px;
+        margin: 0 auto;
+    }
+
+    .storymode-blueprint-meta-row {
+        flex-direction: column;
+    }
+
+    .storymode-blueprint-meta-row .storymode-info-card {
+        min-width: 100%;
+    }
+}
+
+/* ============================================================================
+   GENERATE BLUEPRINT TAB (Special Styling)
+   ============================================================================ */
+
+.storymode-blueprint-subtab[data-special="generate"] {
+    background: var(--black30a);
+    border-left: 3px solid var(--sm-warm);
+    padding: 10px 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.storymode-blueprint-subtab[data-special="generate"]:hover {
+    background: rgba(212, 165, 116, 0.3);
+}
+
+.storymode-blueprint-subtab[data-special="generate"].active {
+    background: var(--sm-warm);
+    border-color: var(--sm-warm);
+    color: white;
+}
+
+.storymode-blueprint-subtab[data-subtab="load"] {
+    background: var(--black30a);
+    border-left: 3px solid var(--SmartThemeEmColor);
+    padding: 10px 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.storymode-blueprint-subtab[data-subtab="load"].active {
+    background: var(--sm-warm);
+    border-color: var(--sm-warm);
+    color: white;
+}
+

@@ -218,6 +218,13 @@ console.log('[Story Mode] All modules imported and initialized successfully');
 * @returns {Promise<void>}
 */
 async function showSettingsDialog(initialTab = 'overview') {
+    // Guard against re-entrancy: close existing dialog before opening a new one
+    if (window.storyModeSettingsPopup) {
+        try {
+            await window.storyModeSettingsPopup.complete(POPUP_RESULT.AFFIRMATIVE);
+        } catch { /* popup may already be closing */ }
+    }
+
     const settings = extension_settings[MODULE_NAME];
     const chatState = getChatStoryState();
     const blueprintState = getBlueprintState();
@@ -305,10 +312,6 @@ ${buildSettingsTabContent()}
         $tabPanes.removeClass('active');
         content.find(`#tab_${tabName}`).addClass('active');
 
-        console.log('[Story Mode] Tab pane classes after switch:');
-        $tabPanes.each(function () {
-            console.log('[Story Mode]', $(this).attr('id'), 'has active:', $(this).hasClass('active'));
-        });
     });
 
     // Subtab switching (handles both Genre & Style and Settings tab subtabs)

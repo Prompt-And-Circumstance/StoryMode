@@ -1,0 +1,321 @@
+
+/* ============================================================================
+   UNIFIED MODAL - Left Sidebar - Not currently used
+   ============================================================================ */
+
+.storymode-sidebar {
+    width: var(--sm-sidebar-width);
+    min-width: var(--sm-sidebar-width);
+    background: var(--black60a);
+    border-right: 1px solid var(--SmartThemeBorderColor);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    position: relative;
+}
+
+/* Subtle accent line on sidebar - removed for cleaner look */
+.storymode-sidebar::before {
+    display: none;
+}
+
+.storymode-sidebar-section {
+    padding: 18px 16px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    position: relative;
+}
+
+.storymode-sidebar-section:last-child {
+    border-bottom: none;
+    margin-top: auto;
+    padding-top: 14px;
+}
+
+.storymode-sidebar-section h4 {
+    margin: 0 0 14px 0;
+    font-size: 0.7em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--sm-accent);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.storymode-sidebar-section h4::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--SmartThemeBorderColor);
+}
+
+/* Story Overview items */
+.storymode-overview-item {
+    margin-bottom: 12px;
+}
+
+.storymode-overview-label {
+    font-size: 0.7em;
+    color: var(--SmartThemeEmColor);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.storymode-overview-value {
+    font-size: 0.9em;
+    color: var(--SmartThemeBodyColor);
+    font-weight: 500;
+}
+
+.storymode-premise {
+    font-size: 0.85em;
+    color: var(--SmartThemeBodyColor);
+    line-height: 1.5;
+    font-style: italic;
+    padding: 12px;
+    background: var(--black30a);
+    border-radius: var(--sm-radius-sm);
+    border-left: 3px solid var(--sm-warm);
+    position: relative;
+}
+
+.storymode-premise::before {
+    content: '"';
+    position: absolute;
+    top: 6px;
+    left: 8px;
+    font-size: 1.5em;
+    color: var(--sm-warm);
+    opacity: 0.4;
+    font-family: Georgia, serif;
+}
+
+/* Character/Persona lists */
+.storymode-entity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 140px;
+    overflow-y: auto;
+}
+
+.storymode-entity-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: var(--black30a);
+    border-radius: var(--sm-radius-sm);
+    font-size: 0.85em;
+    color: var(--SmartThemeBodyColor);
+    transition: var(--sm-transition-fast);
+    border: 1px solid transparent;
+}
+
+.storymode-entity-item:hover {
+    background: var(--black30a);
+    border-color: var(--SmartThemeBorderColor);
+}
+
+.storymode-entity-item.main-char {
+    border-left: 3px solid var(--sm-accent);
+    background: var(--sm-accent-subtle);
+}
+
+.storymode-entity-item i {
+    color: var(--SmartThemeEmColor);
+    font-size: 0.9em;
+    width: 16px;
+    text-align: center;
+}
+
+.storymode-entity-badge {
+    font-size: 0.65em;
+    padding: 3px 8px;
+    background: var(--sm-accent);
+    color: white;
+    border-radius: 10px;
+    margin-left: auto;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Sidebar buttons */
+.storymode-sidebar-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.storymode-sidebar-buttons button {
+    flex: 1;
+    padding: 10px 12px;
+    font-size: 0.8em;
+    border-radius: var(--sm-radius-sm);
+    transition: var(--sm-transition);
+}
+
+/* ============================================================================
+   UNIFIED MODAL - Right Content Area
+   ============================================================================ */
+
+.storymode-content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--black20a);
+}
+
+/* Tab Navigation - Refined underline style */
+.storymode-tabs {
+    display: flex;
+    gap: 0;
+    background: var(--black30a);
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    padding: 0 20px;
+    position: relative;
+}
+
+.storymode-tab {
+    padding: 14px 18px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: 500;
+    color: var(--SmartThemeEmColor);
+    transition: var(--sm-transition);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+}
+
+.storymode-tab i {
+    font-size: 0.9em;
+    opacity: 0.7;
+    transition: var(--sm-transition);
+}
+
+.storymode-tab:hover {
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-tab:hover i {
+    opacity: 1;
+}
+
+.storymode-tab.active {
+    color: var(--sm-accent);
+    border-bottom-color: var(--sm-accent);
+}
+
+.storymode-tab.active i {
+    opacity: 1;
+    color: var(--sm-accent);
+}
+
+/* Tab active indicator glow */
+.storymode-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 6px;
+    background: var(--sm-accent);
+    filter: blur(6px);
+    opacity: 0.5;
+}
+
+/* Disabled tab (e.g., Current Scenario when no blueprint loaded) */
+.storymode-tab.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.storymode-tab.disabled:hover {
+    color: var(--SmartThemeEmColor);
+    border-bottom-color: transparent;
+}
+
+/* Tab Content */
+.storymode-tab-content {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.storymode-tab-pane {
+    display: none;
+    animation: fadeSlideIn 0.3s ease;
+}
+
+.storymode-tab-pane.active {
+    display: block;
+}
+
+@keyframes fadeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================================================
+   SETTINGS SUBTABS
+   ============================================================================ */
+
+.storymode-settings-subtabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    flex-wrap: wrap;
+}
+
+.storymode-settings-subtab {
+    padding: 8px 14px;
+    background: transparent;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    cursor: pointer;
+    font-size: 0.82em;
+    font-weight: 500;
+    color: var(--SmartThemeEmColor);
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-settings-subtab:hover {
+    background: var(--black30a);
+    color: var(--SmartThemeBodyColor);
+    border-color: var(--SmartThemeEmColor);
+}
+
+.storymode-settings-subtab.active {
+    background: var(--sm-accent);
+    border-color: var(--sm-accent);
+    color: white;
+}
+
+.storymode-settings-subtab-pane {
+    display: none;
+    animation: fadeSlideIn 0.3s ease;
+}
+
+.storymode-settings-subtab-pane.active {
+    display: block;
+}
+

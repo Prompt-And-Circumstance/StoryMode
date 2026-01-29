@@ -177,7 +177,7 @@
     align-items: center;
     justify-content: center;
     color: var(--sm-accent);
-    z-index: 10;
+    z-index: var(--sm-z-above);
     transition: background 0.2s ease;
 }
 
@@ -853,7 +853,7 @@
     background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, black 5%);
     border-left: 1px solid var(--SmartThemeBorderColor);
     transition: transform 0.3s ease;
-    z-index: 10;
+    z-index: var(--sm-z-above);
     display: flex;
     flex-direction: column;
 }
@@ -1391,4 +1391,27 @@
 
 #blueprint_json_tree::-webkit-scrollbar-thumb:hover {
     background: var(--SmartThemeEmColor);
+}
+
+/* ============================================================================
+   DELINKED CHARACTERS STYLES
+   ============================================================================ */
+
+/* Delinked section cards */
+.delinked-section .character-mini-card {
+    opacity: 0.5;
+    cursor: pointer;
+}
+.delinked-section .character-mini-card:hover {
+    opacity: 0.8;
+    border-color: var(--SmartThemeEmColor);
+}
+
+/* Linked cards are clickable to delink */
+.characters-section:not(.delinked-section) .character-mini-card[data-delink-name] {
+    cursor: pointer;
+}
+.characters-section:not(.delinked-section) .character-mini-card[data-delink-name]:hover {
+    border-color: var(--SmartThemeWarningColor);
+    opacity: 0.7;
 }

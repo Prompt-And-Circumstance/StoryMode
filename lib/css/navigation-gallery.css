@@ -1,0 +1,324 @@
+/* ============================================================================
+   SCENE/ROUND NAVIGATION SLIDER
+   ============================================================================ */
+
+/* Container */
+.storymode-scene-slider-container {
+    margin: 12px 0;
+    padding: 16px 20px;
+    background: var(--black30a);
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+/* Track - horizontal layout for markers and ticks */
+.storymode-scene-track {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 0;
+    min-height: 80px;
+    padding-top: 8px;
+}
+
+/* Progress fill line - hidden */
+.storymode-progress-fill {
+    display: none;
+}
+
+/* Scene markers */
+.storymode-scene-marker {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+    padding: 0 4px;
+}
+
+.storymode-scene-marker:hover {
+    transform: scale(1.1);
+}
+
+.marker-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--black50a);
+    border: 2px solid var(--SmartThemeBorderColor);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    color: var(--SmartThemeBodyColor);
+    transition: all 0.2s;
+}
+
+/* Completed scene */
+.storymode-scene-marker.completed .marker-circle {
+    background: var(--SmartThemeQuoteColor);
+    border-color: var(--SmartThemeQuoteColor);
+    color: white;
+}
+
+/* Current/active scene */
+.storymode-scene-marker.active .marker-circle {
+    background: var(--sm-warm, #d4a574);
+    border-color: var(--sm-warm, #d4a574);
+    color: white;
+    box-shadow: 0 0 10px var(--sm-warm, #d4a574);
+}
+
+/* Label container */
+.marker-label {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 90px;
+}
+
+.marker-number {
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--SmartThemeBodyColor);
+    white-space: nowrap;
+}
+
+.marker-title {
+    font-size: 10px;
+    color: var(--SmartThemeEmColor);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90px;
+    opacity: 0.8;
+}
+
+/* Round ticks container */
+.storymode-round-ticks {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    margin: 0 8px;
+    padding-top: 10px;
+    justify-content: center;
+    min-width: 40px;
+}
+
+/* Individual tick */
+.storymode-round-ticks .tick {
+    width: 2px;
+    height: 12px;
+    background: var(--SmartThemeBorderColor);
+    border-radius: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.storymode-round-ticks .tick:hover,
+.storymode-round-ticks .tick.active {
+    height: 18px;
+    background: var(--SmartThemeEmColor);
+    box-shadow: 0 0 4px var(--SmartThemeEmColor);
+}
+
+/* Slider info bar */
+.storymode-slider-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    padding: 8px 12px;
+    background: var(--black20a);
+    border-radius: 6px;
+    font-size: 0.85em;
+    color: var(--SmartThemeEmColor);
+}
+
+.storymode-mode-indicator {
+    font-size: 0.8em;
+    padding: 2px 8px;
+    background: var(--black30a);
+    border-radius: 4px;
+    cursor: help;
+}
+
+/* ============================================================================
+   COVER GALLERY STYLES
+   ============================================================================ */
+
+/* Cover Gallery Styles */
+.storymode-cover-preview-container {
+    display: flex;
+    flex-direction: row;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+/* Right column wrapper for carousel and action buttons */
+.storymode-cover-carousel-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+.storymode-cover-preview {
+    position: relative;
+    flex: 0 0 auto;
+    width: 245px;
+    aspect-ratio: 3/4;
+    background: var(--black30a);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.storymode-cover-gallery {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.storymode-cover-image-wrapper {
+    position: relative;
+    flex: 0 0 auto;
+    width: 100%;
+    aspect-ratio: 3/4;
+    overflow: hidden;
+}
+
+.storymode-cover-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.storymode-cover-counter {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.storymode-cover-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--sm-z-above);
+}
+
+.storymode-cover-nav:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.8);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.storymode-cover-nav:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.storymode-cover-nav-prev {
+    left: 10px;
+}
+
+.storymode-cover-nav-next {
+    right: 10px;
+}
+
+.storymode-cover-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray50);
+    gap: 1rem;
+}
+
+.storymode-cover-placeholder i {
+    font-size: 3rem;
+    opacity: 0.5;
+}
+
+.storymode-cover-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.storymode-cover-actions button {
+    flex: 1;
+    min-width: 150px;
+}
+
+/* Settings subsections */
+.storymode-setting-subsection {
+    margin-left: 1rem;
+    padding: 0.75rem;
+    background: var(--black10a);
+    border-radius: 6px;
+    margin-top: 0.5rem;
+}
+
+.storymode-setting-subsection h5 {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.9rem;
+    color: var(--gray70);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.storymode-setting-row {
+    margin-bottom: 0.75rem;
+}
+
+.storymode-setting-row:last-child {
+    margin-bottom: 0;
+}
+
+.storymode-setting-row label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.storymode-setting-row small {
+    display: block;
+    margin-left: 1.5rem;
+    color: var(--gray50);
+    font-size: 0.8rem;
+}
+

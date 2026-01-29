@@ -1,0 +1,231 @@
+/* Story mode textarea class */
+.storymode-textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--black50a);
+    border-radius: 4px;
+    background: var(--black30a);
+    color: var(--SmartThemeBodyColor);
+    font-family: inherit;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    resize: vertical;
+    min-height: 60px;
+}
+
+.storymode-textarea:focus {
+    outline: none;
+    border-color: var(--sm-accent);
+}
+
+/* Scene Image Thumbnail Gallery */
+.storymode-scene-gallery {
+    padding: 12px 0 0 0;
+    margin-top: 8px;
+    border-top: 1px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-scene-gallery-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: 0.85rem;
+    color: var(--SmartThemeQuoteColor);
+    font-weight: 500;
+}
+
+.storymode-scene-gallery-header i {
+    color: var(--sm-accent);
+}
+
+.storymode-scene-gallery-track {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--sm-accent) transparent;
+}
+
+.storymode-scene-gallery-track::-webkit-scrollbar {
+    height: 6px;
+}
+
+.storymode-scene-gallery-track::-webkit-scrollbar-track {
+    background: var(--black30a);
+    border-radius: 3px;
+}
+
+.storymode-scene-gallery-track::-webkit-scrollbar-thumb {
+    background: var(--sm-accent);
+    border-radius: 3px;
+}
+
+.storymode-scene-thumb {
+    position: relative;
+    flex-shrink: 0;
+    width: 80px;
+    height: 60px;
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.storymode-scene-thumb:hover {
+    border-color: var(--SmartThemeBorderColor);
+    transform: scale(1.05);
+}
+
+.storymode-scene-thumb.active {
+    border-color: var(--sm-accent);
+    box-shadow: 0 0 8px var(--sm-accent-glow);
+}
+
+.storymode-scene-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.storymode-scene-thumb-label {
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+
+/* Empty thumbnail placeholder (no image yet) */
+.storymode-scene-thumb-empty {
+    background: var(--SmartThemeBlurTintColor);
+    border: 2px dashed var(--SmartThemeBorderColor);
+}
+
+.storymode-scene-thumb-empty:hover {
+    border-color: var(--sm-accent);
+    background: color-mix(in srgb, var(--sm-accent) 10%, transparent);
+}
+
+.storymode-scene-thumb-empty.generating {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.storymode-scene-thumb-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    color: var(--SmartThemeQuoteColor);
+    font-size: 1rem;
+}
+
+.storymode-scene-thumb-placeholder .fa-image {
+    opacity: 0.5;
+}
+
+.storymode-thumb-generate-icon {
+    font-size: 0.6rem;
+    color: var(--sm-accent);
+}
+
+.storymode-scene-thumb-empty:hover .storymode-thumb-generate-icon {
+    transform: scale(1.2);
+}
+
+/* Main image placeholder (when no image exists for current scene) */
+.storymode-image-container.storymode-image-placeholder {
+    background: var(--SmartThemeBlurTintColor);
+    border: 2px dashed var(--SmartThemeBorderColor);
+    border-radius: 8px;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.storymode-placeholder-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 30px;
+    text-align: center;
+    color: var(--SmartThemeQuoteColor);
+}
+
+.storymode-placeholder-content .fa-image {
+    font-size: 3rem;
+    opacity: 0.4;
+}
+
+.storymode-placeholder-content p {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.storymode-generate-first-btn,
+.storymode-generate-first-btn-alt {
+    background: var(--sm-accent) !important;
+    color: white !important;
+    border: none !important;
+    padding: 10px 20px !important;
+    border-radius: 6px !important;
+    font-size: 0.9rem !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.storymode-generate-first-btn:hover,
+.storymode-generate-first-btn-alt:hover {
+    background: var(--sm-accent-hover) !important;
+    transform: translateY(-1px);
+}
+
+.storymode-generate-first-btn:disabled,
+.storymode-generate-first-btn-alt:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Centered actions bar (when no image) */
+.storymode-image-preview-actions.storymode-actions-centered {
+    justify-content: center;
+    padding: 16px;
+}
+
+/* Cover thumbnail styling - distinct from scene thumbnails */
+.storymode-cover-thumb {
+    border-color: var(--sm-accent) !important;
+    opacity: 0.9;
+}
+
+.storymode-cover-thumb:hover {
+    opacity: 1;
+}
+
+.storymode-cover-thumb .storymode-scene-thumb-label {
+    background: var(--sm-accent);
+    font-size: 0.6rem;
+    padding: 3px 5px;
+}
+
+.storymode-cover-thumb .storymode-scene-thumb-label i {
+    font-size: 0.6rem;
+}
+

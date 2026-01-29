@@ -174,6 +174,15 @@ data/default-user/user/files/
 3. `blueprint.libraryData.coverThumbnail` - Legacy thumbnail
 4. `blueprint.metadata.coverGallery[index].url` - Gallery image
 
+## Characters & Personas
+
+Characters and personas flow through blueprint generation, library linking, export/import, and multiple UI surfaces. See **[CHARACTERS-AND-PERSONAS.md](./CHARACTERS-AND-PERSONAS.md)** for the full reference covering:
+- Blueprint fields (`character_arcs`, `scene_plan.character_focus`, `embeddedResources`)
+- Status detection (linked / embedded / missing)
+- Export embedding and import flows
+- Editor characters tab structure
+- Known issue: `selectedPersonas` vs `personaData` field mismatch
+
 ## Story Blueprints
 
 LLM-generated story structure with scenes, character arcs, antagonistic forces, and resolutions.

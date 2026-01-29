@@ -1,0 +1,312 @@
+/* ============================================================================
+   LEGACY SUPPORT (for blueprint-module.js compatibility)
+   ============================================================================ */
+
+.storymode-blueprint-config-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.storymode-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.storymode-field label {
+    font-weight: 600;
+    color: var(--SmartThemeBodyColor);
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Old .storymode-character-list removed - replaced by .storymode-picker-* */
+
+.storymode-advanced-section {
+    margin-top: 14px;
+}
+
+.storymode-advanced-section summary {
+    cursor: pointer;
+    padding: 8px 12px;
+    user-select: none;
+    font-size: 0.88em;
+    background: var(--black30a);
+    border-radius: var(--sm-radius-sm);
+}
+
+/* Blueprint modal tabs (legacy) */
+.storymode-blueprint-modal-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    padding-bottom: 8px;
+}
+
+.storymode-blueprint-modal-tab {
+    padding: 10px 18px;
+    background: transparent;
+    border: none;
+    border-radius: var(--sm-radius-sm) var(--sm-radius-sm) 0 0;
+    cursor: pointer;
+    transition: var(--sm-transition-fast);
+    color: var(--SmartThemeBodyColor);
+    font-weight: 500;
+    font-size: 0.88em;
+}
+
+.storymode-blueprint-modal-tab:hover {
+    background: var(--black30a);
+}
+
+.storymode-blueprint-modal-tab.active {
+    background: var(--black50a);
+    border-bottom: 2px solid var(--sm-accent);
+    color: var(--sm-accent);
+}
+
+/* Opening message content */
+.storymode-opening-message-content {
+    padding: 16px;
+    background: var(--black30a);
+    border-radius: var(--sm-radius-sm);
+    border: 1px solid var(--SmartThemeBorderColor);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 0.9em;
+    line-height: 1.6;
+    color: var(--SmartThemeBodyColor);
+    max-height: 400px;
+    overflow-y: auto;
+    text-align: left;
+}
+
+/* Scenes subtab list */
+.storymode-scenes-subtab-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.storymode-scenes-subtab-card {
+    background: var(--black30a);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    padding: 14px;
+}
+
+.storymode-scenes-subtab-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.storymode-scenes-subtab-number {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--sm-accent);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.8em;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.storymode-scenes-subtab-title {
+    flex: 1;
+    font-weight: 600;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-scenes-subtab-phase {
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--SmartThemeEmColor);
+    background: var(--black50a);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.storymode-scenes-subtab-purpose {
+    margin: 0 0 8px 0;
+    font-size: 0.85em;
+    color: var(--SmartThemeEmColor);
+    line-height: 1.5;
+}
+
+/* Scene list (legacy) */
+.storymode-scene-list {
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.storymode-scene-item {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    cursor: pointer;
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-scene-item:hover {
+    background: var(--black30a);
+    padding-left: 18px;
+}
+
+.storymode-scene-item.current {
+    background: var(--sm-accent-subtle);
+    border-left: 3px solid var(--sm-accent);
+}
+
+.storymode-scene-item-title {
+    font-weight: 600;
+    color: var(--SmartThemeBodyColor);
+    font-size: 0.92em;
+}
+
+.storymode-scene-item-phase {
+    font-size: 0.82em;
+    color: var(--SmartThemeQuoteColor);
+    margin-top: 4px;
+}
+
+/* JSON editor */
+.storymode-json-editor {
+    width: 100%;
+    min-height: 320px;
+    font-family: 'SF Mono', 'Fira Code', 'Monaco', monospace;
+    font-size: 0.82em;
+}
+
+/* Blueprint buttons */
+.storymode-blueprint-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+/* Blueprint content areas */
+.storymode-blueprint-content {
+    padding: 14px;
+    background: var(--black30a);
+    border-radius: var(--sm-radius-sm);
+    min-height: 220px;
+    overflow-y: auto;
+}
+
+/* Blueprint summary section */
+.storymode-blueprint-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.storymode-blueprint-summary-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.storymode-blueprint-summary-field label {
+    font-weight: 600;
+    color: var(--SmartThemeQuoteColor);
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.storymode-blueprint-summary-field div {
+    padding: 10px 12px;
+    background: var(--black50a);
+    border-radius: var(--sm-radius-sm);
+    font-size: 0.9em;
+}
+
+/* NSFW badge and text (legacy) */
+.storymode-nsfw-badge {
+    font-size: 1.2em;
+    margin-left: 8px;
+}
+
+.storymode-nsfw-text {
+    padding: 12px;
+    margin-top: 10px;
+    background: var(--black60a);
+    color: white !important;
+    border-left: 3px solid var(--sm-warm);
+    border-radius: var(--sm-radius-sm);
+    font-size: 0.88em;
+    line-height: 1.5;
+}
+
+.storymode-nsfw-text strong {
+    color: var(--sm-warm);
+}
+
+/* Notes styling */
+.notes {
+    font-size: 0.82em;
+    color: var(--SmartThemeEmColor);
+    font-style: italic;
+    line-height: 1.5;
+}
+
+/* Checkbox label (legacy) */
+.checkbox_label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.checkbox_label input[type="checkbox"] {
+    cursor: pointer;
+    accent-color: var(--sm-accent);
+    width: 16px;
+    height: 16px;
+}
+
+.checkbox_label span {
+    color: var(--SmartThemeBodyColor);
+}
+
+/* ============================================================================
+   FOCUS STATES - Accessibility
+   ============================================================================ */
+
+.storymode-btn:focus-visible,
+.storymode-tab:focus-visible,
+.storymode-select:focus-visible,
+.storymode-slider:focus-visible {
+    outline: 2px solid var(--sm-accent);
+    outline-offset: 2px;
+}
+
+/* ============================================================================
+   HELP ICONS - Tooltips for UI elements
+   ============================================================================ */
+
+.sm-help-icon {
+    color: var(--SmartThemeEmColor);
+    cursor: help;
+    margin-left: 6px;
+    font-size: 0.85em;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+    vertical-align: middle;
+}
+
+.sm-help-icon:hover {
+    opacity: 1;
+    color: var(--sm-accent);
+}
+

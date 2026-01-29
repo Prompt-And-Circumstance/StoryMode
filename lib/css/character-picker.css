@@ -1,0 +1,160 @@
+/* ============================================================================
+   UNIFIED CHARACTER PICKER - VERTICAL LIST
+   Used by blueprint wizard for chat characters, personas, and library characters
+   ============================================================================ */
+
+.storymode-picker-container {
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    overflow: hidden;
+    background: var(--SmartThemeBlurTintColor);
+    max-width: 300px;
+}
+
+.storymode-picker-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 90%, black 10%);
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-picker-search i {
+    color: var(--SmartThemeQuoteColor);
+    font-size: 0.9em;
+}
+
+.storymode-picker-search input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--SmartThemeBodyColor);
+    outline: none;
+    font-size: 0.95em;
+}
+
+.storymode-picker-search input::placeholder {
+    color: var(--SmartThemeQuoteColor);
+}
+
+.storymode-picker-list {
+    max-height: 180px;
+    overflow-y: auto;
+    padding: 4px;
+}
+
+/* Individual picker item row */
+.storymode-picker-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    margin: 2px 0;
+    border-radius: var(--sm-radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+}
+
+.storymode-picker-item:hover {
+    background: var(--sm-accent-subtle);
+    border-color: var(--SmartThemeBorderColor);
+}
+
+/* Uses .checked class toggled by JavaScript for browser compatibility */
+.storymode-picker-item.checked {
+    background: var(--sm-accent-subtle);
+    border-color: var(--sm-accent);
+}
+
+/* Hide the actual checkbox input */
+.storymode-picker-item input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Avatar */
+.storymode-picker-avatar {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    background-color: var(--SmartThemeBorderColor);
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--SmartThemeQuoteColor);
+    font-size: 1.1em;
+}
+
+/* Info section */
+.storymode-picker-info {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.storymode-picker-primary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.storymode-picker-name {
+    font-weight: 500;
+    color: var(--SmartThemeBodyColor);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.storymode-picker-secondary {
+    font-size: 0.85em;
+    color: var(--SmartThemeQuoteColor);
+    white-space: nowrap;
+}
+
+.storymode-picker-subtitle {
+    font-size: 0.8em;
+    color: var(--SmartThemeQuoteColor);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Checkmark indicator */
+.storymode-picker-check {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--sm-accent);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.storymode-picker-item.checked .storymode-picker-check {
+    opacity: 1;
+}
+
+/* Empty state */
+.storymode-picker-empty,
+.storymode-picker-no-results {
+    padding: 16px;
+    text-align: center;
+    color: var(--SmartThemeQuoteColor);
+    font-style: italic;
+    font-size: 0.9em;
+}
+
+.storymode-picker-empty i,
+.storymode-picker-no-results i {
+    margin-right: 6px;
+}
+

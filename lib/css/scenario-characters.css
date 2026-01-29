@@ -1,0 +1,222 @@
+/* ============================================================================
+   SCENARIO CHARACTERS POPUP
+   ============================================================================ */
+
+.storymode-characters-popout {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(500px, 90vw);
+    max-height: 80vh;
+    background: var(--SmartThemeBlurTintColor);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    z-index: var(--sm-z-popout);
+    display: flex;
+    flex-direction: column;
+}
+
+.storymode-characters-popout-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--sm-accent);
+    color: white;
+    font-weight: 600;
+    flex-shrink: 0;
+    cursor: grab;
+    user-select: none;
+}
+
+.storymode-characters-popout-header i {
+    font-size: 0.9em;
+}
+
+.storymode-characters-popout-header span {
+    flex: 1;
+    font-weight: 600;
+}
+
+.storymode-characters-popout-close {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    padding: 4px 6px;
+    font-size: 1em;
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-characters-popout-close:hover {
+    color: white;
+}
+
+.storymode-characters-popout-body {
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Empty state */
+.storymode-characters-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--SmartThemeEmColor);
+}
+
+.storymode-characters-empty i {
+    font-size: 2.5em;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.storymode-characters-empty p {
+    margin: 0;
+    opacity: 0.8;
+}
+
+/* Character card in popup */
+.storymode-scenario-char-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 80%, black 20%);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm, 4px);
+    transition: border-color 0.2s;
+}
+
+.storymode-scenario-char-card:hover {
+    border-color: var(--SmartThemeEmColor);
+}
+
+/* Status-based left border */
+.storymode-scenario-char-card[data-status="embedded"] {
+    border-left: 3px solid var(--SmartThemeQuoteColor);
+}
+
+.storymode-scenario-char-card[data-status="linked"] {
+    border-left: 3px solid var(--SmartThemeEmColor);
+}
+
+.storymode-scenario-char-card[data-status="missing"] {
+    border-left: 3px solid var(--SmartThemeWarningColor, #f0ad4e);
+}
+
+/* Avatar */
+.storymode-scenario-char-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: var(--SmartThemeBorderColor);
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.storymode-scenario-char-avatar i {
+    font-size: 1.2em;
+    color: var(--SmartThemeEmColor);
+    opacity: 0.6;
+}
+
+/* Character info */
+.storymode-scenario-char-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.storymode-scenario-char-name {
+    font-weight: 500;
+    color: var(--SmartThemeBodyColor);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Status badges */
+.storymode-char-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75em;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-top: 4px;
+}
+
+.storymode-char-badge.embedded {
+    background: color-mix(in srgb, var(--SmartThemeQuoteColor) 20%, transparent);
+    color: var(--SmartThemeQuoteColor);
+}
+
+.storymode-char-badge.linked {
+    background: color-mix(in srgb, var(--SmartThemeEmColor) 20%, transparent);
+    color: var(--SmartThemeEmColor);
+}
+
+.storymode-char-badge.missing {
+    background: color-mix(in srgb, var(--SmartThemeWarningColor, #f0ad4e) 20%, transparent);
+    color: var(--SmartThemeWarningColor, #f0ad4e);
+}
+
+/* Section headers (Characters / Personas) */
+.storymode-resource-section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--SmartThemeEmColor);
+    opacity: 0.8;
+    padding: 4px 0 0;
+}
+
+.storymode-resource-section-header:not(:first-child) {
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--SmartThemeBorderColor);
+}
+
+/* Action buttons */
+.storymode-scenario-char-actions {
+    flex-shrink: 0;
+}
+
+.storymode-add-to-library-btn,
+.storymode-add-persona-to-library-btn {
+    padding: 6px 12px;
+    font-size: 0.85em;
+}
+
+.storymode-add-to-library-btn:disabled,
+.storymode-add-persona-to-library-btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+/* Import unavailable state */
+.storymode-import-unavailable {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8em;
+    color: var(--SmartThemeEmColor);
+    opacity: 0.6;
+    padding: 6px 12px;
+}

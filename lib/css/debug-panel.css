@@ -1,0 +1,125 @@
+/* ============================================================================
+   DEBUG PANEL - Floating overlay for live pacing info
+   ============================================================================ */
+
+.storymode-debug-panel {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 280px;
+    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 90%, black);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-md);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    z-index: var(--sm-z-floating);
+    font-size: 0.85em;
+    backdrop-filter: blur(8px);
+    animation: debugPanelSlideIn 0.3s ease;
+}
+
+@keyframes debugPanelSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.storymode-debug-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--sm-accent);
+    color: white;
+    font-weight: 600;
+    border-radius: var(--sm-radius-md) var(--sm-radius-md) 0 0;
+    cursor: grab;
+    user-select: none;
+}
+
+.storymode-debug-header:active {
+    cursor: grabbing;
+}
+
+.storymode-debug-panel.dragging {
+    opacity: 0.9;
+    transition: none;
+}
+
+.storymode-debug-panel.dragging .storymode-debug-header {
+    cursor: grabbing;
+}
+
+#storymode-debug-panel.sm-rolled-up {
+    height: auto;
+}
+
+#storymode-debug-panel.sm-rolled-up .storymode-debug-header {
+    border-radius: var(--sm-radius-md);
+}
+
+#storymode-debug-panel.sm-rolled-up .storymode-debug-content {
+    display: none;
+}
+
+
+.storymode-debug-header i {
+    font-size: 0.9em;
+}
+
+.storymode-debug-prompt-btn {
+    margin-left: auto;
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    padding: 4px 8px;
+    font-size: 0.85em;
+    border-radius: 4px;
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-header-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.storymode-debug-close,
+.storymode-debug-dock-btn,
+.storymode-debug-prompt-btn,
+.storymode-debug-library-btn,
+.storymode-debug-settings-btn {
+    background: rgba(0, 0, 0, 0.2);
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.storymode-debug-close:hover,
+.storymode-debug-dock-btn:hover,
+.storymode-debug-prompt-btn:hover,
+.storymode-debug-library-btn:hover,
+.storymode-debug-settings-btn:hover {
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.storymode-header-actions {
+    margin-left: auto;
+}
+
+.storymode-debug-content {
+    padding: 14px;
+}
+

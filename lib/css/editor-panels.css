@@ -1,0 +1,175 @@
+/* ============================================================================
+   EDITOR PANELS (Story Types / Author Styles)
+   Left-aligned, clean, horizontal buttons
+   ============================================================================ */
+
+/* Editor container */
+.storymode-editor {
+    text-align: left;
+    padding: 12px;
+}
+
+/* Controls bar - horizontal button layout */
+.storymode-editor-controls {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.storymode-editor-controls .menu_button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: var(--black30a);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    color: var(--SmartThemeBodyColor);
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-editor-controls .menu_button:hover {
+    background: var(--sm-accent);
+    border-color: var(--sm-accent);
+    color: white;
+    box-shadow: 0 2px 8px var(--sm-accent-glow);
+}
+
+/* Search field */
+.storymode-editor .storymode-field {
+    margin-bottom: 20px;
+}
+
+.storymode-editor .text_pole {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 14px;
+    background: var(--black30a);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    color: var(--SmartThemeBodyColor);
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-editor .text_pole:focus {
+    outline: none;
+    border-color: var(--sm-accent);
+    box-shadow: 0 0 0 2px var(--sm-accent-subtle);
+}
+
+/* Editor list container */
+.storymode-editor-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Individual list item - flat modern design */
+.storymode-editor-item {
+    border: none;
+    border-left: 3px solid transparent;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 0;
+    padding: 16px 18px;
+    background: transparent;
+    transition: all var(--sm-transition-fast);
+}
+
+.storymode-editor-item:last-child {
+    border-bottom: none;
+}
+
+.storymode-editor-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-left-color: var(--sm-accent);
+}
+
+/* Item header - name and category */
+.storymode-editor-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.storymode-editor-item-header strong {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--SmartThemeBodyColor);
+    letter-spacing: 0.2px;
+}
+
+.storymode-editor-category {
+    font-size: 0.75rem;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    padding: 4px 10px;
+    background: var(--black50a);
+    border-radius: 12px;
+}
+
+/* Item content - description */
+.storymode-editor-item-content {
+    text-align: left;
+    margin-bottom: 12px;
+}
+
+.storymode-editor-item-content p {
+    margin: 0;
+    color: var(--SmartThemeEmColor);
+    font-size: 0.88rem;
+    line-height: 1.5;
+    max-height: 4.5em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* NSFW indicator styling - matches NSFW panel, now as sibling of content */
+.storymode-editor-item .storymode-nsfw-text {
+    padding: 10px 12px;
+    margin: 8px 0 12px 0;
+    background: var(--black50a);
+    color: var(--SmartThemeBodyColor);
+    border-left: 3px solid var(--sm-warm);
+    border-radius: var(--sm-radius-sm);
+    font-size: 0.85em;
+    line-height: 1.5;
+}
+
+.storymode-editor-item .storymode-nsfw-text strong {
+    color: var(--sm-warm);
+}
+
+/* Action buttons - horizontal layout */
+.storymode-editor-item-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.storymode-editor-item-actions .menu_button {
+    padding: 6px 12px;
+    font-size: 0.82em;
+    background: transparent;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    color: var(--SmartThemeBodyColor);
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-editor-item-actions .menu_button:hover {
+    background: var(--sm-accent);
+    border-color: var(--sm-accent);
+    color: white;
+}
+

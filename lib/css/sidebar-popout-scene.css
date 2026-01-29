@@ -1,0 +1,376 @@
+/* Debug Panel Popups */
+.storymode-debug-interactable {
+    cursor: pointer;
+    transition: var(--sm-transition-fast);
+    padding: 6px 8px;
+    margin: -6px -8px;
+    border-radius: var(--sm-radius-sm);
+}
+
+.storymode-debug-interactable:hover {
+    background: var(--black30a);
+}
+
+.storymode-debug-interactable .storymode-debug-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.storymode-popup-details {
+    padding: 10px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.storymode-detail-section {
+    margin-bottom: 20px;
+}
+
+.storymode-detail-section h4 {
+    margin: 0 0 8px 0;
+    color: var(--sm-accent);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1em;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    padding-bottom: 4px;
+}
+
+.storymode-detail-section p {
+    margin: 0;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+.storymode-detail-section ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.storymode-detail-section li {
+    margin-bottom: 4px;
+}
+
+.storymode-detail-row {
+    display: flex;
+    gap: 20px;
+    padding-top: 10px;
+    border-top: 1px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-beat-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.storymode-beat-item {
+    display: flex;
+    gap: 12px;
+    padding: 10px;
+    background: var(--black30a);
+    border-radius: var(--sm-radius-md);
+    border-left: 4px solid transparent;
+}
+
+.storymode-beat-item.done {
+    opacity: 0.7;
+    border-left-color: var(--sm-phase-setup);
+}
+
+.storymode-beat-item.current {
+    background: rgba(var(--sm-accent-rgb), 0.1);
+    border-left-color: var(--sm-warm);
+    animation: beatHighlight 2s infinite;
+}
+
+.storymode-beat-status {
+    font-size: 1.2em;
+    flex-shrink: 0;
+}
+
+.storymode-beat-status .fa-circle-check {
+    color: var(--sm-phase-setup);
+}
+
+.storymode-beat-status .fa-arrow-right {
+    color: var(--sm-warm);
+}
+
+.storymode-beat-status .fa-circle {
+    color: var(--SmartThemeQuoteColor);
+}
+
+.storymode-beat-text {
+    line-height: 1.4;
+}
+
+@keyframes beatHighlight {
+
+    0%,
+    100% {
+        background: rgba(var(--sm-accent-rgb), 0.1);
+    }
+
+    50% {
+        background: rgba(var(--sm-accent-rgb), 0.2);
+    }
+}
+
+/* ============================================================================
+   POPOUT THEME SYSTEM
+   ============================================================================ */
+
+/* Default Story Mode theme */
+.storymode-scene-popout {
+    --popout-bg: color-mix(in srgb, var(--SmartThemeBlurTintColor) 92%, black);
+    --popout-header-bg: var(--sm-accent);
+    --popout-text: var(--SmartThemeBodyColor);
+    --popout-border: var(--SmartThemeBorderColor);
+    --popout-text-muted: rgba(255, 255, 255, 0.5);
+    --popout-text-secondary: rgba(255, 255, 255, 0.9);
+    --popout-hover-bg: var(--black30a);
+
+    position: fixed;
+    bottom: 20px;
+    right: 310px;
+    width: 360px;
+    max-height: 80vh;
+    background: var(--popout-bg);
+    border: 1px solid var(--popout-border);
+    border-radius: var(--sm-radius-md);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    z-index: var(--sm-z-popout);
+    font-size: 0.85em;
+    backdrop-filter: blur(12px);
+    animation: scenePopoutSlideIn 0.25s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Light theme */
+.storymode-scene-popout[data-theme="light"] {
+    --popout-bg: #fafafc;
+    --popout-header-bg: #0d9488;
+    --popout-text: #1f2937;
+    --popout-border: #d1d5db;
+    --popout-text-muted: #6b7280;
+    --popout-text-secondary: #374151;
+    --popout-hover-bg: rgba(0, 0, 0, 0.05);
+    backdrop-filter: none !important;
+}
+
+/* Dark theme */
+.storymode-scene-popout[data-theme="dark"] {
+    --popout-bg: rgba(17, 17, 17, 0.98);
+    --popout-header-bg: #6366f1;
+    --popout-text: #e5e7eb;
+    --popout-border: #6366f1;
+    --popout-text-muted: #9ca3af;
+    --popout-text-secondary: #d1d5db;
+    --popout-hover-bg: rgba(255, 255, 255, 0.05);
+}
+
+/* RPG Companion theme */
+.storymode-scene-popout[data-theme="rpg-companion"] {
+    --popout-bg: var(--rpg-bg, rgba(26, 26, 46, 0.9));
+    --popout-header-bg: var(--rpg-highlight, #e94560);
+    --popout-text: var(--rpg-text, #eaeaea);
+    --popout-border: var(--rpg-border, #4a7ba7);
+    --popout-text-muted: rgba(234, 234, 234, 0.6);
+    --popout-text-secondary: rgba(234, 234, 234, 0.9);
+    --popout-hover-bg: rgba(255, 255, 255, 0.1);
+}
+
+@keyframes scenePopoutSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.storymode-scene-popout.dragging {
+    opacity: 0.9;
+    transition: none;
+}
+
+.storymode-scene-popout.dragging .storymode-scene-popout-header {
+    cursor: grabbing;
+}
+
+.storymode-scene-popout-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--sm-accent);
+    color: white;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.storymode-scene-popout-header i {
+    font-size: 0.9em;
+}
+
+.storymode-scene-popout-close {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    padding: 4px 6px;
+    font-size: 1em;
+    transition: var(--sm-transition-fast);
+}
+
+.storymode-scene-popout-close:hover {
+    color: white;
+}
+
+.storymode-scene-popout-body {
+    padding: 16px;
+    padding-bottom: 24px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0; /* Allows flex child to shrink and scroll properly */
+}
+
+.storymode-popout-section {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-popout-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.storymode-popout-section h4 {
+    margin: 0 0 8px 0;
+    color: var(--sm-accent);
+    font-size: 0.8em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.storymode-popout-section p {
+    margin: 0;
+    line-height: 1.5;
+    color: var(--SmartThemeEmColor);
+}
+
+.storymode-popout-section ul {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-popout-section li {
+    margin-bottom: 4px;
+}
+
+.storymode-popout-meta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.storymode-popout-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.storymode-popout-meta-label {
+    font-size: 0.7em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.storymode-popout-meta-value {
+    font-weight: 500;
+    color: white;
+}
+
+/* Checklist styling */
+.storymode-popout-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.storymode-popout-checklist-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--sm-radius-sm);
+    border-left: 3px solid transparent;
+}
+
+.storymode-popout-checklist-item.complete {
+    border-left-color: var(--sm-phase-setup);
+    opacity: 0.7;
+}
+
+.storymode-popout-checklist-item.pending {
+    border-left-color: var(--sm-warm);
+}
+
+.storymode-popout-checklist-icon {
+    font-size: 0.9em;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.storymode-popout-checklist-icon.complete {
+    color: var(--sm-phase-setup);
+}
+
+.storymode-popout-checklist-icon.pending {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.storymode-popout-checklist-text {
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Next scene preview */
+.storymode-next-scene-preview {
+    background: rgba(var(--sm-accent-rgb), 0.1);
+    border: 1px solid rgba(var(--sm-accent-rgb), 0.3);
+    border-radius: var(--sm-radius-sm);
+    padding: 12px;
+}
+
+.storymode-next-scene-preview h5 {
+    margin: 0 0 6px 0;
+    color: var(--sm-accent);
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.storymode-next-scene-preview p {
+    margin: 0;
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.4;
+}

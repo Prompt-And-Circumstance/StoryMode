@@ -1,0 +1,122 @@
+/* ============================================================================
+   CARDS AND SECTIONS
+   ============================================================================ */
+
+.storymode-card {
+    background: var(--black30a);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-md);
+    padding: 0px;
+    margin-bottom: 18px;
+    position: relative;
+    transition: var(--sm-transition);
+}
+
+.storymode-card:hover {
+    border-color: rgba(77, 182, 172, 0.3);
+}
+
+.storymode-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-card-title {
+    font-size: 0.95em;
+    font-weight: 600;
+    color: var(--SmartThemeBodyColor);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.storymode-card-subtitle {
+    font-size: 0.78em;
+    color: var(--SmartThemeEmColor);
+}
+
+/* Opening Message specific styles */
+.storymode-card-title #inject_opening_message_btn {
+    padding: 4px 24px !important;
+    min-width: 140px;
+}
+
+.storymode-card h4 + div {
+    padding-bottom: 20px !important;
+}
+
+/* Info Display */
+.storymode-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 10px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    gap: 16px;
+}
+
+.storymode-info-row:last-child {
+    border-bottom: none;
+}
+
+.storymode-info-label {
+    font-size: 0.82em;
+    color: var(--SmartThemeEmColor);
+    min-width: 100px;
+    flex-shrink: 0;
+}
+
+.storymode-info-value {
+    font-size: 0.88em;
+    font-weight: 500;
+    color: var(--SmartThemeBodyColor);
+    text-align: left;
+    flex: 1;
+}
+
+/* Status Badge */
+.storymode-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: var(--black50a);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 20px;
+    font-size: 0.85em;
+    color: var(--SmartThemeBodyColor);
+    font-weight: 500;
+}
+
+.storymode-badge.active {
+    background: var(--sm-accent);
+    border-color: var(--sm-accent);
+    color: white;
+    box-shadow: 0 2px 8px var(--sm-accent-glow);
+}
+
+.storymode-badge i {
+    font-size: 0.85em;
+}
+
+/* Phase badges with theatrical colors */
+.storymode-badge.arc-setup {
+    border-left: 4px solid var(--sm-phase-setup);
+    background: rgba(102, 187, 106, 0.15);
+}
+
+.storymode-badge.arc-confrontation {
+    border-left: 4px solid var(--sm-phase-confrontation);
+    background: rgba(255, 167, 38, 0.15);
+}
+
+.storymode-badge.arc-resolution {
+    border-left: 4px solid var(--sm-phase-resolution);
+    background: rgba(239, 83, 80, 0.15);
+}
+

@@ -1,0 +1,429 @@
+/* ============================================================================
+   WIZARD UI - SILLYTAVERN NATIVE
+   Matches the unified ST theme and "Clean Chat" aesthetic
+   ============================================================================ */
+
+/* Wizard Modal Container - Remove hardcoded gradients, use ST surfaces */
+.storymode-wizard-modal {
+    background: var(--SmartThemeBlurTintColor) !important;
+    backdrop-filter: blur(8px);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    border-radius: 12px;
+    padding: 10px;
+}
+
+.storymode-wizard-header h2 {
+    color: var(--SmartThemeBodyColor) !important;
+    background: none !important;
+    -webkit-text-fill-color: initial !important;
+    text-shadow: none !important;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+/* Wizard Progress Indicator - Unified with ST Colors */
+.storymode-wizard-progress {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 90%, black 10%) !important;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    -webkit-font-smoothing: antialiased;
+    border: 1px solid var(--SmartThemeBorderColor) !important;
+    border-radius: 16px;
+    box-shadow: none !important;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Connecting line background */
+.storymode-wizard-progress::before {
+    content: '';
+    position: absolute;
+    top: 2.8rem;
+    /* Aligns with icon center */
+    left: 4rem;
+    right: 4rem;
+    height: 2px;
+    background: var(--SmartThemeBorderColor) !important;
+    z-index: 0;
+}
+
+.storymode-wizard-progress-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    opacity: 0.6;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: var(--sm-z-local);
+}
+
+.storymode-wizard-progress-item.completed,
+.storymode-wizard-progress-item.current {
+    opacity: 1;
+}
+
+.storymode-wizard-progress-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--SmartThemeBlurTintColor) !important;
+    border: 1px solid var(--SmartThemeBorderColor) !important;
+    color: var(--SmartThemeEmColor) !important;
+    font-size: 1em;
+    /* Reduced from 1.1rem */
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    /* Bouncy transition */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Current Phase - Use ST Accent */
+.storymode-wizard-progress-item.current .storymode-wizard-progress-icon {
+    background: var(--sm-accent) !important;
+    border-color: var(--sm-accent) !important;
+    color: white !important;
+    box-shadow: 0 0 15px color-mix(in srgb, var(--sm-accent) 50%, transparent) !important;
+    transform: scale(1.15);
+}
+
+.storymode-wizard-progress-item.current .storymode-wizard-progress-name {
+    color: var(--SmartThemeBodyColor) !important;
+    font-weight: 500;
+    text-shadow: none !important;
+}
+
+.storymode-wizard-progress-item.current .storymode-wizard-progress-phase {
+    color: var(--sm-accent) !important;
+}
+
+/* Completed Phase - Use ST Success or Quote Color */
+.storymode-wizard-progress-item.completed .storymode-wizard-progress-icon {
+    background: var(--SmartThemeQuoteColor) !important;
+    border-color: var(--SmartThemeQuoteColor) !important;
+    color: white !important;
+    box-shadow: none !important;
+    transform: scale(1.05);
+}
+
+.storymode-wizard-progress-label {
+    text-align: center;
+}
+
+.storymode-wizard-progress-phase {
+    font-size: 0.65em;
+    /* Reduced from 0.65rem */
+    font-weight: 700;
+    color: var(--gray50);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 2px;
+}
+
+.storymode-wizard-progress-name {
+    font-size: 0.82em;
+    /* Reduced from 0.85rem */
+    font-weight: 500;
+    color: var(--gray30);
+}
+
+/* Wizard Preview Panel - Clean Surfaces */
+.storymode-wizard-preview {
+    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 90%, black) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--SmartThemeBorderColor) !important;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: none !important;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+}
+
+.storymode-wizard-preview h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.1em;
+    /* Reduced from 1.2rem */
+    color: var(--SmartThemeBodyColor) !important;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: 1px solid var(--SmartThemeBorderColor) !important;
+    padding-bottom: 0.75rem;
+}
+
+.storymode-wizard-preview-section {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 70%, black) !important;
+    border-radius: 8px;
+    border: 1px solid var(--SmartThemeBorderColor) !important;
+    animation: fade-in-up 0.5s ease-out;
+}
+
+@keyframes fade-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.storymode-wizard-preview-section h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.85em;
+    /* Reduced from 0.9rem */
+    color: var(--SmartThemeEmColor) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.storymode-wizard-preview-content p {
+    margin: 0.4rem 0;
+    font-size: 0.85em;
+    /* Reduced from 0.9rem */
+    color: var(--SmartThemeBodyColor) !important;
+    line-height: 1.6;
+    text-align: left;
+}
+
+/* Wizard Generating Message */
+.storymode-wizard-status {
+    padding: 1rem;
+    font-size: 1em;
+    /* Reduced from 1.1rem */
+    color: var(--SmartThemeBodyColor);
+    line-height: 1.6;
+    min-height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.storymode-wizard-generating {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem 1rem 0.5rem 1rem;
+}
+
+/* Generating Animation - Subtler */
+.storymode-generating-text {
+    font-size: 0.85em;
+    /* Reduced from 0.9rem */
+    font-weight: 600;
+    background: linear-gradient(90deg, var(--SmartThemeEmColor), var(--sm-accent), var(--SmartThemeEmColor)) !important;
+    background-size: 200% 100% !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    letter-spacing: 0.15em;
+    animation: gradient-flow 3s linear infinite;
+}
+
+@keyframes gradient-flow {
+    0% {
+        background-position: 100% 0;
+    }
+
+    100% {
+        background-position: -100% 0;
+    }
+}
+
+/* Primary Ending Display (Unified) */
+.storymode-primary-ending {
+    padding: 1rem;
+    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 85%, black) !important;
+    border-left: 4px solid var(--sm-accent) !important;
+    border-top: 1px solid var(--SmartThemeBorderColor) !important;
+    border-right: 1px solid var(--SmartThemeBorderColor) !important;
+    border-bottom: 1px solid var(--SmartThemeBorderColor) !important;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.storymode-primary-ending h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--SmartThemeBodyColor) !important;
+    font-size: 1em;
+    /* Reduced from 1.1rem */
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.storymode-ending-title {
+    margin: 0 0 0.75rem 0;
+    color: var(--sm-accent) !important;
+    font-size: 1em;
+    /* Reduced from 1.1rem */
+    font-weight: 600;
+}
+
+.storymode-ending-description {
+    margin: 0.5rem 0;
+    line-height: 1.6;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-ending-outcomes {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--SmartThemeBorderColor);
+}
+
+.storymode-ending-outcomes strong {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.85em;
+    /* Reduced from 0.9rem */
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-ending-outcomes ul {
+    margin: 0.5rem 0 0 1.5rem;
+    padding: 0;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-ending-outcomes li {
+    margin-bottom: 0.25rem;
+}
+
+/* Alternate Endings (Collapsible) */
+.storymode-alternate-endings {
+    margin-top: 1rem;
+}
+
+.storymode-alternate-endings summary {
+    cursor: pointer;
+    color: var(--SmartThemeEmColor);
+    font-size: 0.85em;
+    /* Reduced from 0.9rem */
+    padding: 0.5rem;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.storymode-alternate-endings summary:hover {
+    color: var(--sm-accent);
+}
+
+.storymode-alternate-endings-list {
+    margin-top: 0.5rem;
+    padding-left: 1rem;
+}
+
+.storymode-alternate-endings-list .alternate-ending-item {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: var(--black20a);
+    border-radius: 4px;
+}
+
+.storymode-alternate-endings-list h6 {
+    margin: 0 0 0.25rem 0;
+    font-size: 0.9em;
+    /* Reduced from 0.95rem */
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-alternate-endings-list p {
+    margin: 0;
+    font-size: 0.82em;
+    /* Reduced from 0.85rem to match standard standard */
+    color: var(--SmartThemeEmColor);
+}
+
+/* Wizard Settings Toggle */
+.storymode-wizard-settings {
+    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 50%, transparent);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 20px;
+}
+
+.storymode-wizard-settings h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.95em;
+    font-weight: 600;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-wizard-settings .storymode-setting-description {
+    margin: 0.5rem 0 0 0;
+    padding: 0;
+    background: transparent;
+    font-size: 0.85em;
+    font-style: italic;
+    color: var(--SmartThemeEmColor);
+    line-height: 1.5;
+    opacity: 0.9;
+}
+
+/* Advanced Options (Details/Summary) */
+details.storymode-advanced-options {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin-bottom: 1rem;
+}
+
+details.storymode-advanced-options summary {
+    cursor: pointer;
+    color: var(--SmartThemeEmColor);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    list-style: none;
+    /* Hide default triangle */
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.2s ease;
+}
+
+details.storymode-advanced-options summary::-webkit-details-marker {
+    display: none;
+}
+
+details.storymode-advanced-options summary:hover {
+    color: var(--SmartThemeBodyColor);
+}
+
+details.storymode-advanced-options[open] summary {
+    margin-bottom: 1rem;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-advanced-content {
+    padding-left: 0.5rem;
+    border-left: 2px solid var(--SmartThemeBorderColor);
+    margin-left: 4px;
+}
+

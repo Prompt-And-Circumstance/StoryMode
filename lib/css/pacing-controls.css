@@ -1,0 +1,298 @@
+/* ============================================================================
+   PACING MODE TOGGLE
+   ============================================================================ */
+
+.storymode-mode-toggle {
+    border-top: 1px solid var(--SmartThemeBorderColor);
+    padding-top: 8px;
+    margin-top: 4px;
+}
+
+.storymode-toggle-buttons {
+    display: flex;
+    gap: 4px;
+    margin: 4px 0;
+}
+
+.storymode-mode-btn {
+    flex: 1;
+    padding: 4px 8px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 4px;
+    background: var(--SmartThemeBlurTintColor);
+    color: var(--SmartThemeBodyColor);
+    cursor: pointer;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+}
+
+.storymode-mode-btn:hover {
+    background: var(--SmartThemeQuoteColor);
+}
+
+.storymode-mode-btn.active {
+    background: var(--SmartThemeChatTintColor);
+    border-color: var(--SmartThemeQuoteColor);
+    font-weight: bold;
+}
+
+.storymode-mode-btn i {
+    font-size: 10px;
+}
+
+/* Arc History Indicators (icons showing what content is available) */
+.storymode-arc-history-indicators {
+    display: flex;
+    gap: 12px;
+    font-size: 1.2em;
+    color: var(--sm-accent);
+    margin-top: 4px;
+}
+
+.storymode-arc-history-indicators i {
+    opacity: 0.9;
+}
+
+/* OOC (Out of Context) Panel Styles */
+.storymode-ooc-panel {
+    background: transparent;
+    overflow: hidden;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+}
+
+.storymode-ooc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+    margin-bottom: 8px;
+}
+
+.storymode-ooc-header:hover {
+    opacity: 0.8;
+}
+
+.storymode-ooc-header .storymode-debug-label {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.storymode-ooc-toggle {
+    background: transparent;
+    border: none;
+    color: var(--sm-accent);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+}
+
+.storymode-ooc-toggle:hover {
+    color: var(--sm-accent-hover);
+}
+
+.storymode-ooc-content {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 500px;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.storymode-ooc-panel.sm-ooc-rolled-up .storymode-ooc-content {
+    max-height: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.storymode-ooc-textarea {
+    width: 100%;
+    min-height: 60px;
+    max-height: 150px;
+    padding: 8px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: var(--sm-radius-sm);
+    background: var(--SmartThemeBlurTintColor);
+    color: var(--SmartThemeBodyColor);
+    font-family: inherit;
+    font-size: 0.9em;
+    line-height: 1.4;
+    resize: vertical;
+    transition: border-color 0.2s;
+}
+
+.storymode-ooc-textarea:focus {
+    outline: none;
+    border-color: var(--sm-accent);
+    box-shadow: 0 0 0 2px var(--sm-accent-glow);
+}
+
+.storymode-ooc-textarea::placeholder {
+    color: var(--SmartThemeQuoteColor);
+    opacity: 0.6;
+}
+
+.storymode-ooc-hint {
+    font-size: 0.75em;
+    color: var(--SmartThemeQuoteColor);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+}
+
+.storymode-ooc-hint i {
+    color: var(--sm-accent);
+    opacity: 0.8;
+}
+
+.storymode-ooc-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+.storymode-ooc-clear-btn {
+    padding: 6px 12px;
+    border-radius: var(--sm-radius-sm);
+    border: 1px solid var(--SmartThemeBorderColor);
+    background: transparent;
+    color: var(--SmartThemeBodyColor);
+    cursor: pointer;
+    font-size: 0.85em;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.storymode-ooc-clear-btn:hover {
+    background: var(--sm-phase-resolution);
+    border-color: var(--sm-phase-resolution);
+    color: white;
+}
+
+.storymode-ooc-clear-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Legacy drawer content styles (kept for backwards compatibility) */
+.storymode-drawer-content-inner {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+/* ============================================================================
+   SCENE SUMMARIES PANEL
+   Compact display of past scene summaries in controller
+   ============================================================================ */
+
+.storymode-summaries-panel {
+    margin-top: 16px;
+    border-radius: var(--sm-radius-sm);
+    border: 1px solid var(--SmartThemeBorderColor);
+    background: var(--black30a);
+    overflow: hidden;
+}
+
+.storymode-summaries-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--black50a);
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    font-size: 0.85em;
+    font-weight: 600;
+    color: var(--SmartThemeBodyColor);
+}
+
+.storymode-summaries-header i {
+    color: var(--sm-accent);
+    font-size: 0.9em;
+}
+
+.storymode-summaries-count {
+    margin-left: auto;
+    font-size: 0.9em;
+    opacity: 0.7;
+    font-weight: 400;
+}
+
+.storymode-summaries-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--SmartThemeBorderColor);
+}
+
+.storymode-summary-item {
+    padding: 10px 12px;
+    background: var(--black30a);
+    cursor: help;
+    transition: background 0.2s ease;
+}
+
+.storymode-summary-item:hover {
+    background: var(--black50a);
+}
+
+.storymode-summary-header {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.storymode-summary-scene {
+    font-size: 0.75em;
+    font-weight: 600;
+    color: var(--sm-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.storymode-summary-title {
+    font-size: 0.85em;
+    font-weight: 500;
+    color: var(--SmartThemeEmColor);
+}
+
+.storymode-summary-text {
+    font-size: 0.8em;
+    line-height: 1.4;
+    color: var(--SmartThemeQuoteColor);
+}
+
+.storymode-summaries-note {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: var(--black50a);
+    border-top: 1px solid var(--SmartThemeBorderColor);
+    font-size: 0.75em;
+    color: var(--SmartThemeQuoteColor);
+    font-style: italic;
+}
+
+.storymode-summaries-note i {
+    color: var(--sm-accent);
+    opacity: 0.6;
+}
+

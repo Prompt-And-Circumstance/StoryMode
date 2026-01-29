@@ -121,10 +121,12 @@
 
 /* ============================================================================
    POPOUT THEME SYSTEM
+   Theme variables defined in popout-themes-shared.css
    ============================================================================ */
 
-/* Default Story Mode theme */
+/* Default Story Mode theme - variables for light/dark/rpg-companion themes in shared CSS */
 .storymode-scene-popout {
+    text-shadow: none;
     --popout-bg: color-mix(in srgb, var(--SmartThemeBlurTintColor) 92%, black);
     --popout-header-bg: var(--sm-accent);
     --popout-text: var(--SmartThemeBodyColor);
@@ -151,40 +153,6 @@
     flex-direction: column;
 }
 
-/* Light theme */
-.storymode-scene-popout[data-theme="light"] {
-    --popout-bg: #fafafc;
-    --popout-header-bg: #0d9488;
-    --popout-text: #1f2937;
-    --popout-border: #d1d5db;
-    --popout-text-muted: #6b7280;
-    --popout-text-secondary: #374151;
-    --popout-hover-bg: rgba(0, 0, 0, 0.05);
-    backdrop-filter: none !important;
-}
-
-/* Dark theme */
-.storymode-scene-popout[data-theme="dark"] {
-    --popout-bg: rgba(17, 17, 17, 0.98);
-    --popout-header-bg: #6366f1;
-    --popout-text: #e5e7eb;
-    --popout-border: #6366f1;
-    --popout-text-muted: #9ca3af;
-    --popout-text-secondary: #d1d5db;
-    --popout-hover-bg: rgba(255, 255, 255, 0.05);
-}
-
-/* RPG Companion theme */
-.storymode-scene-popout[data-theme="rpg-companion"] {
-    --popout-bg: var(--rpg-bg, rgba(26, 26, 46, 0.9));
-    --popout-header-bg: var(--rpg-highlight, #e94560);
-    --popout-text: var(--rpg-text, #eaeaea);
-    --popout-border: var(--rpg-border, #4a7ba7);
-    --popout-text-muted: rgba(234, 234, 234, 0.6);
-    --popout-text-secondary: rgba(234, 234, 234, 0.9);
-    --popout-hover-bg: rgba(255, 255, 255, 0.1);
-}
-
 @keyframes scenePopoutSlideIn {
     from {
         opacity: 0;
@@ -195,6 +163,15 @@
         opacity: 1;
         transform: translateX(0);
     }
+}
+
+/* Light theme specific: disable text-shadow for crisp text */
+.storymode-scene-popout[data-theme="light"],
+.storymode-scene-popout[data-theme="light"] *,
+.storymode-scene-popout[data-theme="light"] *::before,
+.storymode-scene-popout[data-theme="light"] *::after {
+    text-shadow: none !important;
+    -webkit-text-shadow: none !important;
 }
 
 .storymode-scene-popout.dragging {
@@ -211,7 +188,7 @@
     align-items: center;
     gap: 10px;
     padding: 12px 16px;
-    background: var(--sm-accent);
+    background: var(--popout-header-bg);
     color: white;
     font-weight: 600;
     flex-shrink: 0;
@@ -258,7 +235,7 @@
 
 .storymode-popout-section h4 {
     margin: 0 0 8px 0;
-    color: var(--sm-accent);
+    color: var(--popout-header-bg);
     font-size: 0.8em;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -276,7 +253,7 @@
 .storymode-popout-section ul {
     margin: 0;
     padding-left: 18px;
-    color: var(--SmartThemeBodyColor);
+    color: var(--popout-text);
 }
 
 .storymode-popout-section li {
@@ -298,12 +275,12 @@
 .storymode-popout-meta-label {
     font-size: 0.7em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--popout-text-muted);
 }
 
 .storymode-popout-meta-value {
     font-weight: 500;
-    color: white;
+    color: var(--popout-text);
 }
 
 /* Checklist styling */
@@ -318,7 +295,7 @@
     align-items: flex-start;
     gap: 8px;
     padding: 8px 10px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--popout-hover-bg);
     border-radius: var(--sm-radius-sm);
     border-left: 3px solid transparent;
 }
@@ -343,12 +320,12 @@
 }
 
 .storymode-popout-checklist-icon.pending {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--popout-text-muted);
 }
 
 .storymode-popout-checklist-text {
     line-height: 1.4;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--popout-text-secondary);
 }
 
 /* Next scene preview */
@@ -361,7 +338,7 @@
 
 .storymode-next-scene-preview h5 {
     margin: 0 0 6px 0;
-    color: var(--sm-accent);
+    color: var(--popout-header-bg);
     font-size: 0.9em;
     display: flex;
     align-items: center;
@@ -371,6 +348,6 @@
 .storymode-next-scene-preview p {
     margin: 0;
     font-size: 0.9em;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--popout-text-secondary);
     line-height: 1.4;
 }

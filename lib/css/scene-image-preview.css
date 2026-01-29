@@ -57,12 +57,20 @@
 
 /* Image preview popup */
 .storymode-image-preview {
+    --popout-bg: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, black);
+    --popout-header-bg: var(--sm-accent);
+    --popout-text: var(--SmartThemeBodyColor);
+    --popout-border: var(--SmartThemeBorderColor);
+    --popout-text-muted: var(--SmartThemeQuoteColor);
+    --popout-text-secondary: var(--SmartThemeEmColor);
+    --popout-hover-bg: var(--black30a);
+
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, black);
-    border: 1px solid var(--SmartThemeBorderColor);
+    background: var(--popout-bg);
+    border: 1px solid var(--popout-border);
     border-radius: var(--sm-radius-md);
     max-width: 90vw;
     max-height: 90vh;
@@ -73,13 +81,75 @@
     backdrop-filter: blur(12px);
 }
 
+/* Light theme */
+.storymode-image-preview[data-theme="light"] {
+    --popout-bg: #fafafc;
+    --popout-header-bg: #0d9488;
+    --popout-text: #1f2937;
+    --popout-border: #d1d5db;
+    --popout-text-muted: #9ca3af;
+    --popout-text-secondary: #374151;
+    --popout-hover-bg: rgba(0, 0, 0, 0.05);
+    backdrop-filter: none !important;
+
+    /* Override global accent variables for light theme (CRITICAL for text contrast) */
+    --sm-accent: #0d9488;
+    --sm-accent-hover: #14b8a6;
+    --sm-accent-dark: #0f766e;
+    --sm-accent-glow: rgba(13, 148, 136, 0.25);
+    --sm-accent-subtle: rgba(13, 148, 136, 0.1);
+    --sm-accent-rgb: 13, 148, 136;
+
+    /* Override SillyTavern theme variables for light theme */
+    --SmartThemeBodyColor: #1f2937;
+    --SmartThemeQuoteColor: #6b7280;
+    --SmartThemeEmColor: #374151;
+    --SmartThemeBorderColor: #d1d5db;
+    --SmartThemeBlurTintColor: #f3f4f6;
+    --black10a: rgba(0, 0, 0, 0.04);
+    --black20a: rgba(0, 0, 0, 0.06);
+    --black30a: rgba(0, 0, 0, 0.08);
+    --black50a: rgba(0, 0, 0, 0.12);
+}
+
+/* Light theme: disable text-shadow for crisp text */
+.storymode-image-preview[data-theme="light"],
+.storymode-image-preview[data-theme="light"] *,
+.storymode-image-preview[data-theme="light"] *::before,
+.storymode-image-preview[data-theme="light"] *::after {
+    text-shadow: none !important;
+    -webkit-text-shadow: none !important;
+}
+
+/* Dark theme */
+.storymode-image-preview[data-theme="dark"] {
+    --popout-bg: rgba(17, 17, 17, 0.98);
+    --popout-header-bg: #6366f1;
+    --popout-text: #e5e7eb;
+    --popout-border: #6366f1;
+    --popout-text-muted: #9ca3af;
+    --popout-text-secondary: #d1d5db;
+    --popout-hover-bg: rgba(255, 255, 255, 0.05);
+}
+
+/* RPG Companion theme */
+.storymode-image-preview[data-theme="rpg-companion"] {
+    --popout-bg: var(--rpg-bg, rgba(26, 26, 46, 0.9));
+    --popout-header-bg: var(--rpg-highlight, #e94560);
+    --popout-text: var(--rpg-text, #eaeaea);
+    --popout-border: var(--rpg-border, #4a7ba7);
+    --popout-text-muted: rgba(234, 234, 234, 0.6);
+    --popout-text-secondary: rgba(234, 234, 234, 0.85);
+    --popout-hover-bg: rgba(255, 255, 255, 0.1);
+}
+
 .storymode-image-preview-header {
     padding: 12px 16px;
-    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    border-bottom: 1px solid var(--popout-border);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: var(--sm-accent);
+    background: var(--popout-header-bg);
     border-radius: var(--sm-radius-md) var(--sm-radius-md) 0 0;
     color: white;
 }
@@ -143,7 +213,7 @@
     align-items: center;
     margin-bottom: 8px;
     font-weight: 600;
-    color: var(--SmartThemeBodyColor);
+    color: var(--popout-text);
 }
 
 .storymode-prompt-actions {
@@ -155,7 +225,7 @@
 .storymode-copy-prompt-btn {
     background: transparent;
     border: 1px solid var(--black50a);
-    color: var(--SmartThemeBodyColor);
+    color: var(--popout-text);
     cursor: pointer;
     padding: 4px 8px;
     border-radius: 4px;
@@ -169,7 +239,7 @@
 }
 
 .storymode-prompt-text {
-    color: var(--SmartThemeEmColor);
+    color: var(--popout-text-secondary);
     font-size: 0.9rem;
     line-height: 1.4;
     word-break: break-word;
@@ -181,18 +251,18 @@
 }
 
 .storymode-prompt-text:hover {
-    border-color: var(--SmartThemeBorderColor);
-    background: var(--black30a);
+    border-color: var(--popout-border);
+    background: var(--popout-hover-bg);
 }
 
 .storymode-prompt-edit {
     width: 100%;
     min-height: 80px;
     padding: 8px;
-    border: 1px solid var(--sm-accent);
+    border: 1px solid var(--popout-header-bg);
     border-radius: var(--sm-radius-sm);
-    background: var(--SmartThemeBlurTintColor);
-    color: var(--SmartThemeBodyColor);
+    background: var(--popout-bg);
+    color: var(--popout-text);
     font-size: 0.9rem;
     line-height: 1.4;
     resize: vertical;
@@ -201,7 +271,7 @@
 
 .storymode-prompt-edit:focus {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sm-accent-glow);
+    box-shadow: 0 0 0 2px rgba(var(--sm-accent-rgb, 13, 148, 136), 0.3);
 }
 
 .storymode-prompt-edit-actions {
@@ -228,16 +298,16 @@
     align-items: center;
     gap: 4px;
     font-size: 0.85rem;
-    color: var(--SmartThemeQuoteColor);
+    color: var(--popout-text-muted);
 }
 
 .storymode-image-preview-actions {
     display: flex;
     gap: 8px;
     padding: 12px 16px;
-    border-top: 1px solid var(--SmartThemeBorderColor);
+    border-top: 1px solid var(--popout-border);
     flex-wrap: wrap;
-    background: var(--black30a);
+    background: var(--popout-hover-bg);
     border-radius: 0 0 var(--sm-radius-md) var(--sm-radius-md);
 }
 
@@ -267,8 +337,8 @@
     padding: 6px 8px;
     border-radius: 4px;
     border: 1px solid var(--black50a);
-    background: var(--black30a);
-    color: var(--SmartThemeBodyColor);
+    background: var(--popout-hover-bg);
+    color: var(--popout-text);
     cursor: pointer;
 }
 
@@ -280,8 +350,8 @@
     padding: 8px 12px;
     border-radius: 4px;
     border: 1px solid var(--black50a);
-    background: var(--black30a);
-    color: var(--SmartThemeBodyColor);
+    background: var(--popout-hover-bg);
+    color: var(--popout-text);
     cursor: pointer;
     display: inline-flex;
     align-items: center;

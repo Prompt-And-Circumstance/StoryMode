@@ -40,6 +40,7 @@
 @import url('./lib/css/debug-panel.css');
 @import url('./lib/css/sidebar-core.css');
 @import url('./lib/css/sidebar-chrome.css');
+@import url('./lib/css/popout-themes-shared.css');
 @import url('./lib/css/sidebar-popout-scene.css');
 @import url('./lib/css/sidebar-popout-history.css');
 @import url('./lib/css/sidebar-popout-tools.css');

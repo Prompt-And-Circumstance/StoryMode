@@ -33,9 +33,30 @@
     background: #fafafc !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+    text-shadow: none !important;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+
+    /* Override global accent variables for light theme (CRITICAL for text contrast) */
+    --sm-accent: #0d9488;
+    --sm-accent-hover: #14b8a6;
+    --sm-accent-dark: #0f766e;
+    --sm-accent-glow: rgba(13, 148, 136, 0.25);
+    --sm-accent-subtle: rgba(13, 148, 136, 0.1);
+    --sm-accent-rgb: 13, 148, 136;
+
+    /* Override SillyTavern theme variables for light theme */
+    --SmartThemeBodyColor: #1f2937;
+    --SmartThemeQuoteColor: #6b7280;
+    --SmartThemeEmColor: #374151;
+    --SmartThemeBorderColor: #d1d5db;
+    --SmartThemeBlurTintColor: #f3f4f6;
+    --SmartThemeChatTintColor: rgba(13, 148, 136, 0.1);
+    --black10a: rgba(0, 0, 0, 0.04);
+    --black20a: rgba(0, 0, 0, 0.06);
+    --black30a: rgba(0, 0, 0, 0.08);
+    --black50a: rgba(0, 0, 0, 0.12);
 }
 
 /* Light theme - ensure all child elements have crisp solid backgrounds */
@@ -104,6 +125,15 @@
 .storymode-sidebar[data-theme="light"] .storymode-phase-badge {
     background: rgba(13, 148, 136, 0.15) !important;
     color: #0d9488 !important;
+}
+
+/* Light theme: disable text-shadow for crisp text */
+.storymode-sidebar[data-theme="light"],
+.storymode-sidebar[data-theme="light"] *,
+.storymode-sidebar[data-theme="light"] *::before,
+.storymode-sidebar[data-theme="light"] *::after {
+    text-shadow: none !important;
+    -webkit-text-shadow: none !important;
 }
 
 /* Dark Theme */

@@ -1,13 +1,26 @@
-/* Summary Popout */
+/* ============================================================================
+   SUMMARY & PROMPT INSPECTOR POPOUTS - THEME SYSTEM
+   Theme variables defined in popout-themes-shared.css
+   ============================================================================ */
+
+/* Default Story Mode theme - variables for light/dark/rpg-companion themes in shared CSS */
 .storymode-summary-popout {
+    --popout-bg: var(--SmartThemeBlurTintColor);
+    --popout-header-bg: var(--sm-accent);
+    --popout-text: var(--SmartThemeBodyColor);
+    --popout-border: var(--SmartThemeBorderColor);
+    --popout-text-muted: rgba(255, 255, 255, 0.6);
+    --popout-text-secondary: var(--SmartThemeBodyColor);
+    --popout-hover-bg: var(--black30a);
+
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: var(--SmartThemeBlurTintColor);
+    background: var(--popout-bg);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    border: 1px solid var(--SmartThemeBorderColor);
+    border: 1px solid var(--popout-border);
     border-radius: 12px;
     min-width: 400px;
     max-width: 600px;
@@ -17,12 +30,21 @@
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
 
+/* Light theme specific: disable text-shadow for crisp text */
+.storymode-summary-popout[data-theme="light"],
+.storymode-summary-popout[data-theme="light"] *,
+.storymode-summary-popout[data-theme="light"] *::before,
+.storymode-summary-popout[data-theme="light"] *::after {
+    text-shadow: none !important;
+    -webkit-text-shadow: none !important;
+}
+
 .storymode-summary-popout-header {
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 12px 16px;
-    background: var(--sm-accent);
+    background: var(--popout-header-bg);
     color: white;
     font-weight: 600;
     flex-shrink: 0;
@@ -60,7 +82,7 @@
 }
 
 .storymode-summary-card {
-    border: 1px solid var(--SmartThemeBorderColor);
+    border: 1px solid var(--popout-border);
     border-radius: 6px;
     margin-bottom: 12px;
     overflow: hidden;
@@ -71,8 +93,9 @@
     justify-content: space-between;
     align-items: center;
     padding: 8px 12px;
-    background: var(--SmartThemeQuoteColor);
+    background: var(--popout-hover-bg);
     font-size: 0.9em;
+    color: var(--popout-text);
 }
 
 .storymode-summary-scene-title {
@@ -92,13 +115,13 @@
     width: 100%;
     min-height: 80px;
     resize: vertical;
-    background: var(--SmartThemeBlurTintColor);
-    border: 1px solid var(--SmartThemeBorderColor);
+    background: var(--popout-bg);
+    border: 1px solid var(--popout-border);
     border-radius: 4px;
     padding: 8px;
     font-family: inherit;
     font-size: 0.9em;
-    color: var(--SmartThemeBodyColor);
+    color: var(--popout-text);
 }
 
 .storymode-summary-placeholder {
@@ -109,7 +132,7 @@
 
 .storymode-summary-card-actions {
     padding: 8px 12px;
-    border-top: 1px solid var(--SmartThemeBorderColor);
+    border-top: 1px solid var(--popout-border);
     display: flex;
     justify-content: flex-end;
 }
@@ -121,14 +144,23 @@
 }
 
 /* Prompt Inspector Panel */
+/* Default Story Mode theme - variables for light/dark/rpg-companion themes in shared CSS */
 .storymode-prompt-inspector {
+    --popout-bg: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, black);
+    --popout-header-bg: var(--sm-accent);
+    --popout-text: var(--SmartThemeBodyColor);
+    --popout-border: var(--SmartThemeBorderColor);
+    --popout-text-muted: var(--SmartThemeQuoteColor);
+    --popout-text-secondary: var(--SmartThemeEmColor);
+    --popout-hover-bg: var(--black30a);
+
     position: fixed;
     bottom: 20px;
     right: 310px;
     width: 500px;
     max-height: 85vh;
-    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 95%, black);
-    border: 1px solid var(--SmartThemeBorderColor);
+    background: var(--popout-bg);
+    border: 1px solid var(--popout-border);
     border-radius: var(--sm-radius-md);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     z-index: var(--sm-z-popout-above);
@@ -145,7 +177,7 @@
     align-items: center;
     gap: 10px;
     padding: 12px 16px;
-    background: var(--sm-accent);
+    background: var(--popout-header-bg);
     color: white;
     font-weight: 600;
     flex-shrink: 0;
@@ -168,7 +200,7 @@
 
 .storymode-prompt-tabs {
     display: flex;
-    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    border-bottom: 1px solid var(--popout-border);
     flex-shrink: 0;
 }
 
@@ -177,7 +209,7 @@
     padding: 10px 16px;
     background: transparent;
     border: none;
-    color: var(--SmartThemeQuoteColor);
+    color: var(--popout-text-muted);
     cursor: pointer;
     font-size: 0.9em;
     font-weight: 500;
@@ -186,14 +218,14 @@
 }
 
 .storymode-prompt-tab:hover {
-    color: var(--SmartThemeBodyColor);
-    background: var(--black30a);
+    color: var(--popout-text);
+    background: var(--popout-hover-bg);
 }
 
 .storymode-prompt-tab.active {
-    color: var(--SmartThemeBodyColor);
-    border-bottom-color: var(--sm-accent);
-    background: var(--black30a);
+    color: var(--popout-text);
+    border-bottom-color: var(--popout-header-bg);
+    background: var(--popout-hover-bg);
 }
 
 .storymode-prompt-content {
@@ -206,13 +238,13 @@
     font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
     font-size: 0.85em;
     line-height: 1.5;
-    background: var(--black30a);
-    border: 1px solid var(--SmartThemeBorderColor);
+    background: var(--popout-hover-bg);
+    border: 1px solid var(--popout-border);
     border-radius: var(--sm-radius-sm);
     padding: 12px;
     white-space: pre-wrap;
     word-break: break-word;
-    color: var(--SmartThemeEmColor);
+    color: var(--popout-text-secondary);
     max-height: 60vh;
     overflow-y: auto;
 }
@@ -231,7 +263,7 @@
 
 .storymode-prompt-empty {
     text-align: center;
-    color: var(--SmartThemeQuoteColor);
+    color: var(--popout-text-muted);
     padding: 40px;
     font-style: italic;
 }

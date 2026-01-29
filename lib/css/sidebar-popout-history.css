@@ -1,13 +1,26 @@
-/* Arc History Popout */
+/* ============================================================================
+   ARC HISTORY POPOUT - THEME SYSTEM
+   Theme variables defined in popout-themes-shared.css
+   ============================================================================ */
+
+/* Default Story Mode theme - variables for light/dark/rpg-companion themes in shared CSS */
 .storymode-arc-history-popout {
+    --popout-bg: var(--SmartThemeBlurTintColor);
+    --popout-header-bg: var(--sm-accent);
+    --popout-text: var(--SmartThemeBodyColor);
+    --popout-border: var(--SmartThemeBorderColor);
+    --popout-text-muted: rgba(255, 255, 255, 0.6);
+    --popout-text-secondary: var(--SmartThemeEmColor);
+    --popout-hover-bg: var(--black30a);
+
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: var(--SmartThemeBlurTintColor);
+    background: var(--popout-bg);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    border: 1px solid var(--SmartThemeBorderColor);
+    border: 1px solid var(--popout-border);
     border-radius: 12px;
     min-width: 500px;
     max-width: 700px;
@@ -17,12 +30,21 @@
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
 
+/* Light theme specific: disable text-shadow for crisp text */
+.storymode-arc-history-popout[data-theme="light"],
+.storymode-arc-history-popout[data-theme="light"] *,
+.storymode-arc-history-popout[data-theme="light"] *::before,
+.storymode-arc-history-popout[data-theme="light"] *::after {
+    text-shadow: none !important;
+    -webkit-text-shadow: none !important;
+}
+
 .storymode-arc-history-popout-header {
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 12px 16px;
-    background: var(--sm-accent);
+    background: var(--popout-header-bg);
     color: white;
     font-weight: 600;
     flex-shrink: 0;
@@ -63,7 +85,7 @@
 .storymode-arc-history-section {
     margin-bottom: 16px;
     padding-bottom: 12px;
-    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    border-bottom: 1px solid var(--popout-border);
 }
 
 .storymode-arc-history-section:last-child {
@@ -81,7 +103,7 @@
 
 .storymode-arc-history-header h4 {
     margin: 0;
-    color: var(--sm-accent);
+    color: var(--popout-header-bg);
     font-size: 0.8em;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -100,7 +122,7 @@
 .storymode-arc-history-content {
     margin: 0;
     line-height: 1.5;
-    color: var(--SmartThemeEmColor);
+    color: var(--popout-text-secondary);
     white-space: pre-wrap;
     word-wrap: break-word;
 }
@@ -119,7 +141,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    color: var(--sm-accent);
+    color: var(--popout-header-bg);
 }
 
 .storymode-theme-list {
@@ -138,16 +160,16 @@
 }
 
 .storymode-next-adventure-option {
-    border: 1px solid var(--SmartThemeBorderColor);
+    border: 1px solid var(--popout-border);
     border-radius: 8px;
     padding: 12px;
-    background: color-mix(in srgb, var(--SmartThemeBlurTintColor) 50%, transparent);
+    background: var(--popout-bg);
     transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .storymode-next-adventure-option:hover {
-    border-color: var(--sm-accent);
-    background: color-mix(in srgb, var(--sm-accent) 8%, transparent);
+    border-color: var(--popout-header-bg);
+    background: var(--popout-hover-bg);
 }
 
 .storymode-scenario-header {
@@ -158,7 +180,7 @@
 }
 
 .storymode-scenario-number {
-    background: var(--sm-accent);
+    background: var(--popout-header-bg);
     color: white;
     border-radius: 50%;
     width: 24px;
@@ -178,8 +200,8 @@
 }
 
 .storymode-tone-badge {
-    background: color-mix(in srgb, var(--sm-accent) 20%, transparent);
-    color: var(--sm-accent);
+    background: var(--popout-hover-bg);
+    color: var(--popout-header-bg);
     padding: 2px 8px;
     border-radius: 12px;
     font-size: 0.8em;

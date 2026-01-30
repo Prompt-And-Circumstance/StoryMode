@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Content Security Policy: restrictive without unsafe-inline for scripts -->
     <!-- style-src allows unsafe-inline for legacy inline style attributes -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; connect-src 'self' http://localhost:* https://localhost:*; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com">
-    <title>Story Mode - Blueprint Editor</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; connect-src 'self' http://localhost:* https://localhost:* http://127.0.0.1:* https://127.0.0.1:*; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com">
+    <title>Story Mode - Scenario Blueprint Editor</title>
 
     <!-- External Dependencies (CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"
@@ -30,6 +30,7 @@
     <link rel="stylesheet" href="./themes/form.css">
     <link rel="stylesheet" href="./themes/layout.css">
     <link rel="stylesheet" href="./themes/wizard.css">
+    <link rel="stylesheet" href="./themes/library.css">
 </head>
 <body>
     <!-- Connection Status Banner -->
@@ -42,7 +43,7 @@
     <header class="app-header">
         <h1>
             <i class="fa-solid fa-book-open"></i>
-            Story Mode <span style="font-weight: 400; opacity: 0.7;">| Blueprint Editor</span>
+            Story Mode <span style="font-weight: 400; opacity: 0.7;">| Scenario Blueprint Editor</span>
         </h1>
         <div class="header-actions">
             <button id="settingsBtn" class="btn" title="Settings">
@@ -58,9 +59,21 @@
     <div class="app-container">
         <!-- Sidebar -->
         <aside class="app-sidebar" id="sidebar">
-            <!-- Blueprint Section -->
+            <!-- Library Button -->
             <div class="sidebar-section">
-                <h3>Blueprint</h3>
+                <ul class="sidebar-list">
+                    <li>
+                        <a href="#" class="sidebar-link" id="libraryLink">
+                            <i class="fa-solid fa-folder-open"></i>
+                            Library
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Scenario Section -->
+            <div class="sidebar-section">
+                <h3>Scenario</h3>
                 <ul class="sidebar-list">
                     <li>
                         <a href="#" class="sidebar-link active" data-tab="details">
@@ -216,7 +229,24 @@
                         <h3>API Connection</h3>
                         <div class="form-group">
                             <label for="apiUrl">SillyTavern URL</label>
-                            <input type="text" id="apiUrl" class="form-control" placeholder="http://localhost:9999">
+                            <input type="text" id="apiUrl" class="form-control" placeholder="http://localhost:8000">
+                            <small class="form-text">
+                                <strong>Important:</strong> Use the same URL (localhost or 127.0.0.1) that you see in your browser's address bar to avoid CORS errors.
+                            </small>
+                        </div>
+                        <div class="form-group" style="background: rgba(255, 193, 7, 0.1); padding: 12px; border-radius: 6px; border-left: 3px solid #ffc107;">
+                            <strong>⚠️ CORS Fix:</strong><br>
+                            If you're seeing "Access-Control-Allow-Origin" errors, make sure:
+                            <ul style="margin: 8px 0 0 20px; padding: 0;">
+                                <li>Open this editor at: <code id="suggestedUrl" style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">http://localhost:8000/scripts/extensions/third-party/Extension-StoryMode/standalone/</code></li>
+                                <li>Use the <strong>same hostname</strong> as shown above (don't mix localhost and 127.0.0.1)</li>
+                            </ul>
+                        </div>
+                        <div class="form-group">
+                            <button id="testConnectionBtn" class="btn" type="button">
+                                <i class="fa-solid fa-plug"></i> Test Connection
+                            </button>
+                            <span id="connectionTestResult" style="margin-left: 12px;"></span>
                         </div>
                     </div>
                     <div id="themeTab" class="tab-panel">

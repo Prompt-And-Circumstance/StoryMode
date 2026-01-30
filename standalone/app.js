@@ -1,11 +1,11 @@
 /**
- * Story Mode Standalone Blueprint Editor
+ * Story Mode Standalone Scenario Blueprint Editor
  * Main application orchestrator
  */
 
 import { initSettings } from './settings-system.js';
 import { initTabNavigation, switchTab, loadTabContent, getActiveTab } from './ui/routing.js';
-import { checkConnection, getConnectionStatus } from './ui/connection.js';
+import { checkConnection, getConnectionStatus, initConnectionUI } from './ui/connection.js';
 import { openSettingsModal, showHelp, initModals } from './ui/modals.js';
 import {
     getCurrentBlueprint,
@@ -18,12 +18,13 @@ import {
     updateUIState,
 } from './handlers/blueprint-actions.js';
 import { showBlueprintWizard } from './wizards/blueprint-wizard.js';
+import { showLibrary, hideLibrary, initLibraryHandlers } from './ui/library-view.js';
 
 // ============================================================================
 // CONSTANTS
 // ============================================================================
 
-const APP_NAME = 'Story Mode Blueprint Editor';
+const APP_NAME = 'Story Mode Scenario Blueprint Editor';
 const APP_VERSION = '1.0.0';
 
 // ============================================================================
@@ -48,6 +49,8 @@ async function initApp() {
     // Initialize UI modules
     initTabNavigation();
     initModals();
+    initLibraryHandlers();
+    initConnectionUI();
 
     // Set up event handlers
     setupEventHandlers();
@@ -55,8 +58,20 @@ async function initApp() {
     // Check connection status
     await checkConnection();
 
-    // Apply initial UI state
-    updateUIState();
+    // Show library as default view
+    const status = getConnectionStatus();
+    if (status) {
+        try {
+            await showLibrary();
+        } catch (error) {
+            console.error('[App] Failed to load library:', error);
+            // Fall back to empty state
+            updateUIState();
+        }
+    } else {
+        // No connection - show empty state with connection prompt
+        updateUIState();
+    }
 
     isInitialized = true;
     console.log(`[${APP_NAME}] Initialization complete`);
@@ -71,6 +86,10 @@ function setupEventHandlers() {
     $('#helpBtn').on('click', showHelp);
 
     // Sidebar actions
+    $('#libraryLink').on('click', async (e) => {
+        e.preventDefault();
+        await showLibrary();
+    });
     $('#generateBlueprintLink').on('click', handleGenerateWizard);
     $('#newBlueprintLink').on('click', handleNewBlueprint);
     $('#importLink').on('click', handleImport);
@@ -103,6 +122,11 @@ function setupEventHandlers() {
             $('.modal-tab[data-tab="api"]').click();
         }, 100);
     });
+
+    // Library event handlers
+    $(document).on('library:blueprint-selected.standalone-app', handleLibraryBlueprintSelected);
+    $(document).on('library:new-blueprint.standalone-app', handleNewBlueprint);
+    $(document).on('library:import.standalone-app', handleImport);
 }
 
 /**
@@ -113,6 +137,30 @@ function setupEventHandlers() {
 function handleBlueprintLoaded(e, data) {
     console.log('[App] Blueprint loaded:', data.blueprint);
     // Additional handling when blueprint is loaded
+}
+
+/**
+ * Handle blueprint selected from library
+ * @param {Event} e - Event
+ * @param {Object} data - Event data with blueprint
+ */
+function handleLibraryBlueprintSelected(e, data) {
+    console.log('[App] Blueprint selected from library:', data.blueprint);
+
+    // Hide library
+    hideLibrary();
+
+    // Set the blueprint
+    setCurrentBlueprint(data.blueprint);
+
+    // Trigger blueprint loaded event
+    $(document).trigger('blueprint:loaded', { blueprint: data.blueprint });
+
+    // Update UI to show editor tabs
+    updateUIState();
+
+    // Show the details tab by default
+    switchTab('details');
 }
 
 /**

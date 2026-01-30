@@ -1,0 +1,119 @@
+You are an expert story designer. Generate the SCENE PLAN (lightweight outlines) for a story blueprint.
+
+This is Phase 3a of a staged blueprint generation process. You will design scene outlines that will later be expanded with full detail (beats, choice points, events) in subsequent calls.
+
+**CRITICAL:** Generate your response immediately and directly. Do not engage in verbose internal reasoning or deliberation. Proceed directly to producing valid JSON.
+
+## STORY TYPE
+
+{{STORY_TYPE_JSON}}
+
+## STORY FOUNDATION (from Phases 1-2)
+
+**Core Premise:** {{FOUNDATION}}
+
+**Setting:** {{SETTING_LOCATION}} | {{SETTING_TIME}} | {{SETTING_ATMOSPHERE}}
+
+**Antagonistic Forces:** {{ANTAGONIST_DESCRIPTION}} ({{ANTAGONIST_NATURE}})
+
+**Arc Structure:** {{ARC_OPENING}} -> {{ARC_ESCALATION}} -> {{ARC_CLIMAX}} -> {{ARC_RESOLUTION}}
+
+**Tone:** {{TONE_PRIMARY}} | {{TONE_VOICE}} | {{TONE_PACING}}
+**Stylistic Elements:** {{TONE_STYLISTIC_ELEMENTS}}
+
+{{PERSONA_SECTION}}
+
+## CHARACTERS (from Phase 2)
+
+**Protagonists:** {{PROTAGONIST_GROUP_DESCRIPTION}} (Goal: {{PROTAGONIST_GROUP_SHARED_GOAL}})
+
+**Character Arcs:** {{CHARACTER_ARCS_SUMMARY}}
+
+## TURNING POINT MAPPING (Required)
+
+**Every character turning point listed above MUST appear in your scene plan.** This is non-negotiable.
+
+For each turning point, you must:
+1. Assign it to a specific scene (via `character_focus`)
+2. Set a `turning_point` field referencing the exact turning point text from Phase 2
+
+## AUTHOR STYLE GUIDANCE
+
+{{AUTHOR_STYLE_SECTION}}
+
+## MEMORABLE ELEMENT
+
+**Type:** {{MEMORABLE_ELEMENT_TYPE}}
+**Name:** {{MEMORABLE_ELEMENT_NAME}}
+**Description:** {{MEMORABLE_ELEMENT_DESCRIPTION}}
+**Recommended Placement:** {{MEMORABLE_ELEMENT_PLACEMENT}}
+
+**Setup Hooks (plant these in earlier scenes):**
+{{MEMORABLE_ELEMENT_SETUP_HOOKS}}
+
+Your scene plan MUST include this memorable element. Assign it to the appropriate scene and plant setup hooks in earlier scenes.
+
+## USER SCENARIO
+
+{{USER_SCENARIO}}
+
+## METAPHOR LEVEL
+
+**Level:** {{METAPHOR_LEVEL}} -- {{METAPHOR_INSTRUCTIONS}}
+
+## STORY PARAMETERS
+
+- **Target Length:** {{TOTAL_MESSAGES_TARGET}} messages
+- **Expected Scenes:** {{EXPECTED_SCENE_COUNT}}
+- **Scene Distribution:** Setup (~25%) -> Escalation (~50%) -> Climax (~15%) -> Resolution (~10%)
+
+## SCENE COHESION RULES
+
+A scene is a **complete dramatic unit**. Do NOT split continuous action into separate scenes.
+
+**Anti-Split Rule:** Keep together:
+- Action sequences and their immediate emotional aftermath
+- A crisis and its resolution when they occur in the same location
+- A confrontation and its direct consequences if they flow without interruption
+
+**Climax-Resolution Unity:** The CLIMAX phase scene and its immediate aftermath MUST be combined if they occur in the same location, less than 1 hour passes, and the same core characters are involved.
+
+## YOUR TASK
+
+Generate ONLY lightweight scene outlines. Do NOT include beats, key_events, or choice_points -- those will be generated in subsequent batches.
+
+Each scene outline needs:
+- **index**: Scene number (0-based)
+- **title**: Memorable scene title
+- **phase**: setup | escalation | climax | resolution
+- **purpose**: What this scene accomplishes for plot/character/theme
+- **situation**: 1-2 sentences describing what the protagonists face
+- **character_focus**: Array of `{ "name", "turning_point" }` objects mapping character turning points
+- **hooks_for_future**: Array of threads connecting to later scenes
+
+## RESPONSE FORMAT
+
+Return ONLY valid JSON. No explanations, markdown blocks, or filler.
+
+```json
+{
+  "scene_plan": [
+    {
+      "index": 0,
+      "title": "Scene Title",
+      "phase": "setup",
+      "purpose": "What this accomplishes",
+      "situation": "1-2 sentences describing the scene",
+      "character_focus": [
+        {
+          "name": "Character Name",
+          "turning_point": "exact turning point text from Phase 2 or null"
+        }
+      ],
+      "hooks_for_future": ["thread 1", "thread 2"]
+    }
+  ]
+}
+```
+
+Generate {{EXPECTED_SCENE_COUNT}} scene outlines. Your entire response must be a single parseable JSON object with the scene_plan field.

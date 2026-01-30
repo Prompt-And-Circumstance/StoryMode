@@ -13,7 +13,7 @@ const SETTINGS_VERSION = 1;
 const DEFAULT_SETTINGS = {
     version: SETTINGS_VERSION,
     theme: 'dark',
-    apiUrl: 'http://localhost:9999',
+    apiUrl: 'http://localhost:8000',
     // Future settings can be added here
     autoSave: true,
     showAdvancedOptions: false,
@@ -241,7 +241,25 @@ export function getThemeOptions() {
  */
 export function initSettings() {
     loadSettings();
+    autoDetectApiUrl();
     applyTheme(currentSettings.theme);
+}
+
+/**
+ * Auto-detect API URL from browser origin if user hasn't customized it.
+ * Prevents localhost/127.0.0.1 mismatch CORS errors.
+ */
+function autoDetectApiUrl() {
+    const currentOrigin = window.location.origin;
+    const isLocalDev = currentOrigin.includes('localhost') || currentOrigin.includes('127.0.0.1');
+    if (!isLocalDev) return;
+
+    const isDefault = currentSettings.apiUrl === DEFAULT_SETTINGS.apiUrl;
+    if (isDefault && currentOrigin !== currentSettings.apiUrl) {
+        console.log(`[Settings] Auto-detected API URL from origin: ${currentOrigin}`);
+        currentSettings.apiUrl = currentOrigin;
+        saveSettings();
+    }
 }
 
 // ============================================================================

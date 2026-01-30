@@ -223,8 +223,8 @@ export function updateUIState(hasBlueprint) {
 
     // Update header title
     const title = currentBlueprint?.blueprint_title
-        ? `${currentBlueprint.blueprint_title} - Story Mode Blueprint Editor`
-        : 'Story Mode Blueprint Editor';
+        ? `${currentBlueprint.blueprint_title} - Story Mode Scenario Blueprint Editor`
+        : 'Story Mode Scenario Blueprint Editor';
     document.title = title;
 
     // Emit event for other modules

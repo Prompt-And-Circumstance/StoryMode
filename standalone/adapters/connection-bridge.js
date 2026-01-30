@@ -1,90 +1,105 @@
 /**
  * Connection Bridge Module
- * Handles communication with the SillyTavern backend for Story Mode extension
+ * Handles CSRF authentication and communication with SillyTavern backend.
+ *
+ * SillyTavern protects all API endpoints with CSRF tokens.
+ * This module fetches the token on connect and provides
+ * authenticated request headers to all other modules.
  */
 
-import { getApiUrl, isValidApiUrl } from '../settings-system.js';
+// Note: getApiUrl is no longer needed here — all API calls use relative URLs
+// since the editor is served from within SillyTavern (same-origin).
 
 // ============================================================================
 // CONNECTION STATE
 // ============================================================================
 
 let connectionStatus = 'unknown'; // 'unknown', 'connected', 'disconnected', 'error'
-let backendVersion = null;
-let extensionInstalled = false;
+let csrfToken = null;
+
+// ============================================================================
+// CSRF TOKEN
+// ============================================================================
+
+/**
+ * Fetch a CSRF token from SillyTavern.
+ * Uses a relative URL since the standalone editor is served from within
+ * SillyTavern — this guarantees same-origin and avoids CORS issues.
+ * @returns {Promise<string|null>} CSRF token or null
+ */
+async function fetchCsrfToken() {
+    try {
+        const response = await fetch('/csrf-token', {
+            method: 'GET',
+            signal: AbortSignal.timeout(5000),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            csrfToken = data.token;
+            console.log('[Connection] CSRF token acquired');
+            return csrfToken;
+        }
+    } catch (error) {
+        console.warn('[Connection] Failed to fetch CSRF token:', error.message);
+    }
+
+    return null;
+}
+
+/**
+ * Get request headers with CSRF token (mirrors SillyTavern's getRequestHeaders)
+ * @param {Object} options
+ * @param {boolean} options.omitContentType - Skip Content-Type header
+ * @returns {Object} Headers object
+ */
+export function getRequestHeaders({ omitContentType = false } = {}) {
+    const headers = {};
+
+    if (!omitContentType) {
+        headers['Content-Type'] = 'application/json';
+    }
+
+    if (csrfToken) {
+        headers['X-CSRF-Token'] = csrfToken;
+    }
+
+    return headers;
+}
+
+/**
+ * Get the current CSRF token
+ * @returns {string|null} CSRF token
+ */
+export function getCsrfToken() {
+    return csrfToken;
+}
 
 // ============================================================================
 // CONNECTION CHECKING
 // ============================================================================
 
 /**
- * Check if the Story Mode extension is installed on the backend
- * @param {string} apiUrl - API URL to check
- * @returns {Promise<boolean>} True if extension is installed
- */
-export async function isExtensionInstalled(apiUrl) {
-    try {
-        const response = await fetch(`${apiUrl}/api/storymode/status`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-        });
-        return response.ok;
-    } catch {
-        return false;
-    }
-}
-
-/**
- * Check backend connection and extension availability
- * @returns {Promise<Object>} Connection status object
+ * Check backend connection by fetching CSRF token
+ * If we can get a token, we're connected.
+ * @returns {Promise<Object>} Connection status
  */
 export async function checkBackendConnection() {
-    const apiUrl = getApiUrl();
-
-    if (!isValidApiUrl(apiUrl)) {
-        connectionStatus = 'disconnected';
-        extensionInstalled = false;
-        backendVersion = null;
-        return { connected: false, installed: false, version: null };
-    }
-
     try {
-        // First check if backend is reachable
-        const healthResponse = await fetch(`${apiUrl}/api/health`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-        });
+        const token = await fetchCsrfToken();
 
-        if (!healthResponse.ok) {
+        if (token) {
+            connectionStatus = 'connected';
+            return { connected: true };
+        } else {
             connectionStatus = 'error';
-            return { connected: false, installed: false, version: null };
+            return { connected: false };
         }
-
-        // Check if Story Mode extension is installed
-        const extensionInstalled = await isExtensionInstalled(apiUrl);
-
-        if (extensionInstalled) {
-            // Get extension version
-            const statusResponse = await fetch(`${apiUrl}/api/storymode/status`);
-            if (statusResponse.ok) {
-                const data = await statusResponse.json();
-                backendVersion = data.version || 'unknown';
-                connectionStatus = 'connected';
-                extensionInstalled = true;
-                return { connected: true, installed: true, version: backendVersion };
-            }
-        }
-
-        connectionStatus = 'connected';
-        extensionInstalled = false;
-        return { connected: true, installed: false, version: null };
-
     } catch (error) {
         console.error('[Connection] Backend check failed:', error);
         connectionStatus = 'error';
-        extensionInstalled = false;
-        backendVersion = null;
-        return { connected: false, installed: false, version: null };
+        csrfToken = null;
+        return { connected: false };
     }
 }
 
@@ -97,163 +112,145 @@ export function getConnectionStatus() {
 }
 
 /**
- * Check if the extension is installed
- * @returns {boolean} True if installed
+ * Check if connected
+ * @returns {boolean} True if connected with valid CSRF token
  */
-export function isInstalled() {
-    return extensionInstalled;
-}
-
-/**
- * Get the backend version
- * @returns {string|null} Backend version
- */
-export function getBackendVersion() {
-    return backendVersion;
+export function isConnected() {
+    return connectionStatus === 'connected' && csrfToken !== null;
 }
 
 // ============================================================================
-// API CALLS
+// AUTHENTICATED FETCH
 // ============================================================================
 
 /**
- * Make an API call to the Story Mode backend
- * @param {string} endpoint - API endpoint
+ * Make an authenticated fetch request to SillyTavern
+ * Automatically includes CSRF token header
+ * @param {string} url - Full URL
  * @param {Object} options - Fetch options
- * @returns {Promise<Object>} Response data
+ * @returns {Promise<Response>} Fetch response
  */
-export async function apiCall(endpoint, options = {}) {
-    const apiUrl = getApiUrl();
-
-    if (!isValidApiUrl(apiUrl)) {
-        throw new Error('No API URL configured');
-    }
-
-    if (connectionStatus !== 'connected') {
-        throw new Error('Not connected to backend');
-    }
-
-    const url = `${apiUrl}/api/storymode${endpoint}`;
-    const defaultOptions = {
-        headers: { 'Content-Type': 'application/json' },
+export async function authenticatedFetch(url, options = {}) {
+    const headers = {
+        ...getRequestHeaders(),
+        ...options.headers,
     };
 
-    try {
-        const response = await fetch(url, { ...defaultOptions, ...options });
+    return fetch(url, { ...options, headers });
+}
 
-        if (!response.ok) {
-            const error = await response.json().catch(() => ({ message: 'Request failed' }));
-            throw new Error(error.message || `HTTP ${response.status}`);
-        }
+// ============================================================================
+// DATA LOADERS (story types, author styles)
+// ============================================================================
 
-        return await response.json();
-    } catch (error) {
-        console.error(`[Connection] API call failed: ${endpoint}`, error);
-        throw error;
+/** Cache for static JSON data */
+const dataCache = {};
+
+/**
+ * Load a JSON data file from the extension's data/ directory
+ * @param {string} filename - JSON filename (e.g., 'story_types.json')
+ * @returns {Promise<Array>} Parsed JSON array
+ */
+async function loadDataFile(filename) {
+    if (dataCache[filename]) return dataCache[filename];
+
+    // Resolve relative to standalone/ → ../data/
+    const url = new URL(`../../data/${filename}`, import.meta.url).href;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+        throw new Error(`Failed to load ${filename}: ${response.statusText}`);
     }
+
+    const data = await response.json();
+    dataCache[filename] = data;
+    return data;
 }
 
 /**
- * Get available story types from the backend
- * @returns {Promise<Array<Object>>} Array of story types
+ * Get available story types from extension data
+ * @returns {Promise<Array>} Story type definitions
  */
 export async function getStoryTypes() {
-    try {
-        const data = await apiCall('/story-types');
-        return data.story_types || [];
-    } catch (error) {
-        console.error('[Connection] Failed to get story types:', error);
-        return [];
-    }
+    return loadDataFile('story_types.json');
 }
 
 /**
- * Get available author styles from the backend
- * @returns {Promise<Array<Object>>} Array of author styles
+ * Get available author styles from extension data
+ * @returns {Promise<Array>} Author style definitions
  */
 export async function getAuthorStyles() {
-    try {
-        const data = await apiCall('/author-styles');
-        return data.author_styles || [];
-    } catch (error) {
-        console.error('[Connection] Failed to get author styles:', error);
-        return [];
-    }
+    return loadDataFile('author_styles.json');
 }
 
+// ============================================================================
+// BLUEPRINT GENERATION (requires LLM backend)
+// ============================================================================
+
 /**
- * Generate a blueprint using the backend AI
- * @param {Object} params - Generation parameters
- * @returns {Promise<Object>} Generated blueprint
+ * Generate a blueprint via SillyTavern's LLM API
+ * @param {Object} request - Generation parameters from wizard
+ * @returns {Promise<Object>} Generated blueprint object
+ * @throws {Error} If not connected or generation fails
  */
-export async function generateBlueprint(params) {
-    try {
-        const data = await apiCall('/generate', {
-            method: 'POST',
-            body: JSON.stringify(params),
-        });
-        return data.blueprint;
-    } catch (error) {
-        console.error('[Connection] Blueprint generation failed:', error);
-        throw error;
+export async function generateBlueprint(request) {
+    if (!isConnected()) {
+        throw new Error('Not connected to SillyTavern. Please configure your connection in Settings.');
     }
+
+    const response = await authenticatedFetch('/api/plugins/storymode/generate', {
+        method: 'POST',
+        body: JSON.stringify(request),
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Blueprint generation failed: ${errorText}`);
+    }
+
+    return await response.json();
 }
 
+// ============================================================================
+// COVER GENERATION (requires Stable Diffusion backend)
+// ============================================================================
+
 /**
- * Generate a cover image using the backend
- * @param {Object} params - Generation parameters
+ * Generate a cover image via SillyTavern's SD API
+ * @param {Object} request - Generation parameters (prompt, dimensions, etc.)
  * @returns {Promise<string>} Base64 image data
+ * @throws {Error} If not connected or SD unavailable
  */
-export async function generateCover(params) {
-    try {
-        const data = await apiCall('/generate-cover', {
-            method: 'POST',
-            body: JSON.stringify(params),
-        });
-        return data.image;
-    } catch (error) {
-        console.error('[Connection] Cover generation failed:', error);
-        throw error;
+export async function generateCover(request) {
+    if (!isConnected()) {
+        throw new Error('Not connected to SillyTavern. Please configure your connection in Settings.');
     }
+
+    const response = await authenticatedFetch('/api/sd/generate', {
+        method: 'POST',
+        body: JSON.stringify(request),
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Stable Diffusion generation failed: ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data.image;
 }
 
 // ============================================================================
-// EVENT NOTIFICATIONS
-// ============================================================================
-
-/**
- * Notify other parts of the app about connection changes
- * @param {Object} status - Connection status object
- */
-function notifyConnectionChange(status) {
-    $(document).trigger('connection:changed', status);
-}
-
-/**
- * Refresh connection status and notify listeners
- * @returns {Promise<Object>} Connection status object
- */
-export async function refreshConnection() {
-    const status = await checkBackendConnection();
-    notifyConnectionChange(status);
-    return status;
-}
-
-// ============================================================================
-// EXPORT FOR DEBUGGING (localhost only for security)
+// EXPORT FOR DEBUGGING
 // ============================================================================
 
 if (typeof window !== 'undefined' && window.location?.hostname === 'localhost') {
     window.StoryModeConnection = {
         checkBackendConnection,
         getConnectionStatus,
-        isInstalled,
-        getBackendVersion,
-        apiCall,
-        getStoryTypes,
-        getAuthorStyles,
-        generateBlueprint,
-        generateCover,
-        refreshConnection,
+        isConnected,
+        getCsrfToken,
+        getRequestHeaders,
+        authenticatedFetch,
     };
 }

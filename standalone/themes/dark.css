@@ -1,0 +1,124 @@
+/* ============================================================================
+   DARK THEME
+   Default dark theme for standalone blueprint editor
+   ============================================================================ */
+
+[data-theme="dark"] {
+    /* Application Backgrounds */
+    --app-bg: #111;
+    --header-bg: rgba(17, 17, 17, 0.98);
+    --sidebar-bg: rgba(17, 17, 17, 0.95);
+
+    /* Text Colors */
+    --app-text: #e5e7eb;
+    --text-secondary: #d1d5db;
+    --text-muted: #9ca3af;
+
+    /* Border & Divider */
+    --border-color: #374151;
+
+    /* Accent Colors (Indigo) */
+    --accent-color: #6366f1;
+    --accent-hover: #818cf8;
+    --accent-dark: #4f46e5;
+    --accent-glow: rgba(99, 102, 241, 0.25);
+    --accent-subtle: rgba(99, 102, 241, 0.1);
+    --accent-rgb: 99, 102, 241;
+
+    /* Button Colors */
+    --button-bg: #374151;
+    --button-text: #e5e7eb;
+    --button-border: #4b5563;
+    --button-hover-bg: #4b5563;
+
+    /* Hover State */
+    --hover-bg: rgba(255, 255, 255, 0.05);
+
+    /* Form Colors */
+    --form-bg: #1f2937;
+    --form-border: #374151;
+    --form-focus-border: #6366f1;
+    --form-text: #e5e7eb;
+    --form-placeholder: #6b7280;
+
+    /* Modal */
+    --modal-overlay-bg: rgba(0, 0, 0, 0.75);
+    --modal-bg: #1f2937;
+    --modal-border: #374151;
+
+    /* Panel/Section */
+    --panel-bg: rgba(31, 41, 55, 0.5);
+    --panel-border: #374151;
+
+    /* Card */
+    --card-bg: #1f2937;
+    --card-border: #374151;
+
+    /* Input */
+    --input-bg: #111827;
+    --input-border: #374151;
+    --input-text: #e5e7eb;
+
+    /* Textarea */
+    --textarea-bg: #111827;
+    --textarea-border: #374151;
+
+    /* Select */
+    --select-bg: #111827;
+    --select-border: #374151;
+
+    /* Checkbox/Radio */
+    --checkbox-bg: #111827;
+    --checkbox-border: #374151;
+    --checkbox-checked-bg: #6366f1;
+    --checkbox-checked-border: #6366f1;
+
+    /* Scrollbar */
+    --scrollbar-bg: #1f2937;
+    --scrollbar-thumb: #4b5563;
+    --scrollbar-thumb-hover: #6b7280;
+
+    /* Table */
+    --table-header-bg: #1f2937;
+    --table-row-bg: transparent;
+    --table-row-hover-bg: rgba(255, 255, 255, 0.05);
+    --table-border: #374151;
+
+    /* Code */
+    --code-bg: #111827;
+    --code-text: #e5e7eb;
+    --code-border: #374151;
+}
+
+/* ============================================================================
+   DARK THEME SPECIFIC COMPONENTS
+   ============================================================================ */
+
+/* Buttons with glow effect */
+[data-theme="dark"] .btn-primary {
+    box-shadow: 0 0 0 1px var(--accent-color), 0 4px 12px var(--accent-glow);
+}
+
+[data-theme="dark"] .btn-primary:hover {
+    box-shadow: 0 0 0 1px var(--accent-hover), 0 6px 16px rgba(99, 102, 241, 0.35);
+}
+
+/* Cards with subtle border glow */
+[data-theme="dark"] .card {
+    border: 1px solid var(--card-border);
+}
+
+/* Form inputs with focus glow */
+[data-theme="dark"] input:focus,
+[data-theme="dark"] textarea:focus,
+[data-theme="dark"] select:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px var(--accent-subtle);
+}
+
+/* Active sidebar link */
+[data-theme="dark"] .sidebar-link.active {
+    background: var(--accent-color);
+    color: white;
+    box-shadow: 0 2px 8px var(--accent-glow);
+}

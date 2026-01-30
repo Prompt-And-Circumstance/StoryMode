@@ -1,0 +1,56 @@
+{
+  "blueprint_id": "da632e6b-f2ee-4d19-974d-d736f4e4bc01",
+  "story_type_id": "",
+  "story_type_name": "",
+  "core_premise": "",
+  "setting": {
+    "location": "",
+    "time_period": "",
+    "atmosphere": ""
+  },
+  "protagonist_group": {
+    "description": "",
+    "shared_goal": "",
+    "group_dynamic": ""
+  },
+  "antagonistic_forces": {
+    "description": "",
+    "nature": "external",
+    "motivation": "",
+    "manifestations": []
+  },
+  "arc_structure": {
+    "opening_hook": "",
+    "escalation_pattern": "",
+    "climax_nature": "",
+    "resolution_style": ""
+  },
+  "character_arcs": [
+    {
+      "character_name": "Elena Darkwood",
+      "arc_type": "hero",
+      "arc_progression": [
+        "Reluctant scholar",
+        "Discovers power",
+        "Embraces destiny",
+        "Defeats shadow"
+      ],
+      "description": "A librarian who discovers she is the last heir to an ancient magical lineage."
+    }
+  ],
+  "scene_plan": [],
+  "tone_and_style": {
+    "primary_tone": "",
+    "narrative_voice": "",
+    "pacing": "",
+    "key_stylistic_elements": []
+  },
+  "content_boundaries": {
+    "violence_level": "none",
+    "romance_level": "none"
+  },
+  "genre_realism_notes": {
+    "metaphor_level_used": "literal",
+    "implementation_notes": ""
+  }
+}

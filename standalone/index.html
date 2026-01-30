@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Content Security Policy: restrictive without unsafe-inline for scripts -->
+    <!-- style-src allows unsafe-inline for legacy inline style attributes -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; connect-src 'self' http://localhost:* https://localhost:*; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com">
+    <title>Story Mode - Blueprint Editor</title>
+
+    <!-- External Dependencies (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.css"
+          crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js"
+            crossorigin="anonymous"></script>
+
+    <!-- Font Awesome (CDN fallback for standalone mode) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+          crossorigin="anonymous">
+
+    <!-- Theme System -->
+    <link rel="stylesheet" href="./themes/base.css">
+    <link rel="stylesheet" href="./themes/dark.css">
+    <link rel="stylesheet" href="./themes/light.css">
+    <link rel="stylesheet" href="./themes/rpg-companion.css">
+    <link rel="stylesheet" href="./themes/app.css">
+    <link rel="stylesheet" href="./themes/components.css">
+    <link rel="stylesheet" href="./themes/form.css">
+    <link rel="stylesheet" href="./themes/layout.css">
+    <link rel="stylesheet" href="./themes/wizard.css">
+</head>
+<body>
+    <!-- Connection Status Banner -->
+    <div id="connectionBanner" class="connection-banner disconnected">
+        <span class="status-dot"></span>
+        <span id="connectionStatusText">Checking connection...</span>
+    </div>
+
+    <!-- Header -->
+    <header class="app-header">
+        <h1>
+            <i class="fa-solid fa-book-open"></i>
+            Story Mode <span style="font-weight: 400; opacity: 0.7;">| Blueprint Editor</span>
+        </h1>
+        <div class="header-actions">
+            <button id="settingsBtn" class="btn" title="Settings">
+                <i class="fa-solid fa-gear"></i>
+            </button>
+            <button id="helpBtn" class="btn" title="Help">
+                <i class="fa-solid fa-circle-question"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="app-sidebar" id="sidebar">
+            <!-- Blueprint Section -->
+            <div class="sidebar-section">
+                <h3>Blueprint</h3>
+                <ul class="sidebar-list">
+                    <li>
+                        <a href="#" class="sidebar-link active" data-tab="details">
+                            <i class="fa-solid fa-circle-info"></i>
+                            Details
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="sidebar-link" data-tab="scenes">
+                            <i class="fa-solid fa-list"></i>
+                            Scenes
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="sidebar-link" data-tab="characters">
+                            <i class="fa-solid fa-users"></i>
+                            Characters
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="sidebar-link" data-tab="cover">
+                            <i class="fa-solid fa-image"></i>
+                            Cover
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Actions Section -->
+            <div class="sidebar-section">
+                <h3>Actions</h3>
+                <ul class="sidebar-list">
+                    <li>
+                        <a href="#" class="sidebar-link" id="generateBlueprintLink">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            Generate AI
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="sidebar-link" id="newBlueprintLink">
+                            <i class="fa-solid fa-plus"></i>
+                            New Blueprint
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="sidebar-link" id="importLink">
+                            <i class="fa-solid fa-file-import"></i>
+                            Import PNG
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="sidebar-link" id="exportLink">
+                            <i class="fa-solid fa-file-export"></i>
+                            Export PNG
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="sidebar-link" id="jsonExportLink">
+                            <i class="fa-solid fa-code"></i>
+                            Export JSON
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Connection Section -->
+            <div class="sidebar-section">
+                <h3>Connection</h3>
+                <ul class="sidebar-list">
+                    <li>
+                        <a href="#" class="sidebar-link" id="configureConnectionLink">
+                            <i class="fa-solid fa-plug"></i>
+                            Configure
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="app-main" id="mainContent">
+            <!-- Empty State (shown when no blueprint is loaded) -->
+            <div id="emptyState" class="empty-state">
+                <i class="fa-solid fa-file-circle-plus"></i>
+                <h2>No Blueprint Loaded</h2>
+                <p>Create a new blueprint or import an existing one from PNG to get started.</p>
+                <div style="display: flex; gap: 1rem;">
+                    <button id="generateBlueprintBtn" class="btn btn-primary">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        Generate AI
+                    </button>
+                    <button id="newBlueprintBtn" class="btn">
+                        <i class="fa-solid fa-plus"></i>
+                        New Blueprint
+                    </button>
+                    <button id="importBtn" class="btn">
+                        <i class="fa-solid fa-file-import"></i>
+                        Import PNG
+                    </button>
+                </div>
+            </div>
+
+            <!-- Details Tab Panel -->
+            <div id="detailsTab" class="tab-panel active">
+                <div class="tab-content">
+                    <h2>Blueprint Details</h2>
+                    <p><em>Loading...</em></p>
+                </div>
+            </div>
+
+            <!-- Scenes Tab Panel -->
+            <div id="scenesTab" class="tab-panel">
+                <div class="tab-content">
+                    <h2>Scene Plan</h2>
+                    <p><em>Loading...</em></p>
+                </div>
+            </div>
+
+            <!-- Characters Tab Panel -->
+            <div id="charactersTab" class="tab-panel">
+                <div class="tab-content">
+                    <h2>Character Arcs</h2>
+                    <p><em>Loading...</em></p>
+                </div>
+            </div>
+
+            <!-- Cover Tab Panel -->
+            <div id="coverTab" class="tab-panel">
+                <div class="tab-content">
+                    <h2>Cover Image</h2>
+                    <p><em>Loading...</em></p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Settings Modal (container nested inside overlay to match popup-adapter layout) -->
+    <div id="settingsModal" class="modal-overlay" style="display: none;">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button class="modal-close" aria-label="Close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-tabs">
+                    <button class="modal-tab active" data-settings-tab="api">API Connection</button>
+                    <button class="modal-tab" data-settings-tab="theme">Theme</button>
+                </div>
+                <div class="modal-tab-content">
+                    <div id="apiTab" class="tab-panel active">
+                        <h3>API Connection</h3>
+                        <div class="form-group">
+                            <label for="apiUrl">SillyTavern URL</label>
+                            <input type="text" id="apiUrl" class="form-control" placeholder="http://localhost:9999">
+                        </div>
+                    </div>
+                    <div id="themeTab" class="tab-panel">
+                        <h3>Theme</h3>
+                        <div class="form-group">
+                            <label for="themeSelect">Select Theme</label>
+                            <select id="themeSelect" class="form-control">
+                                <option value="dark">Dark</option>
+                                <option value="light">Light</option>
+                                <option value="rpg-companion">RPG Companion</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="saveSettingsBtn" class="btn btn-primary">Save Settings</button>
+                <button id="cancelSettingsBtn" class="btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file input for import -->
+    <input type="file" id="fileInput" accept="image/png" style="display: none;">
+
+    <!-- Application Scripts -->
+    <script type="module" src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,216 @@
+/* ============================================================================
+   RPG COMPANION THEME
+   RPG-themed dark theme with purple/magenta accents
+   ============================================================================ */
+
+body.theme-rpg-companion,
+[data-theme="rpg-companion"] {
+    /* Application Backgrounds */
+    --app-bg: #1a1a2e;
+    --header-bg: rgba(26, 26, 46, 0.95);
+    --sidebar-bg: rgba(26, 26, 46, 0.9);
+
+    /* Text Colors */
+    --app-text: #eaeaea;
+    --text-secondary: rgba(234, 234, 234, 0.85);
+    --text-muted: rgba(234, 234, 234, 0.6);
+
+    /* Border & Divider */
+    --border-color: #4a7ba7;
+
+    /* Accent Colors (Pink/Magenta) */
+    --accent-color: #e94560;
+    --accent-hover: #ff6b6b;
+    --accent-dark: #c73e54;
+    --accent-glow: rgba(233, 69, 96, 0.3);
+    --accent-subtle: rgba(233, 69, 96, 0.15);
+    --accent-rgb: 233, 69, 96;
+
+    /* Secondary Accent (Blue) */
+    --accent-secondary: #4a7ba7;
+    --accent-secondary-hover: #5a8bb7;
+
+    /* Button Colors */
+    --button-bg: #16213e;
+    --button-text: #eaeaea;
+    --button-border: #4a7ba7;
+    --button-hover-bg: #1f314d;
+
+    /* Hover State */
+    --hover-bg: rgba(255, 255, 255, 0.08);
+
+    /* Form Colors */
+    --form-bg: #16213e;
+    --form-border: #4a7ba7;
+    --form-focus-border: #e94560;
+    --form-text: #eaeaea;
+    --form-placeholder: rgba(234, 234, 234, 0.5);
+
+    /* Modal */
+    --modal-overlay-bg: rgba(0, 0, 0, 0.8);
+    --modal-bg: #16213e;
+    --modal-border: #4a7ba7;
+
+    /* Panel/Section */
+    --panel-bg: rgba(22, 33, 62, 0.6);
+    --panel-border: #4a7ba7;
+
+    /* Card */
+    --card-bg: #16213e;
+    --card-border: #4a7ba7;
+
+    /* Input */
+    --input-bg: #0f3460;
+    --input-border: #4a7ba7;
+    --input-text: #eaeaea;
+
+    /* Textarea */
+    --textarea-bg: #0f3460;
+    --textarea-border: #4a7ba7;
+
+    /* Select */
+    --select-bg: #0f3460;
+    --select-border: #4a7ba7;
+
+    /* Checkbox/Radio */
+    --checkbox-bg: #0f3460;
+    --checkbox-border: #4a7ba7;
+    --checkbox-checked-bg: #e94560;
+    --checkbox-checked-border: #e94560;
+
+    /* Scrollbar */
+    --scrollbar-bg: #16213e;
+    --scrollbar-thumb: #4a7ba7;
+    --scrollbar-thumb-hover: #5a8bb7;
+
+    /* Table */
+    --table-header-bg: #16213e;
+    --table-row-bg: transparent;
+    --table-row-hover-bg: rgba(233, 69, 96, 0.1);
+    --table-border: #4a7ba7;
+
+    /* Code */
+    --code-bg: #0f3460;
+    --code-text: #eaeaea;
+    --code-border: #4a7ba7;
+}
+
+/* ============================================================================
+   RPG THEME SPECIFIC COMPONENTS
+   ============================================================================ */
+
+/* Header with gradient border */
+.app-header,
+[data-theme="rpg-companion"] .app-header {
+    border-bottom: 2px solid;
+    border-image: linear-gradient(90deg, #e94560, #4a7ba7) 1;
+}
+
+/* Primary buttons with RPG-style styling */
+.btn-primary,
+[data-theme="rpg-companion"] .btn-primary {
+    background: linear-gradient(135deg, #e94560, #c73e54);
+    border-color: #e94560;
+    box-shadow: 0 0 15px rgba(233, 69, 96, 0.4);
+}
+
+.btn-primary:hover,
+[data-theme="rpg-companion"] .btn-primary:hover {
+    background: linear-gradient(135deg, #ff6b6b, #e94560);
+    box-shadow: 0 0 20px rgba(233, 69, 96, 0.6);
+}
+
+/* Cards with fantasy-style borders */
+.card,
+[data-theme="rpg-companion"] .card {
+    border: 1px solid var(--card-border);
+    box-shadow: 0 0 10px rgba(74, 123, 167, 0.2);
+    position: relative;
+}
+
+/* Corner accents for cards */
+.card::before,
+[data-theme="rpg-companion"] .card::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    width: 20px;
+    height: 20px;
+    border-top: 2px solid #e94560;
+    border-left: 2px solid #e94560;
+}
+
+.card::after,
+[data-theme="rpg-companion"] .card::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    right: -1px;
+    width: 20px;
+    height: 20px;
+    border-bottom: 2px solid #e94560;
+    border-right: 2px solid #e94560;
+}
+
+/* Form inputs with magical glow on focus */
+input:focus,
+textarea:focus,
+select:focus,
+[data-theme="rpg-companion"] input:focus,
+[data-theme="rpg-companion"] textarea:focus,
+[data-theme="rpg-companion"] select:focus {
+    border-color: #e94560;
+    box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.2), 0 0 15px rgba(233, 69, 96, 0.3);
+}
+
+/* Sidebar link with RPG styling */
+.sidebar-link,
+[data-theme="rpg-companion"] .sidebar-link {
+    border-left: 3px solid transparent;
+}
+
+.sidebar-link:hover,
+[data-theme="rpg-companion"] .sidebar-link:hover {
+    background: linear-gradient(90deg, rgba(233, 69, 96, 0.1), transparent);
+    border-left-color: #4a7ba7;
+}
+
+.sidebar-link.active,
+[data-theme="rpg-companion"] .sidebar-link.active {
+    background: linear-gradient(90deg, #e94560, #c73e54);
+    border-left-color: #ff6b6b;
+    box-shadow: 0 0 15px rgba(233, 69, 96, 0.4);
+}
+
+/* Section headers with fantasy feel */
+.sidebar-section h3,
+[data-theme="rpg-companion"] .sidebar-section h3 {
+    color: #e94560;
+    text-shadow: 0 0 10px rgba(233, 69, 96, 0.5);
+}
+
+/* Connection status banner */
+.connection-banner.connected,
+[data-theme="rpg-companion"] .connection-banner.connected {
+    background: linear-gradient(90deg, rgba(34, 197, 94, 0.15), transparent);
+    border-bottom: 1px solid #22c55e;
+}
+
+.connection-banner.disconnected,
+[data-theme="rpg-companion"] .connection-banner.disconnected {
+    background: linear-gradient(90deg, rgba(251, 191, 36, 0.15), transparent);
+    border-bottom: 1px solid #fbbf24;
+}
+
+/* Scrollbar with RPG accent */
+*::-webkit-scrollbar-thumb,
+[data-theme="rpg-companion"] *::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #e94560, #4a7ba7);
+    border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover,
+[data-theme="rpg-companion"] *::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #ff6b6b, #5a8bb7);
+}

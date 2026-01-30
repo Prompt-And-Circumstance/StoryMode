@@ -71,7 +71,6 @@ The foundation established in Phase 1 provides the core narrative context.
 
 ## STORY PARAMETERS
 
-- **Target length:** {{TOTAL_MESSAGES_TARGET}} messages
 - **Expected scenes:** {{EXPECTED_SCENE_COUNT}}
 
 ## DESIGN PRINCIPLES

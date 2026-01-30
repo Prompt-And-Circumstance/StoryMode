@@ -42,7 +42,6 @@ This is Phase 2 of 5 in a phased blueprint generation process. You will design c
 
 ## STORY PARAMETERS
 
-- **Target Length:** {{TOTAL_MESSAGES_TARGET}} messages
 - **Expected Scenes:** {{EXPECTED_SCENE_COUNT}}
 
 ## DESIGN PRINCIPLES

@@ -83,6 +83,10 @@ import {
     getCurrentSceneIndex,
 } from './lib/core/state-manager.js';
 
+// Import File-backed data layer and v3 migration
+import { initFileBackedData } from './lib/core/file-backed-data.js';
+import { promptAndUpgrade } from './lib/core/data-migration-v3.js';
+
 // Import Arc Engine module
 import {
     getPhaseInfo,
@@ -941,7 +945,11 @@ jQuery(async function () {
     // Load settings (from state-manager)
     loadSettings();
 
-    // Load data from localForage (from state-manager)
+    // Init File API storage layer + prompt upgrade dialog if needed
+    initFileBackedData();
+    await promptAndUpgrade();
+
+    // Load data from File API (with localforage fallback)
     await loadStoryTypes();
     await loadAuthorStyles();
 

@@ -1025,6 +1025,12 @@
     gap: 6px;
 }
 
+/* Favorites filter button - color star when active */
+.storymode-library-actions #library_favorites_filter.storymode-filter-active i,
+#library_favorites_filter.storymode-filter-active .fa-star {
+    color: var(--SmartThemeEmColor, gold) !important;
+}
+
 /* Override flex:1 from style.css for library generate-actions buttons */
 #tab_library .storymode-generate-actions {
     display: inline-flex;

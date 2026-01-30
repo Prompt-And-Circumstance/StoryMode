@@ -33,7 +33,6 @@ The story type defines the genre, framework, and conventions for this narrative.
 
 ## STORY PARAMETERS
 
-- **Target length:** {{TOTAL_MESSAGES_TARGET}} messages
 - **Expected scenes:** {{EXPECTED_SCENE_COUNT}}
 
 ## YOUR TASK

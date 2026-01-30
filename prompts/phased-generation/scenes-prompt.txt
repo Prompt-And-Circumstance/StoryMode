@@ -72,7 +72,6 @@ Every great story has a moment that readers carry with them—a clever twist, an
 
 ## STORY PARAMETERS
 
-- **Target Length:** {{TOTAL_MESSAGES_TARGET}} messages
 - **Expected Scenes:** {{EXPECTED_SCENE_COUNT}}
 - **Scene Distribution:** Setup (~25%) → Escalation (~50%) → Climax (~15%) → Resolution (~10%)
 

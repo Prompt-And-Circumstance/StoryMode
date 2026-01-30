@@ -92,6 +92,8 @@ Extension-StoryMode/
     │   ├── index.js         # Re-exports public API
     │   ├── constants.js     # MODULE_NAME, PHASE_CONFIG, presets
     │   ├── state-manager.js # Settings, chat state, data storage
+    │   ├── file-backed-data.js # File API persistence layer (debounced saves)
+    │   ├── data-migration-v3.js # localforage/localStorage → File API migration
     │   ├── arc-engine.js    # Phase calculation, prompt injection
     │   └── event-handlers.js# Message events, signal parsing
     ├── blueprint/           # Blueprint system
@@ -434,7 +436,9 @@ Direct re-exports (`export { x } from './foo.js'`) don't create local bindings, 
 ```
 lib/core/
 ├── constants.js (no deps)
-├── state-manager.js (imports constants)
+├── file-backed-data.js (imports blueprint/file-api, /script.js)
+├── data-migration-v3.js (imports blueprint/file-api, editor/import-export, popup.js)
+├── state-manager.js (imports constants, file-backed-data)
 ├── arc-engine.js (imports state-manager)
 └── event-handlers.js (imports state-manager, arc-engine, blueprint/module)
 

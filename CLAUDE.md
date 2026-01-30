@@ -38,6 +38,15 @@ Story Mode is a SillyTavern extension providing narrative structure through thre
 - `lib/blueprint/file-storage.js` - Save/load blueprints as PNG files
 - `lib/blueprint/library-adapter.js` - Drop-in replacement for IndexedDB library
 
+**Data Persistence** (file-backed, cross-device):
+- `lib/core/file-backed-data.js` - Generic File API persistence with debounced saves
+- `lib/core/data-migration-v3.js` - localforage/localStorage → File API migration dialog
+
+**Migration Chain:**
+- v1: `extension_settings` → `localforage` (state-manager.js, still runs)
+- v2: IndexedDB → File API (migration.js, blueprints only)
+- v3: localforage/localStorage → File API (data-migration-v3.js, story types/styles/stats)
+
 ## Code Patterns
 
 ### Document-Level Event Delegation
@@ -73,7 +82,6 @@ content.on('click', '#my_button', async function() {
 
     btn.prop('disabled', true);
     btn.html('<i class="fa-solid fa-circle-notch fa-spin"></i> Generating...');
-    LoadingIndicator.show('Processing...');
 
     try {
         const result = await someAsyncOperation();
@@ -86,7 +94,6 @@ content.on('click', '#my_button', async function() {
         console.error('[Story Mode] Error:', error);
         toastr.error(`Failed: ${error.message}`);
     } finally {
-        LoadingIndicator.hide();
         btn.prop('disabled', false);
         btn.html(originalText);
     }
@@ -268,6 +275,15 @@ window.StoryModeDebug.auditHandlers({ showAll: true })
 36. Load blueprint with missing author style (NOT embedded) → warning dialog shown, form opens with ID prefilled
 37. Both story type AND author style missing (not embedded) → forms shown in succession
 
+### Storage Migration (v3)
+38. Fresh install (no localforage) → no upgrade dialog → loads defaults from JSON
+39. Upgrade flow: localforage has data → dialog shown → export buttons download JSONs → Proceed migrates
+40. Skip upgrade → app works via localforage fallback → dialog re-appears next load
+41. Cross-device: after upgrade on desktop, open on mobile → custom genres appear
+42. Rapid edits → debounce coalesces to single File API write
+43. Page close mid-edit → `beforeunload` flushes via sendBeacon/sync XHR
+44. Play stats migrate from localStorage to File API
+
 ## Known Limitations
 
 ### Architecture Issues (v1)
@@ -297,3 +313,5 @@ Bad Request {"error":{"message":"Invalid option: expected one of \"xhigh\"|\"hig
 - No nested/branching arcs
 - Story types manually selected
 - Regeneration edge cases partially addressed
+- **Concurrent tab editing:** Two tabs editing story types/styles → last-write-wins (same as manifest.js)
+- **Library settings not migrated:** `storymode-library-settings` stays in localStorage (cosmetic UI prefs only)

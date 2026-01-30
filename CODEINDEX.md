@@ -16,6 +16,52 @@ Extension-StoryMode/
 ├── CHANGELOG.md             # Version history
 ├── CODEINDEX.md             # This file
 ├── README.md                # Project overview
+├── standalone/              # Standalone fullscreen blueprint editor (no build step)
+│   ├── index.html           # Static entry point, CDN deps (jQuery, toastr, Font Awesome)
+│   ├── app.js               # Main orchestrator, event wiring, init sequence
+│   ├── settings-system.js   # localStorage settings, theme management
+│   ├── adapters/            # SillyTavern dependency bridges
+│   │   ├── connection-bridge.js  # Backend API detection and calls
+│   │   ├── popup-adapter.js      # Modal system (replaces ST Popup class)
+│   │   ├── notification-adapter.js # Toast notifications (wraps toastr)
+│   │   ├── storage-adapter.js    # localStorage vs ST FileAPI
+│   │   ├── character-adapter.js  # Read-only character access
+│   │   ├── profile-adapter.js    # API profile stub
+│   │   └── utils-adapter.js      # Utility shims
+│   ├── editors/             # Tab-specific editors (Details, Scenes, Characters, Cover)
+│   │   ├── details-editor.js          # Details tab form (reuses shared renderers)
+│   │   ├── details-field-renderers.js # Individual field rendering
+│   │   ├── details-section-renderers.js # Section-level rendering
+│   │   ├── scenes-editor.js           # Scene CRUD with in-place refresh
+│   │   ├── characters-editor.js       # Character arc CRUD
+│   │   ├── cover-editor.js            # Cover image tab
+│   │   ├── cover-upload-modal.js      # Cover upload dialog
+│   │   ├── cover-generate-modal.js    # AI cover generation dialog
+│   │   └── character-search-modal.js  # Character search dialog
+│   ├── form/                # Reusable form components
+│   │   ├── array-editor.js  # Dynamic array field editor
+│   │   ├── collapsible.js   # Collapsible sections
+│   │   ├── dropdown.js      # Dropdown component
+│   │   ├── nested-form.js   # Nested object forms
+│   │   └── validation.js    # Form validation
+│   ├── handlers/
+│   │   └── blueprint-actions.js # Blueprint CRUD, import/export operations
+│   ├── ui/                  # UI modules
+│   │   ├── connection.js    # Connection status banner
+│   │   ├── routing.js       # Tab navigation with cache invalidation
+│   │   └── modals.js        # Settings modal (API + Theme tabs)
+│   ├── wizards/
+│   │   └── blueprint-wizard.js # AI blueprint generation wizard
+│   └── themes/              # Self-contained CSS theme system
+│       ├── base.css         # CSS variables and resets
+│       ├── dark.css         # Dark theme variables
+│       ├── light.css        # Light theme variables
+│       ├── rpg-companion.css # RPG Companion theme variables
+│       ├── app.css          # App-level layout
+│       ├── components.css   # Reusable component styles
+│       ├── form.css         # Form styling
+│       ├── layout.css       # Layout utilities
+│       └── wizard.css       # Wizard-specific styles
 ├── data/
 │   ├── story_types.json     # 40+ story type definitions
 │   ├── author_styles.json   # 40+ author style definitions
@@ -659,3 +705,8 @@ const url = new URL('../../data/author_styles.json', import.meta.url);
 | Style generation (AI) | `lib/generation/style-generator.js` | `orchestration.js`, `templates.js` |
 | Debug mocks | `lib/debug/mocks.js` | - |
 | Handler audit | `lib/debug/handler-audit.js` | - |
+| Standalone editor | `standalone/index.html` | `standalone/app.js`, `standalone/adapters/*` |
+| Standalone routing | `standalone/ui/routing.js` | `standalone/editors/*` |
+| Standalone settings | `standalone/settings-system.js` | `standalone/ui/modals.js` |
+| Standalone connection | `standalone/adapters/connection-bridge.js` | `standalone/ui/connection.js` |
+| Fullscreen editor launch | `lib/dialog/settings-pacing.js` | `index.js`, `lib/ui/components/main-panel.js` |

@@ -523,6 +523,7 @@ function setupEventListeners() {
     $(document).off('click.storymode');
     $('#story_mode_enabled').off('change');
     $('#open_story_mode_settings').off('click');
+    $('#open_fullscreen_editor_panel_btn').off('click');
 
     // Master toggle
     $('#story_mode_enabled').on('change', function () {
@@ -535,6 +536,11 @@ function setupEventListeners() {
     });
     // Open settings dialog
     $('#open_story_mode_settings').on('click', () => showSettingsDialog());
+    // Open fullscreen standalone editor
+    $('#open_fullscreen_editor_panel_btn').on('click', () => {
+        const editorUrl = new URL('scripts/extensions/third-party/Extension-StoryMode/standalone/index.html', window.location.origin);
+        window.open(editorUrl.href, '_blank');
+    });
 
     // Start Story from Blueprint button (in settings dialog)
     $(document).on('click.storymode', '#start_story_from_blueprint_btn', async function () {

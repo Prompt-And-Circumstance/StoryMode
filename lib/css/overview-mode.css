@@ -325,6 +325,22 @@
     color: var(--sm-accent);
 }
 
+/* Alt variant: right-aligned, distinct color for external actions */
+.storymode-quick-action-alt {
+    margin-left: auto;
+    background: var(--sm-accent-subtle, var(--black30a));
+    border-color: var(--sm-accent, var(--SmartThemeBorderColor));
+}
+
+.storymode-quick-action-alt:hover {
+    background: var(--sm-accent);
+    color: white;
+}
+
+.storymode-quick-action-alt:hover i {
+    color: white;
+}
+
 /* Section Headers - Left aligned, compact */
 .storymode-section {
     margin-bottom: 16px;

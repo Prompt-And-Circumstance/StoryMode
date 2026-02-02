@@ -383,3 +383,136 @@ tbody tr:hover {
         width: 100%;
     }
 }
+
+/* ============================================================================
+   LOREBOOK EDITOR TAB
+   ============================================================================ */
+
+.lorebook-editor {
+    padding: var(--spacing-md);
+}
+
+.lorebook-section {
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.lorebook-section h3 {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin: 0 0 var(--spacing-md) 0;
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+}
+
+.lorebook-section h3 .badge {
+    margin-left: auto;
+}
+
+.lorebook-metadata {
+    padding: var(--spacing-md);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.lorebook-metadata p {
+    margin: var(--spacing-xs) 0;
+    font-size: var(--text-sm);
+}
+
+.lorebook-metadata strong {
+    color: var(--text-secondary);
+}
+
+.lorebook-entries {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    max-height: 500px;
+    overflow-y: auto;
+    padding: var(--spacing-sm);
+}
+
+.lorebook-entry {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.lorebook-entry.disabled {
+    opacity: 0.5;
+}
+
+.entry-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--card-border);
+}
+
+.entry-header h4 {
+    margin: 0;
+    font-size: var(--text-base);
+    font-weight: var(--font-semibold);
+}
+
+.entry-keywords {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+}
+
+.entry-content {
+    padding: var(--spacing-md);
+}
+
+.entry-content pre {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-sm);
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 200px;
+    overflow-y: auto;
+    font-size: var(--text-sm);
+}
+
+.lorebook-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--border-color);
+}
+
+.linked-lorebook-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.linked-lorebook-list li {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--spacing-xs);
+}
+
+.linked-lorebook-list li i {
+    color: var(--accent-color);
+}

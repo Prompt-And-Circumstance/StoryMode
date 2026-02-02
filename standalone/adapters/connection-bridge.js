@@ -190,6 +190,11 @@ export async function getAuthorStyles() {
 /**
  * Generate a blueprint via SillyTavern's LLM API
  * @param {Object} request - Generation parameters from wizard
+ * @param {string} request.story_type_id
+ * @param {string} request.core_premise
+ * @param {Object} request.embedded_lorebook - OPTIONAL: Embedded lorebook
+ * @param {Array<string>} request.linked_lorebooks - OPTIONAL: Linked lorebook names
+ * ... other fields
  * @returns {Promise<Object>} Generated blueprint object
  * @throws {Error} If not connected or generation fails
  */
@@ -198,9 +203,16 @@ export async function generateBlueprint(request) {
         throw new Error('Not connected to SillyTavern. Please configure your connection in Settings.');
     }
 
+    // Ensure lorebook fields are present (even if null/empty)
+    const requestWithLore = {
+        ...request,
+        embedded_lorebook: request.embedded_lorebook || null,
+        linked_lorebooks: request.linked_lorebooks || [],
+    };
+
     const response = await authenticatedFetch('/api/plugins/storymode/generate', {
         method: 'POST',
-        body: JSON.stringify(request),
+        body: JSON.stringify(requestWithLore),
     });
 
     if (!response.ok) {

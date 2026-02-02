@@ -27,13 +27,16 @@ Extension-StoryMode/
 │   │   ├── storage-adapter.js    # localStorage vs ST FileAPI
 │   │   ├── character-adapter.js  # Read-only character access
 │   │   ├── profile-adapter.js    # API profile stub
+│   │   ├── lorebook-adapter.js   # ST worldinfo/lorebook API access (v1.2+)
+│   │   ├── library-storage-adapter.js # Blueprint library file API wrapper
 │   │   └── utils-adapter.js      # Utility shims
-│   ├── editors/             # Tab-specific editors (Details, Scenes, Characters, Cover)
+│   ├── editors/             # Tab-specific editors (Details, Scenes, Characters, Cover, Lorebook)
 │   │   ├── details-editor.js          # Details tab form (reuses shared renderers)
 │   │   ├── details-field-renderers.js # Individual field rendering
 │   │   ├── details-section-renderers.js # Section-level rendering
 │   │   ├── scenes-editor.js           # Scene CRUD with in-place refresh
 │   │   ├── characters-editor.js       # Character arc CRUD
+│   │   ├── lorebook-editor.js         # Lorebook tab (embedded/linked) (v1.2+)
 │   │   ├── cover-editor.js            # Cover image tab
 │   │   ├── cover-upload-modal.js      # Cover upload dialog
 │   │   ├── cover-generate-modal.js    # AI cover generation dialog
@@ -51,7 +54,10 @@ Extension-StoryMode/
 │   │   ├── routing.js       # Tab navigation with cache invalidation
 │   │   └── modals.js        # Settings modal (API + Theme tabs)
 │   ├── wizards/
-│   │   └── blueprint-wizard.js # AI blueprint generation wizard
+│   │   ├── blueprint-wizard.js # AI blueprint generation wizard (orchestrator, 426 lines)
+│   │   └── wizard-steps/       # Individual wizard step modules (v1.2+)
+│   │       ├── lore-step.js    # Lore selection step (lorebook integration, 365 lines)
+│   │       └── wizard-steps.js # Core wizard step renderers (154 lines)
 │   └── themes/              # Self-contained CSS theme system
 │       ├── base.css         # CSS variables and resets
 │       ├── dark.css         # Dark theme variables
@@ -74,6 +80,8 @@ Extension-StoryMode/
 │   │   ├── characters-prompt.txt
 │   │   ├── characters-prompt-generate.txt
 │   │   ├── characters-prompt-with-data.txt
+│   │   ├── scene-plan-prompt.txt
+│   │   ├── scene-batch-prompt.txt
 │   │   ├── scenes-prompt.txt
 │   │   ├── resolutions-prompt.txt
 │   │   └── validation-prompt.txt
@@ -271,9 +279,9 @@ Extension-StoryMode/
 | `lib/scene/image-preview.js` | ~1,169 | Scene image preview popup with navigation |
 | `lib/core/event-handlers.js` | ~1,137 | Message events, signal parsing |
 | `index.js` | ~1,048 | Entry point, UI setup, settings dialog |
-| `lib/blueprint/storage.js` | ~1,003 | PNG encode/decode, persistence |
+| `lib/blueprint/storage.js` | ~1,003 | PNG encode/decode, persistence, cover migration, async metadata |
 | `lib/generation/templates.js` | ~988 | LLM prompt templates |
-| `lib/dialog/wizard.js` | ~925 | Blueprint generation wizard |
+| `lib/dialog/wizard.js` | ~925 | Blueprint generation wizard with validation and confirmation |
 | `lib/core/state-manager.js` | ~874 | Settings, chat state, data storage |
 | `lib/blueprint/utils.js` | ~768 | Utility functions |
 | `lib/ui/components/settings-tabs.js` | ~737 | Settings dialog subtabs |
@@ -324,11 +332,13 @@ Extension-StoryMode/
 
 | File | Lines | Purpose |
 |------|-------|---------|
+| `wizard.js` | ~925 | Blueprint generation wizard with validation and confirmation |
 | `settings-handlers.js` | ~376 | Coordinator (was ~1,521), delegates to submodules |
 | `settings-blueprint.js` | ~372 | Blueprint settings tab event handlers |
-| `settings-library.js` | ~322 | Library tab events, card actions, search |
+| `settings-library.js` | ~358 | Library tab events, card actions, favorites filter, search |
+| `library-view.js` | ~243 | Library operations, grid rendering, favorites filter persistence |
 | `settings-blueprint-prompts.js` | ~228 | Summarization, cover/scene generation settings |
-| `settings-pacing.js` | ~149 | Pacing mode switching, navigation buttons |
+| `settings-pacing.js` | ~149 | Pacing mode switching, navigation buttons, fullscreen editor |
 
 `settings-handlers.js` was reduced from ~1,521 to ~376 lines by extracting 4 settings submodules.
 
@@ -359,7 +369,7 @@ Extension-StoryMode/
 | `wizard.js` | ~290 | Wizard progress/preview components |
 | `main-panel.js` | ~282 | Main panel and blueprint preview |
 | `phase-override-panel.js` | ~240 | Per-phase API profile and token limit overrides |
-| `library.js` | ~213 | Library tab, blueprint cards |
+| `library.js` | ~260 | Library tab, blueprint cards, scene count validation, favorites filter |
 | `blueprint-shared.js` | ~193 | Shared rendering (info cards, scene cards) |
 | `scenario-characters.js` | ~159 | Character/persona status detection (was ~377) |
 | `index.js` | ~120 | Re-exports all components |
@@ -382,7 +392,7 @@ Note: `lib/ui/components.js` is a thin re-export layer (~16 lines) for backward 
 | `event-handlers.js` | ~477 | Document-level event delegation |
 | `blueprint-editor.js` | ~366 | Main orchestrator, wires up submodules |
 | `wizard-panel.js` | ~331 | AI wizard side panel for section generation |
-| `cover-action-handlers.js` | ~290 | Cover generation, upload, prompt management |
+| `cover-action-handlers.js` | ~290 | Cover generation, upload, prompt, placeholder covers |
 | `scene-crud.js` | ~277 | Scene add/edit/delete/reorder |
 | `cover-tab.js` | ~228 | Cover tab with gallery and prompt editor |
 | `scene-beats-editor.js` | ~216 | Beat rendering and editing within scenes |
@@ -427,7 +437,7 @@ Direct re-exports (`export { x } from './foo.js'`) don't create local bindings, 
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `mocks.js` | ~368 | Mock LLM responses for testing |
+| `mocks.js` | ~368 | Mock LLM responses, async cover placeholder generation |
 | `handler-audit.js` | ~241 | Event handler audit utility |
 | `test-data-loader.js` | ~147 | Blueprint test data loader (disabled) |
 
@@ -445,12 +455,12 @@ lib/core/
 lib/blueprint/
 ├── schema.js (no internal deps)
 ├── validation.js (imports schema)
-├── utils.js (imports file-api for blueprintFilename)
+├── utils.js (no internal deps - FILE_PREFIX, UUID_V4_PATTERN, isValidUUID, blueprintFilename)
 ├── types.js (no deps - JSDoc only)
 ├── placeholders.js (no internal deps)
 ├── resource-utils.js (no internal deps - pure functions)
 ├── storage.js (imports utils, validation, png/*)
-├── file-api.js (no internal deps, wraps fetch)
+├── file-api.js (imports utils for FILE_PREFIX/UUID_V4_PATTERN/isValidUUID/blueprintFilename, re-exports isValidUUID/blueprintFilename)
 ├── manifest.js (imports file-api)
 ├── file-storage.js (imports file-api, manifest, storage)
 ├── library-adapter.js (imports file-storage, manifest)
@@ -688,6 +698,9 @@ const url = new URL('../../data/author_styles.json', import.meta.url);
 | Blueprint tabs | `lib/ui/components/blueprint-tabs.js` | `wizard.js`, `blueprint-shared.js` |
 | Shared blueprint rendering | `lib/ui/components/blueprint-shared.js` | `missing-style-handler.js`, `component-system.js` |
 | Library tab | `lib/ui/components/library.js` | `blueprint-tabs.js` |
+| Library favorites filter | `lib/dialog/settings-library.js` | `library-view.js`, `library.js` |
+| Blueprint scene validation | `lib/ui/components/library.js` | `wizard.js` |
+| Placeholder cover generation | `lib/blueprint/blank-blueprint.js` | `storage.js`, `cover-action-handlers.js`, `mocks.js` |
 | Controller panel | `lib/ui/controller-panel.js` | `controller-panel-*.js` (8 submodules) |
 | Controller: content | `lib/ui/controller-panel-content.js` | `sections.js`, `arc-history.js` |
 | Controller: structure | `lib/ui/controller-panel-structure.js` | `drag.js` |
@@ -713,4 +726,4 @@ const url = new URL('../../data/author_styles.json', import.meta.url);
 | Standalone routing | `standalone/ui/routing.js` | `standalone/editors/*` |
 | Standalone settings | `standalone/settings-system.js` | `standalone/ui/modals.js` |
 | Standalone connection | `standalone/adapters/connection-bridge.js` | `standalone/ui/connection.js` |
-| Fullscreen editor launch | `lib/dialog/settings-pacing.js` | `index.js`, `lib/ui/components/main-panel.js` |
+| Fullscreen editor launch | `lib/dialog/settings-pacing.js` | `main-panel.js`, `settings-tabs.js` |

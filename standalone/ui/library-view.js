@@ -7,6 +7,7 @@ import { showError, showSuccess, showInfo } from '../adapters/notification-adapt
 import {
     getAllBlueprints,
     getBlueprintById,
+    deleteBlueprint,
     setFavorite as setFavoriteInStorage,
 } from '../adapters/library-storage-adapter.js';
 
@@ -18,6 +19,7 @@ let libraryData = [];
 let filteredData = [];
 let currentFilter = 'all';
 let searchQuery = '';
+let currentViewSize = 'medium'; // small, medium, large
 
 // ============================================================================
 // API INTEGRATION
@@ -55,6 +57,17 @@ export function renderLibraryView() {
                 <div class="library-search">
                     <i class="fa-solid fa-search"></i>
                     <input type="text" id="librarySearch" placeholder="Search blueprints..." class="form-control">
+                </div>
+                <div class="library-view-controls" style="margin-left: 10px; margin-right: 10px;">
+                    <button class="btn view-size-btn ${currentViewSize === 'small' ? 'active' : ''}" data-size="small" title="Small View">
+                        <i class="fa-solid fa-th"></i>
+                    </button>
+                    <button class="btn view-size-btn ${currentViewSize === 'medium' ? 'active' : ''}" data-size="medium" title="Medium View">
+                        <i class="fa-solid fa-th-large"></i>
+                    </button>
+                    <button class="btn view-size-btn ${currentViewSize === 'large' ? 'active' : ''}" data-size="large" title="Large View">
+                        <i class="fa-solid fa-square"></i>
+                    </button>
                 </div>
                 <div class="library-actions">
                     <button id="libraryRefresh" class="btn" title="Refresh library">
@@ -114,68 +127,87 @@ export function renderLibraryView() {
     `;
 }
 
+// ============================================================================
+// UTILITIES (imported from lib/blueprint/utils.js)
+// ============================================================================
+
+import {
+    isValidUUID,
+    blueprintFilename,
+    isValidImageUrl,
+    getBlueprintCoverUrl as getUtilsCoverUrl
+} from '../../lib/blueprint/utils.js';
+
+/**
+ * Extract cover image URL from a blueprint object (standalone-specific wrapper)
+ * Ensures root-relative paths for standalone editor
+ * @param {Object} blueprint - Blueprint object
+ * @returns {string|null} Cover URL or null if not found
+ */
+function getBlueprintCoverUrl(blueprint) {
+    const url = getUtilsCoverUrl(blueprint);
+
+    // Ensure root-relative path for standalone editor
+    if (url && url.startsWith('user/files/')) {
+        return '/' + url;
+    }
+
+    return url;
+}
+
 /**
  * Render a single blueprint card
  * @param {Object} blueprint - Blueprint manifest entry
+ * @param {Object} stats - Play statistics for this blueprint
  * @returns {string} HTML for blueprint card
  */
-function renderBlueprintCard(blueprint) {
-    const title = blueprint.title || blueprint.blueprint_title || 'Untitled Blueprint';
+function renderBlueprintCard(blueprint, stats = {}) {
+    const title = blueprint.title || blueprint.userMetadata?.title || blueprint.core_premise?.substring(0, 40) || 'Untitled Blueprint';
     const storyType = blueprint.story_type_name || 'Unknown';
-    const createdAt = blueprint.created_at ? new Date(blueprint.created_at).toLocaleDateString() : 'Unknown';
-    const isFavorite = blueprint.favorite || false;
-    const coverUrl = getCoverUrl(blueprint);
-    const hasCover = blueprint.coverImageUrl || blueprint.metadata?.coverImageUrl || blueprint.metadata?.coverGallery?.length > 0;
+    const sceneCount = blueprint.scene_plan?.length || 0;
+    const isFavorite = blueprint.favorite || blueprint.userMetadata?.favorite || false;
+    const timesPlayed = stats.timesPlayed || 0;
+
+    const coverUrl = getBlueprintCoverUrl(blueprint);
+    const safeCoverUrl = isValidImageUrl(coverUrl) ? coverUrl : null;
+
+    // Use the cover image as background, if available.
+    // NOTE: We rely on the CSS class .storymode-card-cover for the default gradient.
+    const backgroundStyle = safeCoverUrl
+        ? `background-image: url('${escapeHtml(encodeURI(safeCoverUrl))}'); background-size: cover;`
+        : '';
 
     return `
-        <div class="blueprint-card" data-blueprint-id="${blueprint.blueprint_id}">
-            <div class="blueprint-card-cover ${!hasCover ? 'no-cover' : ''}" style="${hasCover ? `background-image: url('${coverUrl}');` : ''}">
-                ${!hasCover ? `<div class="blueprint-card-placeholder"><i class="fa-solid fa-scroll"></i><span>No Cover</span></div>` : ''}
-                ${isFavorite ? '<div class="blueprint-card-favorite"><i class="fa-solid fa-star"></i></div>' : ''}
-            </div>
-            <div class="blueprint-card-content">
-                <h3 class="blueprint-card-title" title="${escapeHtml(title)}">${escapeHtml(title)}</h3>
-                <div class="blueprint-card-meta">
-                    <span class="blueprint-card-type">
-                        <i class="fa-solid fa-masks-theater"></i> ${escapeHtml(storyType)}
-                    </span>
-                    <span class="blueprint-card-date">
-                        <i class="fa-solid fa-calendar"></i> ${createdAt}
-                    </span>
+        <div class="storymode-blueprint-card" data-blueprint-id="${escapeHtml(blueprint.blueprint_id)}">
+            <div class="storymode-card-cover" style="${backgroundStyle}">
+                ${!safeCoverUrl ? `<i class="fa-solid fa-scroll"></i>` : ''}
+                <button class="storymode-card-favorite ${isFavorite ? 'active' : ''}" data-action="favorite" title="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
+                    <i class="fa-solid fa-star"></i>
+                </button>
+                <div class="storymode-card-overlay">
+                    <h4 class="storymode-card-title">${escapeHtml(title)}</h4>
                 </div>
             </div>
-            <div class="blueprint-card-actions">
-                <button class="btn btn-sm blueprint-card-load" title="Load blueprint">
-                    <i class="fa-solid fa-folder-open"></i> Load
+            <div class="storymode-card-body">
+                <div class="storymode-card-meta">
+                    <span><i class="fa-solid fa-theater-masks"></i> ${escapeHtml(storyType)}</span>
+                    <span><i class="fa-solid fa-film"></i> ${sceneCount} scenes</span>
+                </div>
+                ${timesPlayed > 0 ? `<div class="storymode-card-plays"><i class="fa-solid fa-play"></i> Played ${timesPlayed}x</div>` : ''}
+            </div>
+            <div class="storymode-card-actions">
+                <button class="menu_button storymode-btn-icon" data-action="edit" title="Edit scenario blueprint">
+                    <i class="fa-solid fa-pen"></i>
                 </button>
-                <button class="btn btn-sm blueprint-card-favorite-toggle" title="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
-                    <i class="fa-${isFavorite ? 'solid' : 'regular'} fa-star"></i>
+                <button class="menu_button storymode-btn-icon" data-action="export" title="Export as PNG">
+                    <i class="fa-solid fa-download"></i>
+                </button>
+                <button class="menu_button storymode-btn-icon storymode-btn-danger" data-action="delete" title="Delete scenario blueprint">
+                    <i class="fa-solid fa-trash"></i>
                 </button>
             </div>
         </div>
     `;
-}
-
-/**
- * Get cover URL for a blueprint
- * @param {Object} blueprint - Blueprint manifest entry
- * @returns {string} Cover URL or placeholder
- */
-function getCoverUrl(blueprint) {
-    // Use relative URLs — the editor is served from SillyTavern (same-origin)
-    if (blueprint.coverImageUrl) {
-        return blueprint.coverImageUrl;
-    }
-    if (blueprint.metadata?.coverImageUrl) {
-        return blueprint.metadata.coverImageUrl;
-    }
-    if (blueprint.metadata?.coverGallery?.length > 0) {
-        const index = blueprint.metadata.coverGalleryIndex || 0;
-        return blueprint.metadata.coverGallery[index]?.url;
-    }
-
-    // Placeholder
-    return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="400"%3E%3Crect fill="%23333" width="300" height="400"/%3E%3Ctext x="50%25" y="50%25" fill="%23999" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="20"%3ENo Cover%3C/text%3E%3C/svg%3E';
 }
 
 /**
@@ -232,9 +264,18 @@ function renderGrid() {
     const grid = $('#libraryGrid');
     const empty = $('#libraryEmpty');
 
+    // Update grid size class
+    grid.removeClass('size-small size-medium size-large').addClass(`size-${currentViewSize}`);
+
     if (filteredData.length === 0) {
         grid.hide();
         empty.show();
+
+        const hasActiveFilter = searchQuery || currentFilter !== 'all';
+        $('#libraryEmptyText').text(hasActiveFilter
+            ? 'No blueprints match your search or filter.'
+            : 'Your library is empty. Import or create a blueprint to get started.');
+        $('#emptyNewBlueprint, #emptyImport').toggle(!hasActiveFilter);
         return;
     }
 
@@ -259,13 +300,21 @@ function renderGrid() {
  */
 export function initLibraryHandlers() {
     // Search
-    $(document).on('input', '#librarySearch', function() {
+    $(document).on('input', '#librarySearch', function () {
         searchQuery = $(this).val();
         applyFiltersAndSearch();
     });
 
+    // View Size
+    $(document).on('click', '.view-size-btn', function () {
+        $('.view-size-btn').removeClass('active');
+        $(this).addClass('active');
+        currentViewSize = $(this).data('size');
+        renderGrid();
+    });
+
     // Filter selection
-    $(document).on('click', '.filter-item', function() {
+    $(document).on('click', '.filter-item', function () {
         $('.filter-item').removeClass('active');
         $(this).addClass('active');
         currentFilter = $(this).data('filter');
@@ -273,42 +322,85 @@ export function initLibraryHandlers() {
     });
 
     // Refresh library
-    $(document).on('click', '#libraryRefresh', async function() {
+    $(document).on('click', '#libraryRefresh', async function () {
         await refreshLibrary();
     });
 
     // Load blueprint
-    $(document).on('click', '.blueprint-card-load', async function(e) {
+    $(document).on('click', '.blueprint-card-load', async function (e) {
         e.stopPropagation();
-        const card = $(this).closest('.blueprint-card');
+        const card = $(this).closest('.storymode-blueprint-card');
         const blueprintId = card.data('blueprint-id');
         await handleLoadBlueprint(blueprintId);
     });
 
     // Card click (same as load button)
-    $(document).on('click', '.blueprint-card', async function(e) {
-        if ($(e.target).closest('.blueprint-card-actions').length) return;
+    $(document).on('click', '.storymode-blueprint-card', async function (e) {
+        if ($(e.target).closest('.storymode-card-actions').length) return;
+        if ($(e.target).closest('.storymode-card-favorite').length) return;
         const blueprintId = $(this).data('blueprint-id');
         await handleLoadBlueprint(blueprintId);
     });
 
     // Toggle favorite
-    $(document).on('click', '.blueprint-card-favorite-toggle', async function(e) {
+    $(document).on('click', '.storymode-card-favorite', async function (e) {
         e.stopPropagation();
-        const card = $(this).closest('.blueprint-card');
+        const card = $(this).closest('.storymode-blueprint-card');
         const blueprintId = card.data('blueprint-id');
         await handleToggleFavorite(blueprintId);
     });
 
     // New blueprint (from library header)
-    $(document).on('click', '#libraryNewBlueprint, #emptyNewBlueprint', function() {
+    $(document).on('click', '#libraryNewBlueprint, #emptyNewBlueprint', function () {
         $(document).trigger('library:new-blueprint');
     });
 
     // Import (from library header)
-    $(document).on('click', '#libraryImport, #emptyImport', function() {
+    $(document).on('click', '#libraryImport, #emptyImport', function () {
         $(document).trigger('library:import');
     });
+
+    // Edit Blueprint
+    $(document).on('click', '[data-action="edit"]', async function (e) {
+        e.stopPropagation();
+        const card = $(this).closest('.storymode-blueprint-card');
+        const blueprintId = card.data('blueprint-id');
+        await handleLoadBlueprint(blueprintId);
+    });
+
+    // Delete Blueprint
+    $(document).on('click', '[data-action="delete"]', async function (e) {
+        e.stopPropagation();
+        if (!confirm('Are you sure you want to delete this blueprint?')) return;
+
+        const card = $(this).closest('.storymode-blueprint-card');
+        const blueprintId = card.data('blueprint-id');
+
+        try {
+            await deleteBlueprint(blueprintId);
+            await refreshLibrary();
+            showSuccess('Blueprint deleted');
+        } catch (err) {
+            showError('Failed to delete blueprint: ' + err.message);
+        }
+    });
+
+    // Export Blueprint (Trigger generic event for now)
+    $(document).on('click', '[data-action="export"]', async function (e) {
+        e.stopPropagation();
+        const card = $(this).closest('.storymode-blueprint-card');
+        const blueprintId = card.data('blueprint-id');
+        // We can implement export logic here or trigger an event
+        // For now, let's look for an export function in adapters
+        try {
+            // Check if exportToPNG exists in adapter, otherwise just log
+            // TODO: Implement export
+            showInfo('Export feature coming soon');
+        } catch (err) {
+            console.error(err);
+        }
+    });
+
 }
 
 /**
@@ -318,6 +410,11 @@ export function initLibraryHandlers() {
 async function handleLoadBlueprint(blueprintId) {
     try {
         const blueprint = await loadBlueprintById(blueprintId);
+
+        if (!blueprint) {
+            throw new Error('Blueprint could not be loaded. It may be corrupt or in an unsupported format (binary PNG).');
+        }
+
         $(document).trigger('library:blueprint-selected', { blueprint });
         showSuccess('Blueprint loaded');
     } catch (error) {
@@ -358,8 +455,21 @@ async function handleToggleFavorite(blueprintId) {
  * @returns {Promise<void>}
  */
 export async function showLibrary() {
-    // Render library view
-    $('#mainContent').html(renderLibraryView());
+    // Ensure library container exists and is populated
+    const $libraryView = $('#libraryView');
+
+    // Only render if empty (first load)
+    if ($libraryView.is(':empty')) {
+        $libraryView.html(renderLibraryView());
+    }
+
+    // Toggle Views
+    $('#editorView').hide();
+    $libraryView.show();
+
+    // Update active state in sidebar
+    $('.sidebar-link').removeClass('active');
+    $('#libraryLink').addClass('active');
 
     // Load library data
     await refreshLibrary();
@@ -374,12 +484,12 @@ export async function refreshLibrary() {
         showInfo('Loading library...');
         libraryData = await fetchLibrary();
         console.log('[Library] Loaded blueprints:', libraryData);
-        console.log('[Library] Sample blueprint:', libraryData[0]);
         applyFiltersAndSearch();
         showSuccess(`Loaded ${libraryData.length} blueprints`);
     } catch (error) {
         console.error('[Library] Error loading library:', error);
         showError(`Failed to load library: ${error.message}`);
+
         // Show empty state with connection error
         $('#libraryGrid').hide();
         $('#libraryEmpty').show().html(`
@@ -395,12 +505,12 @@ export async function refreshLibrary() {
         `);
 
         // Add retry handler
-        $(document).on('click', '#libraryRetry', async function() {
+        $('#libraryRetry').off('click').on('click', async function () {
             await refreshLibrary();
         });
 
         // Add configure connection handler
-        $(document).on('click', '#libraryConfigureConnection', function() {
+        $('#libraryConfigureConnection').off('click').on('click', function () {
             $(document).trigger('open-settings');
         });
     }
@@ -410,5 +520,7 @@ export async function refreshLibrary() {
  * Hide library view
  */
 export function hideLibrary() {
-    $('.library-view').remove();
+    $('#libraryView').hide();
+    $('#editorView').show();
+    $('#libraryLink').removeClass('active');
 }

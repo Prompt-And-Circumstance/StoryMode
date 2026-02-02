@@ -7,7 +7,9 @@ import { renderDetailsTab, extractDetailsValues, validateDetailsTab } from '../e
 import { renderScenesTab } from '../editors/scenes-editor.js';
 import { renderCharactersTab } from '../editors/characters-editor.js';
 import { renderCoverTab } from '../editors/cover-editor.js';
+import { renderLorebookTab } from '../editors/lorebook-editor.js';
 import { getCurrentBlueprint } from '../handlers/blueprint-actions.js';
+import { sanitizeFilename } from '../../lib/blueprint/utils.js';
 
 // ============================================================================
 // STATE
@@ -15,6 +17,46 @@ import { getCurrentBlueprint } from '../handlers/blueprint-actions.js';
 
 let activeTab = 'details';
 const tabContentCache = new Map();
+
+// ============================================================================
+// TAB CONFIG
+// ============================================================================
+
+/**
+ * Tab renderer configuration
+ * Maps tab IDs to their render functions and options
+ */
+const TAB_RENDERERS = {
+    details: {
+        render: renderDetailsTab,
+        options: () => ({
+            storyTypes: [],
+            authorStyles: [],
+            readonly: false,
+        }),
+        cacheFullContent: true,
+    },
+    scenes: {
+        render: renderScenesTab,
+        options: () => ({ readonly: false }),
+        cacheFullContent: false,
+    },
+    characters: {
+        render: renderCharactersTab,
+        options: () => ({ readonly: false }),
+        cacheFullContent: false,
+    },
+    lorebook: {
+        render: renderLorebookTab,
+        options: () => ({ readonly: false }),
+        cacheFullContent: false,
+    },
+    cover: {
+        render: renderCoverTab,
+        options: () => ({ readonly: false }),
+        cacheFullContent: false,
+    },
+};
 
 // ============================================================================
 // TAB NAVIGATION
@@ -70,6 +112,33 @@ export function getActiveTab() {
 }
 
 /**
+ * Generic tab loader using configuration
+ * @param {string} tabId - Tab identifier
+ * @param {Object} blueprint - Blueprint object
+ */
+function loadTabGeneric(tabId, blueprint) {
+    const config = TAB_RENDERERS[tabId];
+    if (!config) return;
+
+    const $tabPanel = $(`#${tabId}Tab .tab-content`);
+    $tabPanel.empty();
+
+    const options = typeof config.options === 'function' ? config.options() : config.options;
+    const $content = config.render(blueprint, options);
+    $tabPanel.append($content);
+
+    // Cache based on configuration
+    if (config.cacheFullContent) {
+        tabContentCache.set(tabId, { type: tabId, content: $content });
+    } else {
+        tabContentCache.set(tabId, { type: tabId });
+    }
+
+    // Emit tab loaded event
+    $(document).trigger('tab:loaded', { tabId });
+}
+
+/**
  * Load content for a specific tab
  * @param {string} tabId - Tab identifier
  */
@@ -89,99 +158,98 @@ export function loadTabContent(tabId) {
         return;
     }
 
-    switch (tabId) {
-        case 'details':
-            loadDetailsTab(blueprint);
-            break;
-        case 'scenes':
-            loadScenesTab(blueprint);
-            break;
-        case 'characters':
-            loadCharactersTab(blueprint);
-            break;
-        case 'cover':
-            loadCoverTab(blueprint);
-            break;
+    // Use generic loader if configured, otherwise fall back to specific handler
+    if (TAB_RENDERERS[tabId]) {
+        loadTabGeneric(tabId, blueprint);
+    } else {
+        // Special handling for lorebook tab (has custom event binding)
+        if (tabId === 'lorebook') {
+            loadLorebookTab(blueprint);
+        }
     }
 }
 
 /**
  * Load the Details tab content
  * @param {Object} blueprint - Blueprint object
+ * @deprecated Use loadTabGeneric instead
  */
 function loadDetailsTab(blueprint) {
-    const $tabPanel = $('#detailsTab .tab-content');
-    $tabPanel.empty();
-
-    // TODO: Fetch story types and author styles from backend
-    const storyTypes = [];
-    const authorStyles = [];
-
-    const $content = renderDetailsTab(blueprint, {
-        storyTypes,
-        authorStyles,
-        readonly: false,
-    });
-
-    $tabPanel.append($content);
-
-    // Cache the content for quick switching
-    tabContentCache.set('details', {
-        type: 'details',
-        content: $content,
-    });
-
-    // Emit tab loaded event
-    $(document).trigger('tab:loaded', { tabId: 'details' });
+    loadTabGeneric('details', blueprint);
 }
 
 /**
  * Load the Scenes tab content
  * @param {Object} blueprint - Blueprint object
+ * @deprecated Use loadTabGeneric instead
  */
 function loadScenesTab(blueprint) {
-    const $tabPanel = $('#scenesTab .tab-content');
-    $tabPanel.empty();
-
-    const $content = renderScenesTab(blueprint, { readonly: false });
-    $tabPanel.append($content);
-
-    // Cache the content type (scenes tab is dynamic, so we don't cache the full content)
-    tabContentCache.set('scenes', { type: 'scenes' });
-
-    $(document).trigger('tab:loaded', { tabId: 'scenes' });
+    loadTabGeneric('scenes', blueprint);
 }
 
 /**
  * Load the Character Arcs tab content
  * @param {Object} blueprint - Blueprint object
+ * @deprecated Use loadTabGeneric instead
  */
 function loadCharactersTab(blueprint) {
-    const $tabPanel = $('#charactersTab .tab-content');
-    $tabPanel.empty();
-
-    const $content = renderCharactersTab(blueprint, { readonly: false });
-    $tabPanel.append($content);
-
-    tabContentCache.set('characters', { type: 'characters' });
-
-    $(document).trigger('tab:loaded', { tabId: 'characters' });
+    loadTabGeneric('characters', blueprint);
 }
 
 /**
  * Load the Cover tab content
  * @param {Object} blueprint - Blueprint object
+ * @deprecated Use loadTabGeneric instead
  */
 function loadCoverTab(blueprint) {
-    const $tabPanel = $('#coverTab .tab-content');
+    loadTabGeneric('cover', blueprint);
+}
+
+/**
+ * Load the Lorebook tab content
+ * @param {Object} blueprint - Blueprint object
+ */
+function loadLorebookTab(blueprint) {
+    const $tabPanel = $('#lorebookTab .tab-content');
     $tabPanel.empty();
 
-    const $content = renderCoverTab(blueprint, { readonly: false });
+    const $content = renderLorebookTab(blueprint, { readonly: false });
     $tabPanel.append($content);
 
-    tabContentCache.set('cover', { type: 'cover' });
+    tabContentCache.set('lorebook', { type: 'lorebook' });
 
-    $(document).trigger('tab:loaded', { tabId: 'cover' });
+    // Bind events for lorebook actions
+    $content.on('lorebook:export', () => {
+        exportLorebookAsJSON(blueprint.embedded_lorebook);
+    });
+
+    $content.on('lorebook:removed', () => {
+        if (blueprint.embedded_lorebook) {
+            delete blueprint.embedded_lorebook;
+            loadLorebookTab(blueprint); // Refresh
+            // Trigger save...
+        }
+    });
+
+    $(document).trigger('tab:loaded', { tabId: 'lorebook' });
+}
+
+/**
+ * Export lorebook as JSON file
+ * @param {Object} lorebook - Embedded lorebook object
+ */
+function exportLorebookAsJSON(lorebook) {
+    if (!lorebook) return;
+
+    const json = JSON.stringify(lorebook, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    // Use sanitizeFilename for secure filename generation
+    a.download = `${sanitizeFilename(lorebook.name)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
 }
 
 /**

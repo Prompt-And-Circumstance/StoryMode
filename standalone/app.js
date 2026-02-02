@@ -66,10 +66,12 @@ async function initApp() {
         } catch (error) {
             console.error('[App] Failed to load library:', error);
             // Fall back to empty state
+            hideLibrary();
             updateUIState();
         }
     } else {
         // No connection - show empty state with connection prompt
+        hideLibrary();
         updateUIState();
     }
 
@@ -284,7 +286,7 @@ export function getAppState() {
 // ============================================================================
 
 // Initialize when DOM is ready
-$(document).ready(function() {
+$(document).ready(function () {
     initApp();
 });
 

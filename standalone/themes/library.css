@@ -356,5 +356,224 @@
 
     .library-grid {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 16px;
     }
+}
+
+/* ============================================================================
+   STORY MODE BLUEPRINT CARD (Ported from lib/css/blueprint-library.css)
+   ============================================================================ */
+
+.storymode-blueprint-card {
+    background: var(--SmartThemeBlurTintColor, rgba(0, 0, 0, 0.3));
+    border: 1px solid var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.1));
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Size Variants */
+.library-grid.size-small {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+
+.library-grid.size-small .storymode-blueprint-card {
+    font-size: 0.9em;
+}
+
+.library-grid.size-small .storymode-card-actions {
+    display: none;
+}
+
+/* Hide actions in small view */
+
+.library-grid.size-medium {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.library-grid.size-large {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.library-grid.size-large .storymode-blueprint-card {
+    font-size: 1.1em;
+}
+
+
+.storymode-blueprint-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    border-color: var(--sm-accent, #667eea);
+}
+
+.storymode-card-cover {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    /* Blue Mockup Style */
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Fallback icon when no cover */
+.storymode-card-cover>i.fa-scroll {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.storymode-card-favorite {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(0, 0, 0, 0.5);
+    color: rgba(255, 255, 255, 0.7);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0;
+}
+
+.storymode-blueprint-card:hover .storymode-card-favorite,
+.storymode-card-favorite.active {
+    opacity: 1;
+}
+
+.storymode-card-favorite.active {
+    background: rgba(255, 215, 0, 0.9);
+    color: #000;
+}
+
+.storymode-card-favorite:hover {
+    transform: scale(1.1);
+    background: white;
+    color: black;
+}
+
+.storymode-card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px 8px 8px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0) 100%);
+}
+
+.storymode-card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    line-height: 1.3;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.storymode-card-body {
+    padding: 8px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.storymode-card-meta {
+    font-size: 11px;
+    color: var(--SmartThemeQuoteColor, #999);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.storymode-card-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.storymode-card-meta i {
+    width: 14px;
+    text-align: center;
+    opacity: 0.7;
+}
+
+.storymode-card-plays {
+    margin-top: auto;
+    font-size: 10px;
+    color: var(--SmartThemeBodyColor, #ccc);
+    opacity: 0.7;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Actions Bar */
+.storymode-card-actions {
+    display: flex;
+    gap: 4px;
+    padding: 6px 8px;
+    background: var(--black30a, rgba(0, 0, 0, 0.2));
+    border-top: 1px solid var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.1));
+}
+
+.storymode-card-actions .menu_button {
+    flex: 1;
+    height: 28px;
+    min-width: 0;
+    /* Allow shrinking */
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    border: 1px solid var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.1));
+    background: transparent;
+    color: var(--SmartThemeBodyColor, #e0e0e0);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.storymode-card-actions .menu_button:hover {
+    background: var(--black50a, rgba(255, 255, 255, 0.1));
+    color: white;
+}
+
+.storymode-card-actions .storymode-btn-start {
+    flex: 2;
+    /* Wider play button */
+    background: var(--sm-accent, #667eea);
+    border-color: var(--sm-accent, #667eea);
+    color: white;
+}
+
+.storymode-card-actions .storymode-btn-start:hover {
+    background: var(--sm-accent-dark, #5568d3);
+}
+
+.storymode-card-actions .storymode-btn-danger:hover {
+    background: rgba(220, 53, 69, 0.2);
+    border-color: #dc3545;
+    color: #dc3545;
 }

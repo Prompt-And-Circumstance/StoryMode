@@ -94,6 +94,12 @@
                         </a>
                     </li>
                     <li>
+                        <a href="#" class="sidebar-link" data-tab="lorebook">
+                            <i class="fa-solid fa-globe"></i>
+                            Lorebook
+                        </a>
+                    </li>
+                    <li>
                         <a href="#" class="sidebar-link" data-tab="cover">
                             <i class="fa-solid fa-image"></i>
                             Cover
@@ -155,56 +161,70 @@
 
         <!-- Main Content Area -->
         <main class="app-main" id="mainContent">
-            <!-- Empty State (shown when no blueprint is loaded) -->
-            <div id="emptyState" class="empty-state">
-                <i class="fa-solid fa-file-circle-plus"></i>
-                <h2>No Blueprint Loaded</h2>
-                <p>Create a new blueprint or import an existing one from PNG to get started.</p>
-                <div style="display: flex; gap: 1rem;">
-                    <button id="generateBlueprintBtn" class="btn btn-primary">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i>
-                        Generate AI
-                    </button>
-                    <button id="newBlueprintBtn" class="btn">
-                        <i class="fa-solid fa-plus"></i>
-                        New Blueprint
-                    </button>
-                    <button id="importBtn" class="btn">
-                        <i class="fa-solid fa-file-import"></i>
-                        Import PNG
-                    </button>
-                </div>
-            </div>
+            <!-- Library View Container -->
+            <div id="libraryView" style="display: none;"></div>
 
-            <!-- Details Tab Panel -->
-            <div id="detailsTab" class="tab-panel active">
-                <div class="tab-content">
-                    <h2>Blueprint Details</h2>
-                    <p><em>Loading...</em></p>
+            <!-- Editor View Container -->
+            <div id="editorView">
+                <!-- Empty State (shown when no blueprint is loaded) -->
+                <div id="emptyState" class="empty-state">
+                    <i class="fa-solid fa-file-circle-plus"></i>
+                    <h2>No Blueprint Loaded</h2>
+                    <p>Create a new blueprint or import an existing one from PNG to get started.</p>
+                    <div style="display: flex; gap: 1rem;">
+                        <button id="generateBlueprintBtn" class="btn btn-primary">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            Generate AI
+                        </button>
+                        <button id="newBlueprintBtn" class="btn">
+                            <i class="fa-solid fa-plus"></i>
+                            New Blueprint
+                        </button>
+                        <button id="importBtn" class="btn">
+                            <i class="fa-solid fa-file-import"></i>
+                            Import PNG
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Scenes Tab Panel -->
-            <div id="scenesTab" class="tab-panel">
-                <div class="tab-content">
-                    <h2>Scene Plan</h2>
-                    <p><em>Loading...</em></p>
+                <!-- Details Tab Panel -->
+                <div id="detailsTab" class="tab-panel active">
+                    <div class="tab-content">
+                        <h2>Blueprint Details</h2>
+                        <p><em>Loading...</em></p>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Characters Tab Panel -->
-            <div id="charactersTab" class="tab-panel">
-                <div class="tab-content">
-                    <h2>Character Arcs</h2>
-                    <p><em>Loading...</em></p>
+                <!-- Scenes Tab Panel -->
+                <div id="scenesTab" class="tab-panel">
+                    <div class="tab-content">
+                        <h2>Scene Plan</h2>
+                        <p><em>Loading...</em></p>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Cover Tab Panel -->
-            <div id="coverTab" class="tab-panel">
-                <div class="tab-content">
-                    <h2>Cover Image</h2>
-                    <p><em>Loading...</em></p>
+                <!-- Characters Tab Panel -->
+                <div id="charactersTab" class="tab-panel">
+                    <div class="tab-content">
+                        <h2>Character Arcs</h2>
+                        <p><em>Loading...</em></p>
+                    </div>
+                </div>
+
+                <!-- Lorebook Tab Panel -->
+                <div id="lorebookTab" class="tab-panel">
+                    <div class="tab-content">
+                        <h2>World Lore</h2>
+                        <p><em>Loading...</em></p>
+                    </div>
+                </div>
+
+                <!-- Cover Tab Panel -->
+                <div id="coverTab" class="tab-panel">
+                    <div class="tab-content">
+                        <h2>Cover Image</h2>
+                        <p><em>Loading...</em></p>
+                    </div>
                 </div>
             </div>
         </main>

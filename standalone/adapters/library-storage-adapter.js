@@ -155,12 +155,41 @@ export async function saveManifest(manifest) {
 // ============================================================================
 
 /**
+ * Convert manifest entry to card-compatible format
+ * Replicates logic from lib/blueprint/library-adapter.js
+ * @param {Object} entry - Manifest entry
+ * @returns {Object} Card-compatible blueprint object
+ */
+function entryToCardFormat(entry) {
+    if (!entry) return null;
+
+    const coverFileUrl = entry.filename
+        ? `/user/files/${entry.filename}?t=${new Date(entry.modified_at).getTime()}`
+        : null;
+
+    return {
+        ...entry,
+        coverFileUrl,
+        userMetadata: {
+            title: entry.title,
+            favorite: entry.favorite,
+        },
+        libraryData: {
+            dateAdded: entry.created_at,
+            dateModified: entry.modified_at,
+            lastAccessed: entry.last_accessed_at,
+            accessCount: entry.access_count,
+        }
+    };
+}
+
+/**
  * Get all blueprints from the library
  * @returns {Promise<Array>} Array of blueprint manifest entries
  */
 export async function getAllBlueprints() {
     const manifest = await loadManifest();
-    return manifest.blueprints || [];
+    return (manifest.blueprints || []).map(entryToCardFormat);
 }
 
 /**
@@ -178,8 +207,14 @@ export async function getBlueprintById(blueprintId) {
 
     // Load blueprint from PNG file
     // Files are at root level: user/files/storymode-bp-{uuid}.png
-    const filename = `bp-${blueprintId}.png`;
+    const filename = `storymode-bp-${blueprintId}.png`;
     const blueprint = await readBlueprintPNG(filename);
+
+    // Augment with computed cover URL for consistency
+    if (blueprint && typeof blueprint === 'object') {
+        blueprint.coverFileUrl = entry.filename ? `/user/files/${entry.filename}` : null;
+    }
+
     return blueprint;
 }
 
@@ -198,6 +233,10 @@ export async function saveBlueprint(blueprint) {
 
     // Update or add manifest entry
     const existingIndex = manifest.blueprints.findIndex(b => b.blueprint_id === blueprintId);
+
+    // Ensure filename is consistent
+    const filename = `storymode-bp-${blueprintId}.png`;
+
     const entry = {
         blueprint_id: blueprintId,
         title: blueprint.userMetadata?.title || blueprint.blueprint_title || 'Untitled',
@@ -208,6 +247,7 @@ export async function saveBlueprint(blueprint) {
         favorite: blueprint.userMetadata?.favorite || false,
         coverImageUrl: blueprint.coverImageUrl || blueprint.metadata?.coverImageUrl,
         metadata: blueprint.metadata,
+        filename: filename // Standard field used to generate coverFileUrl
     };
 
     if (existingIndex >= 0) {
@@ -220,8 +260,6 @@ export async function saveBlueprint(blueprint) {
     await saveManifest(manifest);
 
     // Save blueprint as PNG
-    // Files are at root level: user/files/storymode-bp-{uuid}.png
-    const filename = `bp-${blueprintId}.png`;
     await saveBlueprintPNG(filename, blueprint);
 }
 
@@ -239,7 +277,7 @@ export async function deleteBlueprint(blueprintId) {
 
     // Delete PNG file
     // Files are at root level: user/files/storymode-bp-{uuid}.png
-    const filename = `bp-${blueprintId}.png`;
+    const filename = `storymode-bp-${blueprintId}.png`;
     try {
         await deleteFile(filename);
     } catch (error) {
@@ -264,19 +302,53 @@ export async function setFavorite(blueprintId, favorite) {
 }
 
 // ============================================================================
-// PNG CODEC (Placeholder - needs proper implementation)
+// PNG CODEC
 // ============================================================================
 
 /**
- * Read blueprint from PNG file
+ * Read blueprint from PNG file (handling both JSON and Binary formats)
  * @param {string} filename - File name
  * @returns {Promise<Object>} Blueprint object
  */
 async function readBlueprintPNG(filename) {
-    // For now, just read as JSON (should use PNG codec)
-    // TODO: Implement proper PNG decoding
-    const content = await readFile(filename);
-    return content;
+    try {
+        const blob = await readBlob(filename);
+        if (!blob) return null;
+
+        // Try treating as JSON (Legacy/Text format)
+        const text = await blob.text();
+        if (text.trim().startsWith('{')) {
+            try {
+                return JSON.parse(text);
+            } catch {
+                // Invalid JSON, fall through to PNG decode
+            }
+        }
+
+        // Try decoding as Binary PNG
+        const { decodeBlueprintFromPNG } = await import('../../lib/blueprint/codec.js');
+        return await decodeBlueprintFromPNG(blob);
+    } catch (error) {
+        console.warn(`[LibraryStorage] Error reading blueprint ${filename}:`, error);
+        return null;
+    }
+}
+
+/**
+ * Read file as Blob (for binary access)
+ * @param {string} filename 
+ * @returns {Promise<Blob>}
+ */
+async function readBlob(filename) {
+    const url = `/user/files/${filename}?t=${Date.now()}`;
+    try {
+        const response = await fetch(url);
+        if (!response.ok) return null;
+        return await response.blob();
+    } catch (e) {
+        console.error('[LibraryStorage] Fetch failed:', e);
+        return null;
+    }
 }
 
 /**
@@ -286,7 +358,6 @@ async function readBlueprintPNG(filename) {
  * @returns {Promise<void>}
  */
 async function saveBlueprintPNG(filename, blueprint) {
-    // For now, just save as JSON (should use PNG codec)
-    // TODO: Implement proper PNG encoding
+    // TODO: Implement PNG encoding using codec.js (currently saves as JSON)
     await writeFile(filename, blueprint);
 }
